@@ -598,47 +598,67 @@ L 414.72 42.5088
   <circle id="concentration" cx="385" cy="70" r="5" fill="url(#ConcentrationGradient)"/>
 
   <script type="application/ecmascript"> <![CDATA[
+    //======================================================================
+
     var svg = document.documentElement; // Top level element
 
-    var plot_line = svg.getElementById("plot1");
-    var plot_mark = svg.getElementById("mark1");
+    //======================================================================
 
-    var plot = new Float64Array(JSON.parse('[' + plot_line.getAttribute('d').split(/M|L| /).filter(i => i != '').join(',') + ']'));
+    class Plot {
+      constructor(id, visualiser) {
+        this.line = svg.getElementById(id).getElementsByTagName("path")[0]
+        if (this.line) {
+          this.points = new Float64Array(JSON.parse('[' + this.line.getAttribute('d').split(/M|L| /).filter(i => i != '').join(',') + ']'));
+          this.marker = document.createElementNS(svg.namespaceURI, 'circle');
+          this.marker.setAttribute("r","3");
+          this.marker.style.stroke = "none";
+          this.marker.style.fill = this.line.style["stroke"]
+          svg.appendChild(this.marker);
+          this.visualiser = visualiser;
+        }
+      }
 
+      draw_path(t) {
+        var xy = this.points;
+        var path = "M " + String(xy[0]) + " " + String(xy[1]);
+
+        if (t < xy[0]) {
+          this.marker.setAttribute("visibility", "hidden");
+          }
+        else {
+          var mx = xy[0];
+          var my = xy[1];
+          if (t > xy[0]) {
+            var i = 2;
+            while (i < xy.length && xy[i] <= t) {
+              mx = xy[i]; my = xy[i+1];
+              if (i == 2) path += " L";
+              path += " " + String(mx) + " " + String(my);
+              i += 2;
+            }
+            if (i < xy.length) {  // xy[i-2] <= t < xy[i]
+              var dt = t - xy[i-2];
+              var dy = dt*(xy[i+1]-xy[i-1])/(xy[i]-xy[i-2]);
+              mx = t; my = xy[i-1] + dy;
+              path += " l" + String(dt) + " " + String(dy);
+            }
+          }
+          this.marker.setAttribute("cx", mx);
+          this.marker.setAttribute("cy", my);
+          this.marker.setAttribute("visibility", "visible");
+
+          this.visualiser.setAttribute("r", 5 + 30*(xy[1] - my)/200);
+        }
+        this.line.setAttribute("d", path);
+      }
+    };
+
+    //======================================================================
+
+    //var plot_line = svg.getElementById("plot1");
     var concentration = svg.getElementById("concentration");
 
-    function make_path(t, xy, marker) {
-      var path = "M " + String(xy[0]) + " " + String(xy[1]);
-
-      if (t < xy[0]) {
-        marker.setAttribute("visibility", "hidden");
-        }
-      else {
-        var mx = xy[0];
-        var my = xy[1];
-        if (t > xy[0]) {
-          var i = 2;
-          while (i < xy.length && xy[i] <= t) {
-            mx = xy[i]; my = xy[i+1];
-            if (i == 2) path += " L";
-            path += " " + String(mx) + " " + String(my);
-            i += 2;
-          }
-          if (i < xy.length) {  // xy[i-2] <= t < xy[i]
-            var dt = t - xy[i-2];
-            var dy = dt*(xy[i+1]-xy[i-1])/(xy[i]-xy[i-2]);
-            mx = t; my = xy[i-1] + dy;
-            path += " l" + String(dt) + " " + String(dy);
-          }
-        }
-        marker.setAttribute("cx", mx);
-        marker.setAttribute("cy", my);
-        marker.setAttribute("visibility", "visible");
-
-        concentration.setAttribute("r", 5 + 30*(xy[1] - my)/200);
-      }
-      return path;
-    }
+    var voltage_plot = new Plot("line2d_14", concentration)
 
     var T = 0;
     const T_MAX = 500;
@@ -653,7 +673,7 @@ L 414.72 42.5088
     }
 
     function animate() {
-      plot_line.setAttribute("d", make_path(T, plot, plot_mark));
+      voltage_plot.draw_path(T);
       T += 1;
       if (T >= T_MAX) {
         T = 0;
