@@ -476,10 +476,7 @@ z
     </g>
    </g>
    <g id="line2d_14">
-      <circle id="mark1" cx="57.6" cy="281.380838" r="3"
-          style="stroke: none; fill: #1b77b4;"
-          visibility="hidden" />
-    <path id="plot1" clip-path="url(#p48eeada7ba)" d="M 73.832727 302.659148
+    <path clip-path="url(#p48eeada7ba)" d="M 73.832727 302.659148
 L 79.243636 302.695716
 L 79.784727 72.617568
 L 80.325818 54.9072
@@ -605,7 +602,7 @@ L 414.72 42.5088
     //======================================================================
 
     class Plot {
-      constructor(id, visualiser) {
+      constructor(id, visualiser=null) {
         this.line = svg.getElementById(id).getElementsByTagName("path")[0]
         if (this.line) {
           this.points = new Float64Array(JSON.parse('[' + this.line.getAttribute('d').split(/M|L| /).filter(i => i != '').join(',') + ']'));
@@ -647,7 +644,7 @@ L 414.72 42.5088
           this.marker.setAttribute("cy", my);
           this.marker.setAttribute("visibility", "visible");
 
-          this.visualiser.setAttribute("r", 5 + 30*(xy[1] - my)/200);
+          if (this.visualiser) this.visualiser(xy[1] - my);
         }
         this.line.setAttribute("d", path);
       }
@@ -655,10 +652,10 @@ L 414.72 42.5088
 
     //======================================================================
 
-    //var plot_line = svg.getElementById("plot1");
     var concentration = svg.getElementById("concentration");
 
-    var voltage_plot = new Plot("line2d_14", concentration)
+    var voltage_plot = new Plot("line2d_14", (dy) => { concentration.setAttribute("r", 5 + 30*dy/200); });
+
 
     var T = 0;
     const T_MAX = 500;
