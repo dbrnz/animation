@@ -35,21 +35,32 @@ class Plot {
     }
   }
 
-  draw(time) {
+  draw(from, to) {
+    var mx, my;
+    var path = "";
     var xy = this.points;
-    var path = "M " + String(xy[0]) + " " + String(xy[1]);
-    var t = this.time_map.transform(time);
+    var start = this.time_map.transform(from);
+    var t = this.time_map.transform(to);
 
-// Need to scan to find first point just before `time`
+    // Find first point just before `time`
 
-    if (t < xy[0]) {
-      this.marker.setAttribute("visibility", "hidden");
+    var i = 0;
+    while (i < xy.length && xy[i] < start)
+      i += 2;
+    // Now have start <= xy[i]
+
+    if (i < xy.length) {
+      if (i > 0 && start < xy[i]) {
+        var dt = start - xy[i-2];
+        var dy = dt*(xy[i+1]-xy[i-1])/(xy[i]-xy[i-2]);
+        mx = start; my = xy[i-1] + dy;
+      } else {
+        mx = xy[i];
+        my = xy[i+1];
       }
-    else {
-      var mx = xy[0];
-      var my = xy[1];
-      if (t > xy[0]) {
-        var i = 2;
+      path = "M " + String(mx) + " " + String(my);
+      if (t > xy[i]) {
+        i += 2;
         while (i < xy.length && xy[i] <= t) {
           mx = xy[i]; my = xy[i+1];
           if (i == 2) path += " L";
@@ -63,13 +74,16 @@ class Plot {
           path += " l" + String(dt) + " " + String(dy);
         }
       }
+      if (this.visualiser) this.visualiser(xy[1] - my);
+    }
+    if (path == "") {
+      this.marker.setAttribute("visibility", "hidden");
+    } else {
+      this.line.setAttribute("d", path);
       this.marker.setAttribute("cx", mx);
       this.marker.setAttribute("cy", my);
       this.marker.setAttribute("visibility", "visible");
-
-      if (this.visualiser) this.visualiser(xy[1] - my);
     }
-    this.line.setAttribute("d", path);
   }
 };
 
@@ -89,7 +103,7 @@ class Animation {
   }
   draw_plots(time) {
     for (let plot of this.plots)
-      plot.draw(time);
+      plot.draw(this.start_time, time);
   }
   animate() {
     this.draw_plots(this.time);
