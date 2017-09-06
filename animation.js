@@ -20,7 +20,7 @@ class Transform1D {
 //======================================================================
 
 class Plot {
-  constructor(id, time_map=null, visualiser=null) {
+  constructor(id, time_transform=null, value_transform=null, visualiser=null) {
     this.line = svg.getElementById(id).getElementsByTagName("path")[0]
     if (this.line) {
       this.points = new Float64Array(JSON.parse('[' + this.line.getAttribute('d').split(/M|L| /).filter(i => i != '').join(',') + ']'));
@@ -29,8 +29,10 @@ class Plot {
       this.marker.style.stroke = "none";
       this.marker.style.fill = this.line.style["stroke"]
       svg.appendChild(this.marker);
-      if (time_map) this.time_map = time_map;
-      else          this.time_map = new Transform1D(1.0, 0.0);
+      if (time_transform) this.time_transform = time_transform;
+      else                this.time_transform = new Transform1D(1.0, 0.0);
+      if (value_transform) this.value_transform = value_transform;
+      else                 this.value_transform = new Transform1D(1.0, 0.0);
       this.visualiser = visualiser;
     }
   }
@@ -39,8 +41,8 @@ class Plot {
     var mx, my;
     var path = "";
     var xy = this.points;
-    var start = this.time_map.transform(from);
-    var t = this.time_map.transform(to);
+    var start = this.time_transform.transform(from);
+    var t = this.time_transform.transform(to);
 
     // Find first point just before `time`
 
@@ -74,7 +76,8 @@ class Plot {
           path += " l" + String(dt) + " " + String(dy);
         }
       }
-      if (this.visualiser) this.visualiser(xy[1] - my);
+      if (this.visualiser)
+        this.visualiser(to, this.value_transform.inverse(my));
     }
     if (path == "") {
       this.marker.setAttribute("visibility", "hidden");
@@ -114,6 +117,12 @@ class Animation {
   start(period) {
     if (this.animation == null)
       this.animation = setInterval(this.animate.bind(this), period);
+  }
+  stop() {
+    if (this.animation != null) {
+      clearInterval(this.animation);
+      this.animation = null;
+    }
   }
 };
 

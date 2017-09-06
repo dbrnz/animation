@@ -1368,17 +1368,20 @@ L 414.72 191.2896
   <script type="application/ecmascript" href="file:///Users/dave/build/SVG_Animation/animation.js"/>
 
   <script type="application/ecmascript"> <![CDATA[
-    var animation = new Animation(200, 400, 5);
 
     var concentration = svg.getElementById("concentration");
-    var sodium_plot = new Plot("Na", new Transform1D(0.5411, 73.83), (dy) => { concentration.setAttribute("r", 25 + 25*dy/200); });
+    var sodium_plot = new Plot("Na", new Transform1D(0.5411, 73.83), 0, (t, y) => { concentration.setAttribute("r", 25 + 25*y/200); });
 
     var voltage = svg.getElementById("voltage");
-    var voltage_plot = new Plot("V", new Transform1D(0.5411, 73.83), (dy) => { voltage.setAttribute("r", 5 + 30*dy/200); })
+    var voltage_plot = new Plot("V", new Transform1D(0.5411, 73.83),
+                                     new Transform1D(-0.8764, 224.87),
+                                      (t, y) => { voltage.setAttribute("r", 5 + (y + 100)/5); })
+
+    var animation = new Animation(0, 600, 5);
 
     animation.add_plot(sodium_plot);
     animation.add_plot(voltage_plot);
-    animation.start(5);
+    animation.start(10);
   ]]>
   </script>
 </svg>
