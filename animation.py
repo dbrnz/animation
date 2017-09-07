@@ -86,7 +86,7 @@ class Figure(matplotlib.figure.Figure):
 
         self.add_script('var animation = new Animation(%g, %g, %g);' % (start, end, step))
 
-        # SVG backend can adjust scaling so create SVG before using transforms
+        # First create SVG before using transforms since backend can adjust them
 
 #        svg = io.BytesIO()  # Save figure as SVG to an in-memory file
 #        super().savefig(svg, format='svg', **kwds)
@@ -120,6 +120,8 @@ class Figure(matplotlib.figure.Figure):
         self._script.append(']]></script>')
         self.add_svg('\n'.join(self._script))
 
+
+        # Need to write this just before end of `svg` file and then save to disk...
         print('\n'.join(self._svg))
 
 
@@ -135,78 +137,40 @@ if __name__ == '__main__':
     na = [9, 8, 7, 6, 5, 4, 5, 6, 7, 8]
 
 
-fig = figure()
+    fig = figure()
 
-fig.add_svg('''<defs>
-  <radialGradient id="RedGradient">
-      <stop offset="10%" stop-color="red" />
-      <stop offset="100%" stop-color="white" />
-  </radialGradient>
-</defs>
-<script type="application/ecmascript" href="file:///Users/dave/build/SVG_Animation/animation.js"/>
-''')
+    fig.add_svg('''<defs>
+      <radialGradient id="RedGradient">
+          <stop offset="10%" stop-color="red" />
+          <stop offset="100%" stop-color="white" />
+      </radialGradient>
+    </defs>
+    <script type="application/ecmascript" href="file:///Users/dave/build/SVG_Animation/animation.js"/>
+    ''')
 
-sodium_visualiser = CircleVisualiser('sodium', (0.9, 0.8),
-                                      'url(#RedGradient)',
-                                      'var sodium = svg.getElementById("sodium");',
-                                      '(t, y) => { sodium.setAttribute("r", 600*(y - 8.59)); }')
-sodium_plot = fig.add_subplot(211, xlabel='Time (ms)', ylabel='Na i (millimolar)')
-sodium_trace = sodium_plot.plot(t, na, lw=1)[0]
-fig.add_animation(sodium_trace, visualiser=sodium_visualiser)
+    sodium_visualiser = CircleVisualiser('sodium', (0.9, 0.8),
+                                          'url(#RedGradient)',
+                                          'var sodium = svg.getElementById("sodium");',
+                                          '(t, y) => { sodium.setAttribute("r", 600*(y - 8.59)); }')
+    sodium_plot = fig.add_subplot(211, xlabel='Time (ms)', ylabel='Na i (millimolar)')
+    sodium_trace = sodium_plot.plot(t, na, lw=1)[0]
+    fig.add_animation(sodium_trace, visualiser=sodium_visualiser)
 
-voltage_visualiser = CircleVisualiser('voltage', (0.9, 0.8),
-                                      'url(#RedGradient)',
-                                      'var voltage = svg.getElementById("voltage");',
-                                      '(t, y) => { voltage.setAttribute("r", (y + 90)/5); }')
-voltage_plot = fig.add_subplot(212, xlabel='Time (ms)', ylabel='Membrane voltage (mV)')
-voltage_trace = voltage_plot.plot(t, v, lw=1)[0]   ## Set colour...
-fig.add_animation(voltage_trace, visualiser=voltage_visualiser)
+    voltage_visualiser = CircleVisualiser('voltage', (0.9, 0.8),
+                                          'url(#RedGradient)',
+                                          'var voltage = svg.getElementById("voltage");',
+                                          '(t, y) => { voltage.setAttribute("r", (y + 90)/5); }')
+    voltage_plot = fig.add_subplot(212, xlabel='Time (ms)', ylabel='Membrane voltage (mV)')
+    voltage_trace = voltage_plot.plot(t, v, lw=1)[0]   ## Set colour...
+    fig.add_animation(voltage_trace, visualiser=voltage_visualiser)
 
-fig.generate_svg('test.svg', 0, 600, speed=0.5)
+    fig.generate_svg('test.svg', 0, 600, speed=0.5)
 
 '''
-
-<defs>
-  <radialGradient id="RedGradient">
-      <stop offset="10%" stop-color="red" />
-      <stop offset="100%" stop-color="white" />
-  </radialGradient>
-</defs>
-<script type="application/ecmascript" href="file:///Users/dave/build/SVG_Animation/animation.js"/>
-
-<circle id="sodium" cx="74.2656" cy="36514.7" r="0" fill="url(#RedGradient)"/>
-<circle id="voltage" cx="74.2656" cy="221.278" r="0" fill="url(#RedGradient)"/>
-
-
-<script type="application/ecmascript"> <![CDATA[
-var animation = new Animation(0, 600, 5);
-var sodium = svg.getElementById("sodium");
-animation.add_trace(new Trace("trace_0", new Transform1D(0.541091, 73.832727), new Transform1D(-4667.470619, 40248.714107) , (t, y) => { sodium.setAttribute("r", (y + 90)/5); }));
-var voltage = svg.getElementById("voltage");
-animation.add_trace(new Trace("trace_1", new Transform1D(0.541091, 73.832727), new Transform1D(-0.938180, 222.028890) , (t, y) => { voltage.setAttribute("r", (y + 90)/5); }));
-animation.start(10);
-]]></script>
-
-
-
-
-        # step == 0 ==> step = period
-        # step *= speed
-
- 73.83   398.49
-  0.00   600.00
-
-# 73.83pt = 72*(v_axis.transData.transform((0.0, v[0]))[0])/100  (pt/in)/(dots/in)
-
- = 72*102.545/100
-Out[5]: array([ 102.54545455,   60.56943335])
-
-
 
 ## Options to show marker, animate trace
 
 ## Option to only visualise (==> no plot/subplot, need to pass (t, y) arrays)
-
 
 1) Animated trace with marker, with or without visualiser          A A x 2
                                                                    A N x 2
@@ -214,7 +178,6 @@ Out[5]: array([ 102.54545455,   60.56943335])
 3) Static trace with animated marker, with or without visualiser   V A x 2
 4) No trace but visualiser                                         H N  V
                                                                    V N  V
-
 Not allowed:
     H N  N
     V N  N
@@ -224,32 +187,7 @@ marker in { none, animated }
 visualiser in { none, animated }
 
 
-
 5) No sub-plot but visualiser (i.e.  need T, Y)
 
 6) Y/Z plot but timing from elsewhere... T, Y, Z
-
-Generated:
-
-  <script type="application/ecmascript" href="file:///Users/dave/build/SVG_Animation/animation.js"/>
-
-  <script type="application/ecmascript"> <![CDATA[
-
-
-    var animation = new Animation(0, 600, 5); // Time range
-
-    var concentration = svg.getElementById("concentration");
-
-    var sodium_plot = new Plot("Na", new Transform1D(0.5411, 73.83), (dy) => { concentration.setAttribute("r", 25 + 25*dy/200); });
-
-    var voltage = svg.getElementById("voltage");
-    var voltage_plot = new Plot("V", new Transform1D(0.5411, 73.83), (dy) => { voltage.setAttribute("r", 5 + 30*dy/200); })
-
-    animation.add_plot(sodium_plot);
-    animation.add_plot(voltage_plot);
-
-
-    animation.start(10);
-
-    ]]></script>
 '''
