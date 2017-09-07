@@ -19,7 +19,7 @@ class Transform1D {
 
 //======================================================================
 
-class Plot {
+class Trace {
   constructor(id, time_transform=null, value_transform=null, visualiser=null) {
     this.line = svg.getElementById(id).getElementsByTagName("path")[0]
     if (this.line) {
@@ -97,19 +97,19 @@ class Animation {
     this.start_time = start;
     this.end_time = end;
     this.time_step = step;
-    this.plots = [];
+    this.traces = [];
     this.time = this.start_time;
     this.animation = null;
   }
-  add_plot(plot) {
-    this.plots.push(plot);
+  add_trace(trace) {
+    this.traces.push(trace);
   }
-  draw_plots(time) {
-    for (let plot of this.plots)
-      plot.draw(this.start_time, time);
+  draw_traces(time) {
+    for (let trace of this.traces)
+      trace.draw(this.start_time, time);
   }
   animate() {
-    this.draw_plots(this.time);
+    this.draw_traces(this.time);
     this.time += this.time_step;
     if (this.time > this.end_time)
       this.time = this.start_time;
