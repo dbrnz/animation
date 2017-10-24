@@ -1,7 +1,12 @@
 import io
 
 import matplotlib
+matplotlib.use('svg')  ## Otherwise transforms are wrong with tight-layout...
+
 from matplotlib import pyplot as plt
+from matplotlib.transforms import Affine2D
+
+import xml.etree.ElementTree as ET
 
 
 POINTS_PER_INCH = 72.0
@@ -14,13 +19,7 @@ class Visualiser(object):
         self._call_js = call_js
 
     def get_pos(self, plot):
-        fig = plot.get_figure()
-        trans_vis = (plot.transAxes.get_affine()
-                                   .frozen()
-                                   .scale(POINTS_PER_INCH/fig.dpi)
-                                   .scale(1, -1)
-                                   .translate(0, POINTS_PER_INCH*fig.get_figheight()))
-        return trans_vis.transform(self._position)
+        return plot.get_figure().make_flip_transform(plot.transAxes).transform(self._position)
 
     def setup_js(self):
         return self._setup_js
@@ -39,8 +38,8 @@ class CircleVisualiser(Visualiser):
 
     def svg(self, plot):
         pos = self.get_pos(plot)
-        return '<circle id="%(id)s" cx="%(cx)g" cy="%(cy)g" r="0" fill="%(fill)s"/>' % dict(
-            id=self._id, cx=pos[0], cy=pos[1], fill=self._fill)
+        return ET.Element('circle',
+                          dict(id=self._id, cx='%g' % pos[0], cy='%g' % pos[1], r='0', fill=self._fill))
 
 
 class Animation(object):
@@ -61,6 +60,9 @@ class Figure(matplotlib.figure.Figure):
         self._script = []
         self._svg = []
 
+    def close(self):
+        plt.close(self)
+
     def add_animation(self, trace, id=None, display='animate', marker=True, timing=None, visualiser=None):
         if display in [None, 'hidden', 'visible'] and not marker and visualiser is None:
             raise ValueError('Nothing to animate...')
@@ -73,14 +75,24 @@ class Figure(matplotlib.figure.Figure):
     def add_script(self, script):
         self._script.append(script)
 
-    def add_svg(self, svg):
+    def add_svg(self, svg):  ## Also allow a list and extend??
         self._svg.append(svg)
 
-    def generate_svg(self, filename, start, end, step=0.0, speed=1.0, units='ms', period=10, **kwds):  ## Period in ms
+    # Based on _make_flip_transform() in matplotlib/backend_svg.py
+    def make_flip_transform(self, transform):
+        return (transform +
+                Affine2D()
+                .scale(POINTS_PER_INCH/self.dpi)
+                .scale(1.0, -1.0)
+                .translate(0.0, POINTS_PER_INCH*self.get_figheight()))
+
+
+    def generate_svg(self, start, end, step=0.0, speed=1.0, units='ms', period=10, **kwds):  ## Period in ms
         if units not in ['ms', 's', 'm', 'h', 'd']:
             raise ValueError('Unknown timing units')
 
         ## Allow for units and scale everything?? Adjust speed ???
+
         if step == 0: step = period
         step *= speed
 
@@ -88,22 +100,27 @@ class Figure(matplotlib.figure.Figure):
 
         # First create SVG before using transforms since backend can adjust them
 
-#        svg = io.BytesIO()  # Save figure as SVG to an in-memory file
-#        super().savefig(svg, format='svg', **kwds)
-        super().savefig(filename, format='svg', **kwds)
+        # register_namespace() is necessary to avoid populating the XML name
+        # space with 'ns0'.
 
+        ET.register_namespace("", "http://www.w3.org/2000/svg")
+
+        # Save figure as SVG to an in-memory file
+
+        svg = io.BytesIO()
+        super().savefig(svg, format='svg') #, bbox_inches='tight') #, pad_inches=0, **kwds)  ## dpi=1000,
+
+        # Get the XML tree for the SVG
+
+        svg_tree, xmlid = ET.XMLID(svg.getvalue())
+
+        # Generate SVG to animate our traces and visualisers
 
         for animation in self._animations:
             trace = animation.trace
             plot = trace.axes
-            # Transform world coordinates into SVG point-based coordinates
-            trans_svg = (plot.transData.get_affine()
-                                       .frozen()
-                                       .scale(POINTS_PER_INCH/self.dpi)
-                                       .scale(1, -1)
-                                       .translate(0, POINTS_PER_INCH*self.get_figheight()))
-            xfm = trans_svg.get_matrix()
-
+            # Affine matrix to transform world coordinates into SVG point-based coordinates
+            xfm = self.make_flip_transform(plot.transData).get_matrix()
             if animation.visualiser:
                 self.add_svg(animation.visualiser.svg(plot))
                 self.add_script(animation.visualiser.setup_js())
@@ -116,21 +133,152 @@ class Figure(matplotlib.figure.Figure):
                                                                                                         invoke_visualiser))
         self.add_script('animation.start(%g);' % period)
 
-        self._script.insert(0, '<script type="application/ecmascript"> <![CDATA[')
-        self._script.append(']]></script>')
-        self.add_svg('\n'.join(self._script))
+        script_element = ET.Element('script', {'type': 'application/ecmascript'})
+        script_element.text = '<![CDATA[%s]]>' % '\n'.join(self._script)
+        self.add_svg(script_element)
 
+        # Insert animation SVG into the XML tree
 
-        # Need to write this just before end of `svg` file and then save to disk...
-        print('\n'.join(self._svg))
+        svg_tree.extend(self._svg)
+
+        # Return SVG as a Unicode string. A method of 'html' ensures
+        # that '<', '>' and '&' are not escaped.
+
+        return ET.tostring(svg_tree, encoding='unicode', method='html')
 
 
 def figure(**kwds):
     return plt.figure(FigureClass=Figure, tight_layout=True, **kwds)
 
 
+# Embedded Javascript
+
+ANIMATION_SCRIPT = '''
+    // Top level element
+    var svg = document.documentElement;
+
+    class Transform1D {
+      constructor(scale, offset) {
+        this.scale = scale;
+        this.offset = offset;
+      }
+      transform(x) {
+        return x*this.scale + this.offset;
+      }
+      inverse(x) {
+        return (x - this.offset)/this.scale;
+      }
+    }
+
+    class Trace {
+      constructor(id, time_transform=null, value_transform=null, visualiser=null) {
+        this.line = svg.getElementById(id).getElementsByTagName("path")[0]
+        if (this.line) {
+          this.points = new Float64Array(JSON.parse("[" + this.line.getAttribute("d").split(/M|L| /).filter(i => i != "").join(",") + "]"));
+          this.marker = document.createElementNS(svg.namespaceURI, "circle");
+          this.marker.setAttribute("r","3");
+          this.marker.style.stroke = "none";
+          this.marker.style.fill = this.line.style["stroke"]
+          svg.appendChild(this.marker);
+          if (time_transform) this.time_transform = time_transform;
+          else                this.time_transform = new Transform1D(1.0, 0.0);
+          if (value_transform) this.value_transform = value_transform;
+          else                 this.value_transform = new Transform1D(1.0, 0.0);
+          this.visualiser = visualiser;
+        }
+      }
+
+      draw(from, to) {
+        var mx, my;
+        var path = "";
+        var xy = this.points;
+        var start = this.time_transform.transform(from);
+        var t = this.time_transform.transform(to);
+
+        // Find first point just before `time`
+        var i = 0;
+        while (i < xy.length && xy[i] < start) {
+          i += 2;
+        }
+
+        // Now have start <= xy[i]
+        if (i < xy.length) {
+          if (i > 0 && start < xy[i]) {
+            var dt = start - xy[i-2];
+            var dy = dt*(xy[i+1]-xy[i-1])/(xy[i]-xy[i-2]);
+            mx = start; my = xy[i-1] + dy;
+          } else {
+            mx = xy[i];
+            my = xy[i+1];
+          }
+          path = "M " + String(mx) + " " + String(my);
+          if (t > xy[i]) {
+            i += 2;
+            while (i < xy.length && xy[i] <= t) {
+              mx = xy[i]; my = xy[i+1];
+              if (i == 2) path += " L";
+              path += " " + String(mx) + " " + String(my);
+              i += 2;
+            }
+            if (i < xy.length) {  // xy[i-2] <= t < xy[i]
+              var dt = t - xy[i-2];
+              var dy = dt*(xy[i+1]-xy[i-1])/(xy[i]-xy[i-2]);
+              mx = t; my = xy[i-1] + dy;
+              path += " l" + String(dt) + " " + String(dy);
+            }
+          }
+          if (this.visualiser)
+            this.visualiser(to, this.value_transform.inverse(my));
+        }
+        if (path == "") {
+          this.marker.setAttribute("visibility", "hidden");
+        } else {
+          this.line.setAttribute("d", path);
+          this.marker.setAttribute("cx", mx);
+          this.marker.setAttribute("cy", my);
+          this.marker.setAttribute("visibility", "visible");
+        }
+      }
+    };
+
+    class Animation {
+      constructor(start, end, step) {
+        this.start_time = start;
+        this.end_time = end;
+        this.time_step = step;
+        this.traces = [];
+        this.time = this.start_time;
+        this.animation = null;
+      }
+      add_trace(trace) {
+        this.traces.push(trace);
+      }
+      draw_traces(time) {
+        for (let trace of this.traces)
+          trace.draw(this.start_time, time);
+      }
+      animate() {
+        this.draw_traces(this.time);
+        this.time += this.time_step;
+        if (this.time > this.end_time)
+          this.time = this.start_time;
+      }
+      start(period) {
+        if (this.animation == null)
+          this.animation = setInterval(this.animate.bind(this), period);
+      }
+      stop() {
+        if (this.animation != null) {
+          clearInterval(this.animation);
+          this.animation = null;
+        }
+      }
+    };
+'''
 
 if __name__ == '__main__':
+
+    import OpenCOR as oc
 
     t  = [0, 1, 2, 3, 4, 5, 6, 7, 7, 9]
     v  = [0, 1, 2, 3, 4, 4, 3, 2, 1, 0]
@@ -139,32 +287,38 @@ if __name__ == '__main__':
 
     fig = figure()
 
-    fig.add_svg('''<defs>
+    fig.add_script(ANIMATION_SCRIPT)
+
+## Define standard gradients...
+    fig.add_svg(ET.XML('''<defs>
       <radialGradient id="RedGradient">
           <stop offset="10%" stop-color="red" />
           <stop offset="100%" stop-color="white" />
       </radialGradient>
-    </defs>
-    <script type="application/ecmascript" href="file:///Users/dave/build/SVG_Animation/animation.js"/>
-    ''')
+    </defs>'''))
 
     sodium_visualiser = CircleVisualiser('sodium', (0.9, 0.8),
                                           'url(#RedGradient)',
-                                          'var sodium = svg.getElementById("sodium");',
-                                          '(t, y) => { sodium.setAttribute("r", 600*(y - 8.59)); }')
+                                          'var sodiumVar = svg.getElementById("sodium");',
+                                          '(t, y) => { sodiumVar.setAttribute("r", 5*(y-2)); }')
     sodium_plot = fig.add_subplot(211, xlabel='Time (ms)', ylabel='Na i (millimolar)')
     sodium_trace = sodium_plot.plot(t, na, lw=1)[0]
     fig.add_animation(sodium_trace, visualiser=sodium_visualiser)
 
     voltage_visualiser = CircleVisualiser('voltage', (0.9, 0.8),
                                           'url(#RedGradient)',
-                                          'var voltage = svg.getElementById("voltage");',
-                                          '(t, y) => { voltage.setAttribute("r", (y + 90)/5); }')
+                                          'var voltageVar = svg.getElementById("voltage");',
+                                          '(t, y) => { voltageVar.setAttribute("r", 5*(y+1)); }')
     voltage_plot = fig.add_subplot(212, xlabel='Time (ms)', ylabel='Membrane voltage (mV)')
     voltage_trace = voltage_plot.plot(t, v, lw=1)[0]   ## Set colour...
     fig.add_animation(voltage_trace, visualiser=voltage_visualiser)
 
-    fig.generate_svg('test.svg', 0, 600, speed=0.5)
+## Auto determine max T and speed
+    svg = fig.generate_svg(0, 10, speed=0.01)
+    fig.close()
+
+    browser = oc.browserWebView()
+    browser.setContent(svg, "image/svg+xml")
 
 '''
 
