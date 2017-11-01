@@ -1,4 +1,5 @@
 import io
+from lxml import etree as ET
 
 import matplotlib
 matplotlib.use('svg')  ## Otherwise transforms are wrong with tight-layout...
@@ -6,7 +7,6 @@ matplotlib.use('svg')  ## Otherwise transforms are wrong with tight-layout...
 from matplotlib import pyplot as plt
 from matplotlib.transforms import Affine2D
 
-import xml.etree.ElementTree as ET
 
 
 POINTS_PER_INCH = 72.0
@@ -98,14 +98,8 @@ class Figure(matplotlib.figure.Figure):
 
         self.add_script('var animation = new Animation(%g, %g, %g);' % (start, end, step))
 
-        # First create SVG before using transforms since backend can adjust them
-
-        # register_namespace() is necessary to avoid populating the XML name
-        # space with 'ns0'.
-
-        ET.register_namespace("", "http://www.w3.org/2000/svg")
-
-        # Save figure as SVG to an in-memory file
+        # Save figure as SVG to an in-memory file and before using transforms
+        # since backend can adjust them
 
         svg = io.BytesIO()
         super().savefig(svg, format='svg') #, bbox_inches='tight') #, pad_inches=0, **kwds)  ## dpi=1000,
