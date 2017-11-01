@@ -190,7 +190,7 @@ class DiagramVisualiser(Visualiser):
 
         super().__init__(id, None,
                          setup_js='var {id}_Var = svg.getElementById("{id}");'.format(id=id),
-                         call_js='(t, y) => {{ {id}_Var.setAttribute("r", 50.0*(y - {ymin})/({ymax}-{ymin})); }}'
+                         call_js='(t, y) => {{ var r = 5.0 + 40.0*(y - ({ymin}))/({ymax}-({ymin})); if (r < 0) r = 0; {id}_Var.setAttribute("r", r); }}'
                                  .format(id=id, ymin=ymin, ymax=ymax))
 
         xy = np.empty((len(t), 2), dtype=np.float_)
@@ -316,7 +316,7 @@ def figure(**kwds):
     return plt.figure(FigureClass=Figure, tight_layout=True, **kwds)
 
 
-def animate_diagram(diagram, simulation, element_map, start, end, step, units='ms', speed=1.0, period=10):  ## Period in ms
+def animate_diagram(diagram, simulation, element_map, start, end, step, units='ms', speed=1.0, period=1):  ## Period in ms
     if units not in ['ms', 's', 'm', 'h', 'd']:
         raise ValueError('Unknown timing units')
 
@@ -341,7 +341,8 @@ def animate_diagram(diagram, simulation, element_map, start, end, step, units='m
 
     for variable_id, element_id in element_map.items():
         # Find the ID of the animation element's radialGradient
-        gradient = svg_tree.find('//*/svg:g[@id="{id}"]/svg:g/svg:g/svg:g/svg:radialGradient'.format(id=element_id),
+# TTusscher        gradient = svg_tree.find('//*/svg:g[@id="{id}"]/svg:g/svg:g/svg:g/svg:radialGradient'.format(id=element_id),
+        gradient = svg_tree.find('//*/svg:g[@id="{id}"]/svg:g/svg:g/svg:radialGradient'.format(id=element_id),
                                  {'svg': 'http://www.w3.org/2000/svg'})
         # And the corresponding variable
         variable = variables.get(variable_id)
@@ -374,16 +375,65 @@ if __name__ == '__main__':
 
     import OpenCOR as oc
 
-    s = oc.simulation()
+    s = oc.openSimulation('noble_1962.cellml')
+    s.data().setEndingPoint(0.6)
+    s.data().setPointInterval(0.005)
+    s.reset()
+    s.run()
 
-    svg = animate_diagram('ten_tusscher_2004.svg', s, {'sodium_dynamics/Na_i': 'i_Na'}, 0, 1000, 10)
+    svg = animate_diagram('noble_1962.svg', s, {'sodium_channel/i_Na': 'i_Na',
+                                                'potassium_channel/i_K': 'i_K',
+                                                'leakage_current/i_Leak': 'i_Leak'},
+                                                0.04, 0.60, 0.01, speed=0.2)
+##i_Na
+##  animation.add_trace(new Trace("SVGID_2_", null, null, (t, y) => { var r = -50.0 + 100.0*(y - (-148369.27383164677))/(-8807.722189250824-(-148369.27383164677)); if (r < 0) r = 0; SVGID_2__Var.setAttribute("r", r); }));
 
     browser = oc.browserWebView()
     browser.setContent(svg, "image/svg+xml")
 
-    f = open('test.svg', 'w')
+    f = open('noble_1962_animated.svg', 'w')
     f.write(svg)
     f.close()
+
+    '''
+#    svg = animate_diagram('ten_tusscher_2004.svg', s, {'sodium_dynamics/Na_i': 'i_Na'}, 0, 1000, 10)
+
+'i_up'
+'i_leak'
+'i_rel'
+'i_Kr'
+'i_Ks'
+'i_K1'
+'i_to'
+'i_p_K'
+
+'sodium_dynamics/Na_i',
+'i_Na'
+
+'i_b_Na'
+'i_CaL'
+'i_b_Ca'
+'i_p_Ca'
+'i_NaCa'
+'i_NaK'
+
+
+'calcium_dynamics/Ca_SR',
+'transient_outward_current/transient_outward_current_s_gate/s',
+'rapid_time_dependent_potassium_current/rapid_time_dependent_potassium_current_Xr1_gate/Xr1',
+'fast_sodium_current/fast_sodium_current_j_gate/j',
+'L_type_Ca_current/L_type_Ca_current_f_gate/f',
+'calcium_dynamics/g',
+'transient_outward_current/transient_outward_current_r_gate/r',
+'L_type_Ca_current/L_type_Ca_current_d_gate/d',
+'L_type_Ca_current/L_type_Ca_current_fCa_gate/fCa',
+'potassium_dynamics/K_i',
+'calcium_dynamics/Ca_i',
+'fast_sodium_current/fast_sodium_current_h_gate/h',
+'rapid_time_dependent_potassium_current/rapid_time_dependent_potassium_current_Xr2_gate/Xr2',
+'slow_time_dependent_potassium_current/slow_time_dependent_potassium_current_Xs_gate/Xs',
+'fast_sodium_current/fast_sodium_current_m_gate/m'])
+'''
 
 else:
     t  = [0, 1, 2, 3, 4, 5, 6, 7, 7, 9, 10]
