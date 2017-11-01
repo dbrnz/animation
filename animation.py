@@ -145,11 +145,15 @@ ANIMATION_SCRIPT = '''
 
 
 class Visualiser(object):
-    def __init__(self, id, position, setup_js, call_js):
+    def __init__(self, id, position, setup_js='', call_js=''):
         self._id = id
         self._position = position   # (x, y) on Axes scale??
         self._setup_js = setup_js
         self._call_js = call_js
+
+    @property
+    def id(self):
+        return self._id
 
     def get_pos(self, plot):
         return plot.get_figure().make_flip_transform(plot.transAxes).transform(self._position)
@@ -165,8 +169,8 @@ class Visualiser(object):
 
 
 class CircleVisualiser(Visualiser):
-    def __init__(self, id, position, fill, *args):
-        super().__init__(id, position, *args)
+    def __init__(self, id, position, fill, **kwds):
+        super().__init__(id, position, **kwds)
         self._fill = fill
 
     def svg(self, plot):
@@ -386,16 +390,21 @@ if __name__ == '__main__':
 
     sodium_visualiser = CircleVisualiser('sodium', (0.9, 0.8),
                                           'url(#RedGradient)',
-                                          'var sodiumVar = svg.getElementById("sodium");',
-                                          '(t, y) => { sodiumVar.setAttribute("r", 5*(y-2)); }')
+                                          setup_js='var sodiumVar = svg.getElementById("sodium");',
+#                                          call_js= '(t, y) => { voltageVar.setAttribute("r", 5*(y-3)); }')
+                                          call_js='(t, y) => { sodiumVar.setAttribute("r", 5*(y-2)); }')
+#                                          call_js='(t, y) => { sodiumVar.setAttribute("r", 600*(y - 8.59)); }')
+
     sodium_plot = fig.add_subplot(211, xlabel='Time (ms)', ylabel='Na i (millimolar)')
     sodium_trace = sodium_plot.plot(t, na, lw=1)[0]
     fig.add_animation(sodium_trace, visualiser=sodium_visualiser)
 
     voltage_visualiser = CircleVisualiser('voltage', (0.9, 0.8),
                                           'url(#RedGradient)',
-                                          'var voltageVar = svg.getElementById("voltage");',
-                                          '(t, y) => { voltageVar.setAttribute("r", 5*(y+1)); }')
+                                          setup_js='var voltageVar = svg.getElementById("voltage");',
+                                          call_js='(t, y) => { voltageVar.setAttribute("r", 5*(y+1)); }')
+#                                          call_js='(t, y) => { voltageVar.setAttribute("r", (y + 90)/5); }')
+
     voltage_plot = fig.add_subplot(212, xlabel='Time (ms)', ylabel='Membrane voltage (mV)')
     voltage_trace = voltage_plot.plot(t, v, lw=1)[0]   ## Set colour...
     fig.add_animation(voltage_trace, visualiser=voltage_visualiser)
