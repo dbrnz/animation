@@ -180,8 +180,18 @@ class CircleVisualiser(Visualiser):
 
 
 class DiagramVisualiser(Visualiser):
-    def __init__(self, id, t, y, *args):
-        super().__init__(id, None, *args)
+    def __init__(self, id, t, y):
+
+        ymin = np.min(y)
+        ymax = np.max(y)
+        if ymin == ymax:
+            # Avoid zero division...
+            ymin, ymax = (0, ymax/2.0)
+
+        super().__init__(id, None,
+                         setup_js='var {id}_Var = svg.getElementById("{id}");'.format(id=id),
+                         call_js='(t, y) => {{ {id}_Var.setAttribute("r", 50.0*(y - {ymin})/({ymax}-{ymin})); }}'
+                                 .format(id=id, ymin=ymin, ymax=ymax))
 
         xy = np.empty((len(t), 2), dtype=np.float_)
         xy[:, 0] = t
@@ -196,7 +206,7 @@ class DiagramVisualiser(Visualiser):
         self._path = _path.convert_to_string(simplified.transformed(xfm.inverted()), None, None, False, None, 6, [b'M', b'L', b'Q', b'C', b'z'], False).decode('ascii')
 
     def svg(self, plot):
-        return ET.XML('<defs><path id="{id}_path" d="{d}"/></defs>'.format(id=self.id, d=self._path))
+        return ET.XML('<defs><path id="{id}_path" d="{d}"/></defs>'.format(id=self._id, d=self._path))
 
 
 class Animation(object):
@@ -311,76 +321,80 @@ def animate_diagram(diagram, simulation, element_map, start, end, step, units='m
         raise ValueError('Unknown timing units')
 
     ## Allow for units and scale everything?? Adjust speed ???
-
     step *= speed
 
-    script = [ ]
-    script.append('var animation = new Animation(%g, %g, %g);' % (start, end, step))
+    javascript = [ ]
+    javascript.append(ANIMATION_SCRIPT)
+    javascript.append('var animation = new Animation(%g, %g, %g);' % (start, end, step))
 
-
-    # Open and parse the SVG diagram
-
-    svg_tree = ET.parse(diagram)
-
-    animator = Animation()
+    animation_xml = [ ]
     visualisers = [ ]
 
-    javascript = [ ]
-    animation_xml = [ ]
 
-    t = simulation.dataStore().values()
+    variables = simulation.results().dataStore().variables()
+
+    t = simulation.results().dataStore().voi().values()
     n_start = np.searchsorted(t, start)
     n_end = np.searchsorted(t, end) + 1
 
-    variables = simulation.dataStore().variables()
+    svg_tree = ET.parse(diagram)
 
-    for element_id, variable_id in element_map.items():
+    for variable_id, element_id in element_map.items():
         # Find the ID of the animation element's radialGradient
-        gradient = svg_tree.find('//*/svg:g[@id="{id}".format(id=element_id)]/svg:g/svg:g/svg:g/svg:radialGradient',
+        gradient = svg_tree.find('//*/svg:g[@id="{id}"]/svg:g/svg:g/svg:g/svg:radialGradient'.format(id=element_id),
                                  {'svg': 'http://www.w3.org/2000/svg'})
         # And the corresponding variable
         variable = variables.get(variable_id)
 
-        if gradient and variable:
+        if gradient is not None and variable is not None:
             gradient_id = gradient.get('id')
-            visualisers.append(DiagramVisualiser(element_id), t[n_start:n_end], variable.values()[n_start:n_end])
-
+            visualisers.append(DiagramVisualiser(gradient_id, t[n_start:n_end], variable.values()[n_start:n_end]))
 
     for visualiser in visualisers:
         animation_xml.append(visualiser.svg(None))
         javascript.append(visualiser.setup_js())
         javascript.append('animation.add_trace(new Trace("%s", null, null, %s));'
-                                            % (animation.id, visualiser.call_js()))
+                                            % (visualiser.id, visualiser.call_js()))
 
-    # Diagram has to have <defs> added to hold data values
-    # along with JS to set things up and run the animation...
-                                                                                                        invoke_visualiser))
     javascript.append('animation.start(%g);' % period)
 
     script_element = ET.Element('script', {'type': 'application/ecmascript'})
     script_element.text = '<![CDATA[%s]]>' % '\n'.join(javascript)
     animation_xml.append(script_element)
 
-    # Insert animation SVG into the XML tree
+    svg_tree.getroot().extend(animation_xml)
 
-    svg_tree.extend(animation_xml)
+    # Return SVG as a Unicode string. A method of 'html' ensures
+    # that '<', '>' and '&' are not escaped.
 
-'''
+    return ET.tostring(svg_tree, encoding='unicode', method='html')
+
 
 if __name__ == '__main__':
 
     import OpenCOR as oc
 
-    t  = [0, 1, 2, 3, 4, 5, 6, 7, 7, 9]
-    v  = [0, 1, 2, 3, 4, 4, 3, 2, 1, 0]
-    na = [9, 8, 7, 6, 5, 4, 5, 6, 7, 8]
+    s = oc.simulation()
 
+    svg = animate_diagram('ten_tusscher_2004.svg', s, {'sodium_dynamics/Na_i': 'i_Na'}, 0, 1000, 10)
+
+    browser = oc.browserWebView()
+    browser.setContent(svg, "image/svg+xml")
+
+    f = open('test.svg', 'w')
+    f.write(svg)
+    f.close()
+
+else:
+    t  = [0, 1, 2, 3, 4, 5, 6, 7, 7, 9, 10]
+    v  = [0, 1, 2, 3, 4, 5, 4, 3, 2, 1, 0]
+    na = [9, 8, 7, 6, 5, 4, 5, 6, 7, 8, 9]
 
     fig = figure()
 
     fig.add_script(ANIMATION_SCRIPT)
 
-## Define standard gradients...
+## Add standard gradients as they are used...
     fig.add_xml(ET.XML('''<defs>
       <radialGradient id="RedGradient">
           <stop offset="10%" stop-color="red" />
