@@ -87,13 +87,12 @@ class Figure(matplotlib.figure.Figure):
                 .translate(0.0, POINTS_PER_INCH*self.get_figheight()))
 
 
-    def generate_svg(self, start, end, step=0.0, speed=1.0, units='ms', period=10, **kwds):  ## Period in ms
+    def generate_svg(self, start, end, step, units='ms', speed=1.0, period=10, **kwds):  ## Period in ms
         if units not in ['ms', 's', 'm', 'h', 'd']:
             raise ValueError('Unknown timing units')
 
         ## Allow for units and scale everything?? Adjust speed ???
 
-        if step == 0: step = period
         step *= speed
 
         self.add_script('var animation = new Animation(%g, %g, %g);' % (start, end, step))
@@ -317,7 +316,7 @@ if __name__ == '__main__':
     fig.add_animation(voltage_trace, visualiser=voltage_visualiser)
 
 ## Auto determine max T and speed
-    svg = fig.generate_svg(0, 10, speed=0.01)
+    svg = fig.generate_svg(0, 10, 1, speed=0.1)
     fig.close()
 
     browser = oc.browserWebView()
