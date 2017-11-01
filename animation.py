@@ -58,7 +58,7 @@ class Figure(matplotlib.figure.Figure):
         self._animations = []
         self._next_id = 0
         self._script = []
-        self._svg = []
+        self._xml = []
 
     def close(self):
         plt.close(self)
@@ -75,8 +75,8 @@ class Figure(matplotlib.figure.Figure):
     def add_script(self, script):
         self._script.append(script)
 
-    def add_svg(self, svg):  ## Also allow a list and extend??
-        self._svg.append(svg)
+    def add_xml(self, xml):  ## Also allow a list and extend??
+        self._xml.append(xml)
 
     # Based on _make_flip_transform() in matplotlib/backend_svg.py
     def make_flip_transform(self, transform):
@@ -112,7 +112,7 @@ class Figure(matplotlib.figure.Figure):
 
         # Get the XML tree for the SVG
 
-        svg_tree, xmlid = ET.XMLID(svg.getvalue())
+        svg_tree = ET.XML(svg.getvalue())
 
         # Generate SVG to animate our traces and visualisers
 
@@ -122,7 +122,7 @@ class Figure(matplotlib.figure.Figure):
             # Affine matrix to transform world coordinates into SVG point-based coordinates
             xfm = self.make_flip_transform(plot.transData).get_matrix()
             if animation.visualiser:
-                self.add_svg(animation.visualiser.svg(plot))
+                self.add_xml(animation.visualiser.svg(plot))
                 self.add_script(animation.visualiser.setup_js())
                 invoke_visualiser = ', %s' % animation.visualiser.call_js()
             else:
@@ -135,11 +135,11 @@ class Figure(matplotlib.figure.Figure):
 
         script_element = ET.Element('script', {'type': 'application/ecmascript'})
         script_element.text = '<![CDATA[%s]]>' % '\n'.join(self._script)
-        self.add_svg(script_element)
+        self.add_xml(script_element)
 
         # Insert animation SVG into the XML tree
 
-        svg_tree.extend(self._svg)
+        svg_tree.extend(self._xml)
 
         # Return SVG as a Unicode string. A method of 'html' ensures
         # that '<', '>' and '&' are not escaped.
@@ -290,7 +290,7 @@ if __name__ == '__main__':
     fig.add_script(ANIMATION_SCRIPT)
 
 ## Define standard gradients...
-    fig.add_svg(ET.XML('''<defs>
+    fig.add_xml(ET.XML('''<defs>
       <radialGradient id="RedGradient">
           <stop offset="10%" stop-color="red" />
           <stop offset="100%" stop-color="white" />
