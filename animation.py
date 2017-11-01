@@ -113,6 +113,11 @@ class Figure(matplotlib.figure.Figure):
         for animation in self._animations:
             trace = animation.trace
             plot = trace.axes
+
+            path = svg_tree.find('.//svg:g/svg:g/svg:g[@id="{id}"]/svg:path'.format(id=animation.id),
+                                 {'svg': 'http://www.w3.org/2000/svg'})
+            d = path.get('d')
+            self.add_xml(ET.XML('<defs><path id="{id}_path" d="{d}"/></defs>'.format(id=animation.id, d=d)))
             # Affine matrix to transform world coordinates into SVG point-based coordinates
             xfm = self.make_flip_transform(plot.transData).get_matrix()
             if animation.visualiser:
@@ -166,20 +171,24 @@ ANIMATION_SCRIPT = '''
 
     class Trace {
       constructor(id, time_transform=null, value_transform=null, visualiser=null) {
-        this.line = svg.getElementById(id).getElementsByTagName("path")[0]
+        var path_id = id + "_path";
+        this.path = svg.getElementById(path_id);
+        if (this.path)
+          this.points = new Float64Array(JSON.parse("[" + this.path.getAttribute("d").split(/M|L| /).filter(i => i != "").join(",") + "]"));
+        var trace = svg.getElementById(id);
+        this.line = trace ? trace.getElementsByTagName("path")[0] : null;
         if (this.line) {
-          this.points = new Float64Array(JSON.parse("[" + this.line.getAttribute("d").split(/M|L| /).filter(i => i != "").join(",") + "]"));
           this.marker = document.createElementNS(svg.namespaceURI, "circle");
           this.marker.setAttribute("r","3");
           this.marker.style.stroke = "none";
           this.marker.style.fill = this.line.style["stroke"]
           svg.appendChild(this.marker);
-          if (time_transform) this.time_transform = time_transform;
-          else                this.time_transform = new Transform1D(1.0, 0.0);
-          if (value_transform) this.value_transform = value_transform;
-          else                 this.value_transform = new Transform1D(1.0, 0.0);
-          this.visualiser = visualiser;
         }
+        if (time_transform) this.time_transform = time_transform;
+        else                this.time_transform = new Transform1D(1.0, 0.0);
+        if (value_transform) this.value_transform = value_transform;
+        else                 this.value_transform = new Transform1D(1.0, 0.0);
+        this.visualiser = visualiser;
       }
 
       draw(from, to) {
@@ -226,7 +235,7 @@ ANIMATION_SCRIPT = '''
         }
         if (path == "") {
           this.marker.setAttribute("visibility", "hidden");
-        } else {
+        } else if (this.line) {
           this.line.setAttribute("d", path);
           this.marker.setAttribute("cx", mx);
           this.marker.setAttribute("cy", my);
