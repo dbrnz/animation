@@ -1,0 +1,187 @@
+<svg width="640" height="480" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+ <g>
+  <title>Layer 1</title>
+  <defs>
+
+   <g id="IonCurrent">
+    <ellipse cx="10" cy="0"  rx="8" ry="10"/>
+    <ellipse cx="10" cy="30"  rx="8" ry="10"/>
+    <ellipse cx="10" cy="60"  rx="8" ry="10"/>
+    <ellipse cx="10" cy="90" rx="8" ry="10"/>
+    <ellipse cx="10" cy="120" rx="8" ry="10"/>
+    <ellipse cx="10" cy="150" rx="8" ry="10"/>
+    <ellipse cx="10" cy="180" rx="8" ry="10"/>
+   </g>
+
+   <g id="OneCurrent">
+    <ellipse cx="10" cy="-10" rx="8" ry="30"/>
+    <ellipse cx="10" cy="210" rx="8" ry="30"/>
+   </g>
+
+   <linearGradient x1="0" x2="0" y1="0" y2="200" gradientUnits="userSpaceOnUse" id="IonMaskGradient">
+    <stop offset="0" stop-color="white" stop-opacity="0.1"/>
+    <stop offset="0.5" stop-color="white" stop-opacity="1"/>
+    <stop offset="1" stop-color="white" stop-opacity="1"/>
+   </linearGradient>
+
+   <mask width="20" height="200" x="0" y="0" maskmaskUnits="userSpaceOnUse" id="IonMask">
+    <ellipse cx="10" cy="100" rx="40" ry="110" fill="url(#IonMaskGradient)"/>
+<!--    <rect fill="url(#IonMaskGradient)" width="20" height="220" x="0" y="0"/> -->
+   </mask>
+
+    <clipPath id="IonMaskClipPath">
+      <ellipse cx="40" cy="100" rx="40" ry="100"/>
+    </clipPath>
+
+   <g id="IonChannelA">
+    <g transform="translate(30, 0)"  mask="url(#IonMask)">
+      <use xlink:href="#IonCurrent">
+        <animateTransform attributeName="transform" attributeType="XML"
+                          type="translate" from="0 0" to="0 30"
+                          dur="0.5s" repeatCount="indefinite"/>
+      </use>
+    </g>
+   </g>
+
+   <g id="IonChannelB">
+    <g transform="translate(30, 0)" mask="url(#IonMask)">
+      <use xlink:href="#OneCurrent"/>
+    </g>
+   </g>
+
+   <g id="IonChannelC">
+    <g transform="translate(30, 15)" mask="url(#IonMask)">
+      <use xlink:href="#IonCurrent"/>
+    </g>
+   </g>
+ </defs>
+ <use xlink:href="#IonChannelA" fill="blue"/>
+ <use xlink:href="#IonChannelA" fill="green" transform="rotate(180 80 75) scale(0.5)"/>
+
+
+  <g transform="translate(200, 50)" clip-path="url(#IonMaskClipPath)">
+    <ellipse cx="40" cy="100" rx="40" ry="100" fill="blue"/>
+    <use xlink:href="#IonChannelC" fill="red" x="0" y="-15" id="test_js"/>
+  </g>
+
+  <text x="200" y="280" font-family="Verdana" font-size="16" fill="blue" id="value">
+    Hello, out there
+  </text>
+
+  <text x="200" y="300" font-family="Verdana" font-size="16" fill="blue" id="clock">
+    CLOCK
+  </text>
+
+  <g transform="translate(300, 50) rotate(180 40 100)" clip-path="url(#IonMaskClipPath)">
+    <rect x="0" y="0" width="80" height="200" fill="none" stroke="black"/>
+    <ellipse cx="40" cy="100" rx="40" ry="100" fill="green"/>
+    <use xlink:href="#IonChannelC" fill="purple" x="0" y="-15">
+        <animateTransform attributeName="transform" attributeType="XML"
+                          type="translate" from="0 0" to="0 30"
+                          dur="0.5s" repeatCount="indefinite"/>
+    </use>
+  </g>
+
+  <g transform="translate(400, 70) rotate(90 40 100) scale(0.5)" clip-path="url(#IonMaskClipPath)">
+    <ellipse cx="40" cy="100" rx="40" ry="110" fill="green"/>
+    <use xlink:href="#IonChannelC" fill="purple" x="0" y="-15">
+        <animateTransform attributeName="transform" attributeType="XML"
+                          type="translate" from="0 0" to="0 30"
+                          dur="0.1s" repeatCount="indefinite"/>
+    </use>
+  </g>
+
+ </g>
+
+  <script type="application/ecmascript"><![CDATA[
+    // Top level element
+    var svg = document.documentElement;
+
+    var channel = svg.getElementById("test_js");
+    var clocktext = svg.getElementById("clock");
+    var valuetext = svg.getElementById("value");
+
+function checkTime(i) {
+    if (i < 10) {i = "0" + i};  // add zero in front of numbers < 10
+    return i;
+}
+
+function showTime() {
+    var today = new Date();
+    var h = today.getHours();
+    var m = today.getMinutes();
+    var s = today.getSeconds();
+    var ms = today.getMilliseconds()
+    m = checkTime(m);
+    s = checkTime(s);
+    clocktext.innerHTML = h + ":" + m + ":" + s + "." + ms;
+}
+
+
+    function current(t) {
+      if      (t < 0.1) return 0.0;
+      else if (t < 0.2) return 20.0*(t - 0.1)/0.1;
+      else if (t < 0.5) return 5.0 + 5.0*(0.5 - t)/0.3;
+      else if (t < 0.8) return 5.0*(0.8 - t)/0.3;
+      else              return 0.0;
+    }
+
+    class Animation {
+      constructor(start, end, step) {
+        this.start_time = start;
+        this.end_time = end;
+        this.time_step = step;
+        this.time = this.start_time;
+        this.animation = null;
+
+        this.millisecs = 0;
+        this.y = 0.0;
+      }
+
+      draw_traces(time, dt) {
+        if (channel) {
+          var i = current(time);
+// current == 10 ==> y + 30 in 100ms
+
+          var dy = 30*dt*i/1000.0;
+
+          this.y += dy;
+          if (this.y > 15.0) this.y = -15.0;
+
+          channel.setAttribute("y", this.y);
+
+          valuetext.innerHTML = time.toFixed(1) + " " + i.toFixed(1) + " " + dt;
+        }
+      }
+
+      animate() {
+        var dt = Date.now() - this.millisecs;
+        this.millisecs = Date.now();
+        this.draw_traces(this.time, dt);
+        this.time += dt/1000.0;    // this.time_step;
+        if (this.time > this.end_time)
+          this.time = this.start_time;
+        showTime();
+      }
+
+      start(period) {
+        if (this.animation == null)
+          this.animation = setInterval(this.animate.bind(this), period);
+        this.millisecs = Date.now();
+        this.y = -15.0;
+      }
+      stop() {
+        if (this.animation != null) {
+          clearInterval(this.animation);
+          this.animation = null;
+        }
+      }
+    };
+
+    var animation = new Animation(0, 1, 0.01);
+
+    animation.start(0.01);
+
+  ]]></script>
+
+</svg>
