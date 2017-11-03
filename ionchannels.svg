@@ -4,18 +4,13 @@
   <defs>
 
    <g id="IonCurrent">
-    <ellipse cx="10" cy="0"  rx="8" ry="10"/>
-    <ellipse cx="10" cy="30"  rx="8" ry="10"/>
-    <ellipse cx="10" cy="60"  rx="8" ry="10"/>
-    <ellipse cx="10" cy="90" rx="8" ry="10"/>
-    <ellipse cx="10" cy="120" rx="8" ry="10"/>
-    <ellipse cx="10" cy="150" rx="8" ry="10"/>
-    <ellipse cx="10" cy="180" rx="8" ry="10"/>
-   </g>
-
-   <g id="OneCurrent">
-    <ellipse cx="10" cy="-10" rx="8" ry="30"/>
-    <ellipse cx="10" cy="210" rx="8" ry="30"/>
+    <ellipse cy="0"   rx="8" ry="10"/>
+    <ellipse cy="30"  rx="8" ry="10"/>
+    <ellipse cy="60"  rx="8" ry="10"/>
+    <ellipse cy="90"  rx="8" ry="10"/>
+    <ellipse cy="120" rx="8" ry="10"/>
+    <ellipse cy="150" rx="8" ry="10"/>
+    <ellipse cy="180" rx="8" ry="10"/>
    </g>
 
    <linearGradient x1="0" x2="0" y1="0" y2="200" gradientUnits="userSpaceOnUse" id="IonMaskGradient">
@@ -25,12 +20,12 @@
    </linearGradient>
 
    <mask width="20" height="200" x="0" y="0" maskmaskUnits="userSpaceOnUse" id="IonMask">
-    <ellipse cx="10" cy="100" rx="40" ry="110" fill="url(#IonMaskGradient)"/>
+    <ellipse cy="100" rx="40" ry="110" fill="url(#IonMaskGradient)"/>
 <!--    <rect fill="url(#IonMaskGradient)" width="20" height="220" x="0" y="0"/> -->
    </mask>
 
     <clipPath id="IonMaskClipPath">
-      <ellipse cx="40" cy="100" rx="40" ry="100"/>
+      <ellipse cy="100" rx="40" ry="100"/>
     </clipPath>
 
    <g id="IonChannelA">
@@ -43,14 +38,8 @@
     </g>
    </g>
 
-   <g id="IonChannelB">
-    <g transform="translate(30, 0)" mask="url(#IonMask)">
-      <use xlink:href="#OneCurrent"/>
-    </g>
-   </g>
-
    <g id="IonChannelC">
-    <g transform="translate(30, 15)" mask="url(#IonMask)">
+    <g mask="url(#IonMask)">
       <use xlink:href="#IonCurrent"/>
     </g>
    </g>
@@ -60,7 +49,7 @@
 
 
   <g transform="translate(200, 50)" clip-path="url(#IonMaskClipPath)">
-    <ellipse cx="40" cy="100" rx="40" ry="100" fill="blue"/>
+    <ellipse cy="100" rx="40" ry="100" fill="blue"/>
     <use xlink:href="#IonChannelC" fill="red" x="0" y="-15" id="test_js"/>
   </g>
 
@@ -73,8 +62,7 @@
   </text>
 
   <g transform="translate(300, 50) rotate(180 40 100)" clip-path="url(#IonMaskClipPath)">
-    <rect x="0" y="0" width="80" height="200" fill="none" stroke="black"/>
-    <ellipse cx="40" cy="100" rx="40" ry="100" fill="green"/>
+    <ellipse cy="100" rx="40" ry="100" fill="green"/>
     <use xlink:href="#IonChannelC" fill="purple" x="0" y="-15">
         <animateTransform attributeName="transform" attributeType="XML"
                           type="translate" from="0 0" to="0 30"
@@ -83,7 +71,7 @@
   </g>
 
   <g transform="translate(400, 70) rotate(90 40 100) scale(0.5)" clip-path="url(#IonMaskClipPath)">
-    <ellipse cx="40" cy="100" rx="40" ry="110" fill="green"/>
+    <ellipse cy="100" rx="40" ry="110" fill="green"/>
     <use xlink:href="#IonChannelC" fill="purple" x="0" y="-15">
         <animateTransform attributeName="transform" attributeType="XML"
                           type="translate" from="0 0" to="0 30"
@@ -93,11 +81,43 @@
 
  </g>
 
+
+  <g id="i_Leak">
+    <g>
+      <line fill="none" stroke="#0101FF" x1="133.551" y1="218.801" x2="133.551" y2="157.485"></line>
+      <polygon fill="#FF0101" points="137.255,160.293 133.551,158.721 129.846,160.293 133.551,151.516    "></polygon>
+      <polygon fill="#01FF01" points="129.848,215.992 133.551,217.565 137.255,215.992 133.551,224.77    "></polygon>
+    </g>
+    <g>
+      <g>
+
+          <radialGradient id="SVGID_3_" cx="140.1309" cy="188.1428" r="18.2191" gradientTransform="matrix(1 0 0 1 -6.5791 0)" gradientUnits="userSpaceOnUse">
+          <stop offset="0" style="stop-color:#FBFAE2"></stop>
+          <stop offset="0.1203" style="stop-color:#FCFADD"></stop>
+          <stop offset="0.2662" style="stop-color:#FFF9CD"></stop>
+          <stop offset="0.4255" style="stop-color:#FCF6B4"></stop>
+          <stop offset="0.5943" style="stop-color:#FDEF90"></stop>
+          <stop offset="0.7706" style="stop-color:#FEE863"></stop>
+          <stop offset="0.9506" style="stop-color:#FEE12A"></stop>
+          <stop offset="1" style="stop-color:#FEDE12"></stop>
+        </radialGradient>
+        <path fill="url(#SVGID_3_)" d="M138.634,164.727c-2.227,0-4.158,1.957-5.083,4.777c-0.926-2.82-2.857-4.777-5.082-4.777      c-3.117,0-5.668,3.826-5.668,8.504v29.824c0,4.678,2.551,8.504,5.668,8.504c2.225,0,4.156-1.957,5.082-4.777      c0.924,2.82,2.856,4.777,5.083,4.777c3.117,0,5.668-3.826,5.668-8.504v-29.824C144.302,168.553,141.751,164.727,138.634,164.727      z"></path>
+      </g>
+      <g>
+        <path id="i_Leak_path1" fill="none" stroke="#010101" d="M138.634,164.727c-2.227,0-4.158,1.957-5.083,4.777      c-0.926-2.82-2.857-4.777-5.082-4.777c-3.117,0-5.668,3.826-5.668,8.504v29.824c0,4.678,2.551,8.504,5.668,8.504      c2.225,0,4.156-1.957,5.082-4.777c0.924,2.82,2.856,4.777,5.083,4.777c3.117,0,5.668-3.826,5.668-8.504v-29.824      C144.302,168.553,141.751,164.727,138.634,164.727z"></path>
+      </g>
+    </g>
+
+  <g transform="translate(133.551, 167.485) scale(0.3, 0.2)">
+    <use xlink:href="#IonChannelC" fill="red" x="0" y="-15" id="i_leak_channel"/>
+  </g>
+
+  </g>
+
   <script type="application/ecmascript"><![CDATA[
     // Top level element
     var svg = document.documentElement;
 
-    var channel = svg.getElementById("test_js");
     var clocktext = svg.getElementById("clock");
     var valuetext = svg.getElementById("value");
 
@@ -126,49 +146,58 @@ function showTime() {
       else              return 0.0;
     }
 
+    class IonChannel {
+      constructor(id) {
+        this.element = svg.getElementById(id);
+        this.last_time = 0;
+        this.offset = -15;
+      }
+      draw(time) {
+        if (this.element) {
+          var dt = time - this.last_time;  // seconds
+          var i = current(time);
+
+  valuetext.innerHTML = "t: " + time.toFixed(1);
+  clocktext.innerHTML = "i: " + i.toFixed(1);
+
+          this.offset += 30*dt*i;   // current == 10  ==> offset changes by 30 in 100ms
+          if (this.offset > 15.0) this.offset = -15.0;
+          this.element.setAttribute("y", this.offset);
+          this.last_time = time;
+        }
+      }
+    }
+
     class Animation {
-      constructor(start, end, step) {
+      constructor(start, end, speed) {
         this.start_time = start;
         this.end_time = end;
-        this.time_step = step;
+        this.time_speed = speed;
         this.time = this.start_time;
         this.animation = null;
-
+        this.traces = [];
         this.millisecs = 0;
         this.y = 0.0;
       }
-
-      draw_traces(time, dt) {
-        if (channel) {
-          var i = current(time);
-// current == 10 ==> y + 30 in 100ms
-
-          var dy = 30*dt*i/1000.0;
-
-          this.y += dy;
-          if (this.y > 15.0) this.y = -15.0;
-
-          channel.setAttribute("y", this.y);
-
-          valuetext.innerHTML = time.toFixed(1) + " " + i.toFixed(1) + " " + dt;
-        }
+      add_trace(trace) {
+        this.traces.push(trace);
       }
-
+      draw_traces() {
+        for (let trace of this.traces)
+          trace.draw(this.time);
+      }
       animate() {
         var dt = Date.now() - this.millisecs;
         this.millisecs = Date.now();
-        this.draw_traces(this.time, dt);
-        this.time += dt/1000.0;    // this.time_step;
-        if (this.time > this.end_time)
-          this.time = this.start_time;
-        showTime();
+        this.draw_traces();
+        this.time += dt*this.time_speed/1000.0;
+        if (this.time > this.end_time) this.time = this.start_time;
       }
 
       start(period) {
         if (this.animation == null)
           this.animation = setInterval(this.animate.bind(this), period);
         this.millisecs = Date.now();
-        this.y = -15.0;
       }
       stop() {
         if (this.animation != null) {
@@ -178,9 +207,12 @@ function showTime() {
       }
     };
 
-    var animation = new Animation(0, 1, 0.01);
+    var animation = new Animation(0.0, 1.0, 0.5); // seconds, seconds, speed
 
-    animation.start(0.01);
+    animation.add_trace(new IonChannel("test_js"));
+    animation.add_trace(new IonChannel("i_leak_channel"));
+
+    animation.start(25);  // milliseconds
 
   ]]></script>
 
