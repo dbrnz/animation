@@ -62,53 +62,42 @@
 
 
 <!-- Display a grid -->
-<use xlink:href="#grid"/>
-
+<!--<use xlink:href="#grid"/>
+-->
 
     <defs>
-      <g id="membrane-part3">
+      <g id="cell_membrane_base_unit">
         <circle cx="0" cy="0" r="2.4"/>
         <line x1="2.4" y1="0" x2="17" y2="0"/>
       </g>
-      <g id="membrane-part4">
-        <use transform="translate(-10.737, -1.4)" xlink:href="#membrane-part3"/>
-        <use transform="rotate(180) translate(-10.737, 4.2)" xlink:href="#membrane-part3"/>
+      <g id="cell_membrane_unit">
+        <use transform="translate(-10.737, -1.4)" xlink:href="#cell_membrane_base_unit"/>
+        <use transform="rotate(180) translate(-10.737, 4.2)" xlink:href="#cell_membrane_base_unit"/>
       </g>
-      <marker id="membrane-unit" markerUnits="userSpaceOnUse" style="overflow: visible" orient="auto">
-        <use stroke="#0092DF" fill="#BFDDFF" xlink:href="#membrane-part4" transform="rotate(90)"/>
-      </marker>
       <marker id="corner-in" markerUnits="userSpaceOnUse" style="overflow: visible" orient="auto">
-        <use stroke="#0092DF" fill="#BFDDFF" xlink:href="#membrane-part3" transform="rotate(90)"/>
+        <use stroke="#0092DF" fill="#BFDDFF" xlink:href="#cell_membrane_base_unit" transform="rotate(90)"/>
       </marker>
       <marker id="corner-out" markerUnits="userSpaceOnUse" style="overflow: visible" orient="auto">
-        <use stroke="#0092DF" fill="#BFDDFF" xlink:href="#membrane-part3" transform="rotate(270)"/>
+        <use stroke="#0092DF" fill="#BFDDFF" xlink:href="#cell_membrane_base_unit" transform="rotate(270)"/>
       </marker>
-
-<g id="corner" transform="translate(-34.445, -15.555)">
-  <g transform="translate(0, 17.955) rotate(-5 0 32.045)">
-    <path stroke="none" fill="none" marker-mid="url(#corner-in)"
-          d="M0,0
-a0,0 0 0,1 5.56453,0.486833
-a0,0 0 0,1 5.39545,1.44571
-a0,0 0 0,1 5.06244,2.36065
-a0,0 0 0,1 4.5756,3.20387
-a0,0 0 0,1 3.94974,3.94974
-a0,0 0 0,1 3.20387,4.5756
-a0,0 0 0,1 2.36065,5.06244
-a0,0 0 0,1 1.44571,5.39545
-a0,0 0 0,1 0.486833,5.56453
-a0,0 0 0,1 -0.486833,5.56453"/>
-  </g>
-  <g transform="translate(0, 39.429)">
-    <path stroke="none" fill="none" marker-mid="url(#corner-out)"
-          d="M0,0
-a0,0 0 0,1 5.28529,1.41619
-a0,0 0 0,1 3.8691,3.8691
-a0,0 0 0,1 1.41619,5.28529
-a0,0 0 0,1 -1.41619,5.28529"/>
-  </g>
-</g>
-
+      <g id="cell_membrane_corner" transform="translate(-34.445, -15.555)">
+        <g transform="translate(0, 17.955) rotate(-5 0 32.045)">
+          <path stroke="none" fill="none" marker-mid="url(#corner-in)"
+                d="M0,0 a0,0 0 0,1 5.56453,0.486833 a0,0 0 0,1 5.39545,1.44571
+                        a0,0 0 0,1 5.06244,2.36065  a0,0 0 0,1 4.5756,3.20387
+                        a0,0 0 0,1 3.94974,3.94974  a0,0 0 0,1 3.20387,4.5756
+                        a0,0 0 0,1 2.36065,5.06244  a0,0 0 0,1 1.44571,5.39545
+                        a0,0 0 0,1 0.486833,5.56453 a0,0 0 0,1 -0.486833,5.56453"/>
+        </g>
+        <g transform="translate(0, 39.429)">
+          <path stroke="none" fill="none" marker-mid="url(#corner-out)"
+                d="M0,0 a0,0 0 0,1 5.28529,1.41619 a0,0 0 0,1 3.8691,3.8691
+                        a0,0 0 0,1 1.41619,5.28529 a0,0 0 0,1 -1.41619,5.28529"/>
+        </g>
+      </g>
+      <marker id="cell_membrane_marker" markerUnits="userSpaceOnUse" style="overflow: visible" orient="auto">
+        <use stroke="#0092DF" fill="#BFDDFF" xlink:href="#cell_membrane_unit" transform="rotate(90)"/>
+      </marker>
     </defs>
 
 
@@ -135,18 +124,24 @@ a0,0 0 0,1 -1.41619,5.28529"/>
 
 
 <g transform="translate(300,200) rotate(90)">
-    <path stroke="none" marker-start="url(#membrane-unit)"
-                           marker-mid="url(#membrane-unit)"
-                           marker-end="url(#membrane-unit)"
+    <path stroke="none" marker-start="url(#cell_membrane_marker)"
+                           marker-mid="url(#cell_membrane_marker)"
+                           marker-end="url(#cell_membrane_marker)"
                            d="M13.137,33.045v5.6,5.6,5.6,5.6,5.6,5.6"/>
 </g>
 
 <g transform="translate(300,200)">
-    <path stroke="none" marker-start="url(#membrane-unit)"
-                           marker-mid="url(#membrane-unit)"
-                           marker-end="url(#membrane-unit)"
+    <path stroke="none" marker-start="url(#cell_membrane_marker)"
+                           marker-mid="url(#cell_membrane_marker)"
+                           marker-end="url(#cell_membrane_marker)"
                            d="M-13.137,35.845v5.6,5.6,5.6,5.6,5.6,5.6"/>
 </g>
+
+
+<use transform="translate(300, 300)" xlink:href="#corner"/>
+<use transform="translate(300, 300) rotate(90 -34.445 34.445)" xlink:href="#corner"/>
+<use transform="translate(300, 300) rotate(180 -34.445 34.445)" xlink:href="#corner"/>
+<use transform="translate(300, 300) rotate(270 -34.445 34.445)" xlink:href="#corner"/>
 
 <!--
 
