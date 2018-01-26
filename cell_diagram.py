@@ -210,31 +210,27 @@ class Parser(object):
                 if name in self._element_attributes:
                     self._element_attributes['_' + name] = self._element_attributes.pop(name)
             self._element_style = self._stylesheet.match(self._element) if self._stylesheet else None
-            logging.debug("NEXT: %s %s %s", self._element_tag, self._element_attributes, self._element_style)
         except StopIteration:
             self._element = None
             self._element_tag = None
             self._element_attributes = {}
             self._style = None
-            raise
 
     def _parse_container(self, container=None):
-        try:
-            self._next_element()
-            while True:
-                if self._element_tag == 'compartment':
-                    self.parse_compartment(container)
-                elif self._element_tag == 'flow':
-                    self.parse_flow()
-                elif self._element_tag == 'quantity':
-                    self.parse_quantity(container)
-                elif self._element_tag == 'transporters':
-                    if isinstance(container, Compartment): self.parse_transporters(container)
-                    else: raise SyntaxError
-                else:
-                    self._next_element()
-        except StopIteration:
-            pass
+        self._next_element()
+        while self._element_tag is not None:
+            logging.debug("PROCESS: %s %s %s", self._element_tag, self._element_attributes, self._element_style)
+            if self._element_tag == 'compartment':
+                self.parse_compartment(container)
+            elif self._element_tag == 'flow':
+                self.parse_flow()
+            elif self._element_tag == 'quantity':
+                self.parse_quantity(container)
+            elif self._element_tag == 'transporters':
+                if isinstance(container, Compartment): self.parse_transporters(container)
+                else: raise SyntaxError
+            else:
+                self._next_element()
 
     def parse_compartment(self, container=None):
         compartment = Compartment(**self._element_attributes)
