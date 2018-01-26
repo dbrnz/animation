@@ -1,8 +1,9 @@
-from lxml import etree
+import logging
 
-#import cssselect2
-#import tinycss2
-#import tinycss2.color3
+from lxml import etree
+import cssselect2
+import tinycss2
+import tinycss2.color3
 
 #------------------------------------------------------------------------------
 
@@ -89,6 +90,45 @@ class Flux(Element):
 
 #------------------------------------------------------------------------------
 
+class StyleSheet(cssselect2.Matcher):
+    def __init__(self, stylesheet):
+        '''Parse CSS and add rules to the matcher.'''
+        super().__init__()
+        rules = tinycss2.parse_stylesheet(stylesheet, skip_comments=True, skip_whitespace=True)
+        for rule in rules:
+            selectors = cssselect2.compile_selector_list(rule.prelude)
+            declarations = [obj for obj in tinycss2.parse_declaration_list(rule.content, skip_whitespace=True)
+                                        if obj.type == 'declaration']
+            for selector in selectors:
+                self.add_selector(selector, declarations)
+
+    @staticmethod
+    def style_value(declaration):
+        components = [c for c in declaration.value if c.type != 'whitespace']
+        if not components:
+            return None
+        component = components[0]
+        if declaration.lower_name == 'colour':
+            return tinycss2.color3.parse_color(component)
+        elif component.type == 'function':
+            return component.name + ' (' + tinycss2.serialize(component.arguments) + ')'
+        elif component.type[3:] == 'block':
+            return component.type[0] + tinycss2.serialize(component.content) + component.type[1]
+        else:
+            return component.value
+
+    def match(self, element):
+        rules = {}
+        matches = super().match(element)
+        if matches:
+            for match in matches:
+                specificity, order, pseudo, declarations = match
+                for declaration in declarations:
+                    rules[declaration.lower_name] = self.style_value(declaration)
+        return rules
+
+#------------------------------------------------------------------------------
+
 class SyntaxError(Exception):
     pass
 
@@ -97,25 +137,28 @@ class SyntaxError(Exception):
 class Parser(object):
     _reserved_words = ['class', 'from']
 
-    def __init__(self, tree, stylesheet=None):
-        self._element_iter = tree.iter()
+    def __init__(self, elements, stylesheet=None):
+        self._element_iter = elements.iter_subtree()
         self._stylesheet = stylesheet
         self._element = None
         self._element_tag = None
+        self._element_attributes = {}
         self._style = None
 
     def _next_element(self):
         try:
             self._element = self._element_iter.__next__()
-            self._element_tag = self._element.tag
-            self._element_attributes = dict(self._element.items())
+            while isinstance(self._element.etree_element, etree._Comment):
+                self._element = self._element_iter.__next__()
+            self._element_tag = self._element.etree_element.tag
+            self._element_attributes = dict(self._element.etree_element.items())
             # The attribute dictionary is used for keyword arguments and since some
             # attribute names are reserved words in Python we prefix these with `_`
             for name in self._reserved_words:
                 if name in self._element_attributes:
                     self._element_attributes['_' + name] = self._element_attributes.pop(name)
-            print("NEXT: ", self._element_tag, " ", self._element_attributes)
-            #self._style = self._stylesheet.match(self._element) if self._stylesheet else None
+            self._element_style = self._stylesheet.match(self._element) if self._stylesheet else None
+            logging.debug("NEXT: %s %s %s", self._element_tag, self._element_attributes, self._element_style)
         except StopIteration:
             self._element = None
             self._element_tag = None
@@ -133,8 +176,11 @@ class Parser(object):
                     self.parse_flow()
                 elif self._element_tag == 'quantity':
                     self.parse_quantity(container)
-                elif isinstance(container, Compartment) and self._element_tag == 'transporters':
-                    self.parse_transporters(container)
+                elif self._element_tag == 'transporters':
+                    if isinstance(container, Compartment): self.parse_transporters(container)
+                    else: raise SyntaxError
+                else:
+                    self._next_element()
         except StopIteration:
             pass
 
@@ -143,7 +189,7 @@ class Parser(object):
         self._parse_container(diagram)
         return diagram
 
-    def parse_cell_compartment(self, container=None):
+    def parse_compartment(self, container=None):
         compartment = Compartment(**self._element_attributes)
         if container: container.add_component(compartment)
         self._parse_container(compartment)
@@ -177,6 +223,33 @@ class Parser(object):
 
 #------------------------------------------------------------------------------
 
+stylesheet = StyleSheet('''
+    #q21 {
+      colour : pink ;
+    }
+    .cell {
+      shape: (12, 8);
+      colour: blue;
+      /* closed-cylinder, rectangle, circle/ellipse */
+      /* thickness, size, aspect-ratio, ... */
+    }
+    .sodium {
+      colour: yellow;
+      /* symbol, ... */
+    }
+    .potassium {
+      colour: green;
+    }
+    .channel {
+      position: bottom;
+    }
+    #i_Leak {
+      position: right;
+    }
+  ''')
+
+#------------------------------------------------------------------------------
+
 def test_diagram():
     diagram = CellDiagram()
     diagram.add_component(Substance(_class="sodium", id="q1",  variable="u1", label="$\\text{q}_1^{[\\text{Na}^+]_o}$"))
@@ -189,12 +262,19 @@ def test_diagram():
 
 #------------------------------------------------------------------------------
 
-def test_bond_graph():
-    tree = etree.parse('bond_graph.xml')
-    parser = Parser(tree)
+def test_parser(file):
+    logging.debug('PARSE: %s', file)
+    tree = etree.parse(file)
+    selector_tree = cssselect2.ElementWrapper.from_xml_root(tree)
+    parser = Parser(selector_tree, stylesheet)
     diagram = parser.parse()
+    logging.debug('')
 
 #------------------------------------------------------------------------------
 
 if __name__ == '__main__':
-    test_bond_graph()
+    logging.getLogger().setLevel(logging.DEBUG)
+
+    test_parser('bond_graph.xml')
+
+    test_parser('cell_diagram.xml')
