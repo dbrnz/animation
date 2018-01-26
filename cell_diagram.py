@@ -132,7 +132,7 @@ class Flux(Element):
         super().__init__(**kwds)
         self._from = _from
         self._to = to
-        self._count = count
+        self._count = int(count)
 
     @property
     def from_potential(self):
