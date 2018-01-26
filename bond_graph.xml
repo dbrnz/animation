@@ -1,0 +1,50 @@
+<cell-diagram>
+
+    <quantity label="$\text{q}_1^{\text{Na}^+]_m}$" potential="u1"/>
+    <quantity label="$\text{q}_2^{\text{Na}^+]_c}$" potential="u2"/>
+    <quantity label="$\text{q}_3^{\text{Na}^+]_s}$" potential="u3"/>
+    <quantity label="$\text{q}_4^{\text{K}^+_m}$" potential="u4"/>
+    <quantity label="$\text{q}_5^{\text{K}^+_c}$" potential="u5"/>
+    <quantity label="$\text{q}_6^{\text{K}^+_c}$" potential="u6"/>
+    <quantity label="$\text{q}_7^{\text{Cl}^-]_m}$" potential="u7"/>
+    <quantity label="$\text{q}_8^{\text{Cl}^-]_c}$" potential="u8"/>
+    <quantity label="$\text{q}_9^{\text{Cl}^-]_s}$" potential="u9"/>
+    <quantity label="$\text{q}_10^{\text{G}^_m}$" potential="u10"/>
+    <quantity label="$\text{q}_11^{\text{G}^_c}$" potential="u11"/>
+    <quantity label="$\text{q}_12^{\text{G}^_s}$" potential="u12"/>
+
+    <flow id="v1" label="SGLT1" transporter="Re1">
+        <flux from="u1" to="u2" count="2"/>
+        <flux from="u10" to="u11"/>
+    </flow>
+    <flow id="v2" label="NaCl cotransport" transporter="Re2">
+        <flux from="u1" to="u2"/>
+        <flux from="u7" to="u8"/>
+    </flow>
+    <flow id="v3" label="NaK-ATPase" transporter="Re3">
+        <flux from="u2" to="u3" count="3"/>
+        <flux from="u6" to="u5" count="2"/>
+    </flow>
+    <flow id="v4" label="GLUT2" transporter="Re4">
+        <flux from="u11" to="u12"/>
+    </flow>
+    <flow id="v5" label="Na diffusion" transporter="Re5">
+        <flux from="u1" to="u2"/>
+    </flow>
+    <flow id="v6" label="Na diffusion" transporter="Re6">
+        <flux from="u3" to="u2"/>
+    </flow>
+    <flow id="v7" label="K diffusion" transporter="Re7">
+        <flux from="u5" to="u4"/>
+    </flow>
+    <flow id="v8" label="K diffusion" transporter="Re8">
+        <flux from="u5" to="u6"/>
+    </flow>
+    <flow id="v9" label="Cl diffusion" transporter="Re9">
+        <flux from="u8" to="u7"/>
+    </flow>
+    <flow id="v10" label="Cl diffusion" transporter="Re10">
+        <flux from="u8" to="u9"/>
+    </flow>
+
+</cell-diagram>

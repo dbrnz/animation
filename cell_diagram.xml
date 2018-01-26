@@ -1,0 +1,56 @@
+<!-- From http://sites.bioeng.auckland.ac.nz/mwu035/mpb/  -->
+
+<cell-diagram>
+
+    <quantity class="sodium" id="q1" label="$\text{q}_1^{[\text{Na}^+]_o}$" potential="u1"/>
+
+    <quantity class="potassium" id="q4" label="$\text{q}_4^{[\text{K}^+]_o}$" potential="u4"/>
+
+    <compartment class="cell">
+        <transporters>  <!-- See https://en.wikipedia.org/wiki/Membrane_transport_protein
+                             and https://en.wikipedia.org/wiki/Transporter_Classificatquantity_Database -->
+            <transporter class="sodium channel" id="Na" label="$\text{I}_\text{Na}" flow="v1"/>
+            <transporter class="sodium channel" id="Na-b" label="$\text{I}_\text{Na,b}" flow="v2"/>
+            <transporter class="sodium channel" id="pNa" label="$\text{I}_\text{pNa}" flow="v3"/>
+            <transporter class="sodium metabolic exchanger" id="NKE" flow="v4"/> <!-- label "[ATP]" ??  -->
+        </transporters>
+
+        <quantity class="sodium" id="q2" label="$\text{q}_2^{[\text{Na}^+]_i}$" potential="u2"/>
+
+        <quantity class="potassium" id="q5" label="$\text{q}_5^{[\text{K}^+]_i}$" potential="u5"/>
+
+        <flow id="v1" transporter="Na">
+            <flux from="u1" to="u2"/>
+        </flow>
+        <flow id="v2" transporter="Na-b">
+            <flux from="u1" to="u2"/>
+        </flow>
+        <flow id="v3" transporter="pNa">
+            <flux from="u1" to="u2"/>
+        </flow>
+        <flow id="v4" transporter="NKE">
+            <flux from="u2" to="u1" amount="3"/>
+            <flux from="u4" to="u5" amount="2"/>
+        </flow>
+
+        <compartment class="SR">
+            <transporters>
+                <transporter class="calcium channel" id="SERCA" flow="v27"/>  <!-- energy="ATP" ?? (styling only, so add 'ATP' to class??) -->
+                <transporter class="calcium channel" id="RyR" flow="v23"/>
+            </transporters>
+            <quantity class="calcium" id="q21" label="$\text{q}_21^{[\text{Ca}^{2+}]_i}$"/>
+            <quantity class="calcium" id="q22" label="$\text{q}_22^{[\text{Ca}^{2+}-\text{CSNQ}]_i}$"/>
+        </compartment>
+
+        <compartment class="ATP">
+            <quantity class="metabolism" id="q24" label="$\text{q}_24^{[\text{ATP}]_i}$" potential="u24"/>
+            <quantity class="metabolism" id="q25" label="$\text{q}_25^{[\text{ADP}]}$" potential="u25"/>
+            <quantity class="metabolism" id="q26" label="$\text{q}_26^{[\text{P}]_i}$" potential="u26"/>
+            <flow id="v35">  <!-- label "[ATP]" ??  -->
+                <flux in="u24" out="u25 u26"/>
+            </flow>
+        </compartment>
+
+    </compartment>
+
+</cell-diagram>
