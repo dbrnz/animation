@@ -1,9 +1,13 @@
-import logging
+from collections import OrderedDict
 
 from lxml import etree
 import cssselect2
 import tinycss2
 import tinycss2.color3
+
+import igraph
+
+import logging
 
 #------------------------------------------------------------------------------
 
@@ -17,6 +21,14 @@ class Element(object):
         self._label = label if label else id
         if id is not None:
             Element._elements[id] = self
+
+    @property
+    def id(self):
+        return self._id
+
+    @property
+    def label(self):
+        return self._label
 
     def draw(self):
         return ''
@@ -44,6 +56,25 @@ class Container(Element):
 class CellDiagram(Container):
     def __init__(self, **kwds):
         super().__init__(**kwds)
+        self._potentials = OrderedDict()
+        self._flows = []
+
+    def add_potential(self, potential, quantity):
+        self._potentials[potential] = quantity
+
+    def add_flow(self, flow):
+        self._flows.append(flow)
+
+    def bond_graph(self):
+        g = igraph.Graph()
+        g.add_vertices(len(self._potentials))
+        potentials = list(self._potentials.keys())
+        edges = []
+        for flow in self._flows:
+            for flux in flow.fluxes:
+                edges.append((potentials.index(flux.from_potential), potentials.index(flux.to_potential)))
+        g.add_edges(edges)
+        return g
 
 #------------------------------------------------------------------------------
 
@@ -62,6 +93,10 @@ class Quantity(Element):
         super().__init__(**kwds)
         self._potential = potential
 
+    @property
+    def potential(self):
+        return self._potential
+
 #------------------------------------------------------------------------------
 
 class Transporter(Element):
@@ -76,6 +111,10 @@ class Flow(Element):
         self._fluxes = []
         self._transporter = transporter
 
+    @property
+    def fluxes(self):
+        return self._fluxes
+
     def add_flux(self, flux):
         self._fluxes.append(flux)
 
@@ -87,6 +126,18 @@ class Flux(Element):
         self._from = _from
         self._to = to
         self._count = count
+
+    @property
+    def from_potential(self):
+        return self._from
+
+    @property
+    def to_potential(self):
+        return self._to
+
+    @property
+    def count(self):
+        return self._count
 
 #------------------------------------------------------------------------------
 
@@ -140,6 +191,7 @@ class Parser(object):
     def __init__(self, elements, stylesheet=None):
         self._element_iter = elements.iter_subtree()
         self._stylesheet = stylesheet
+        self._diagram = None
         self._element = None
         self._element_tag = None
         self._element_attributes = {}
@@ -184,11 +236,6 @@ class Parser(object):
         except StopIteration:
             pass
 
-    def parse_cell_diagram(self):
-        diagram = CellDiagram(**self._element_attributes)
-        self._parse_container(diagram)
-        return diagram
-
     def parse_compartment(self, container=None):
         compartment = Compartment(**self._element_attributes)
         if container: container.add_component(compartment)
@@ -200,10 +247,13 @@ class Parser(object):
         while self._element_tag == 'flux':
             flow.add_flux(Flux(**self._element_attributes))
             self._next_element()
-        ## Add `flow` to diagram's list of flows...
+        self._diagram.add_flow(flow)
 
     def parse_quantity(self, container):
-        container.add_component(Quantity(**self._element_attributes))
+        quantity = Quantity(**self._element_attributes)
+        container.add_component(quantity)
+        if quantity.potential is not None:
+            self._diagram.add_potential(quantity.potential, quantity)
         self._next_element()
 
     def parse_transporters(self, compartment):
@@ -214,39 +264,11 @@ class Parser(object):
 
     def parse(self):
         self._next_element()
-        if self._element_tag != 'cell-diagram':
-            raise SyntaxError()
-        diagram = self.parse_cell_diagram()
-        if self._element_tag is not None:
-            raise SyntaxError()
-        return diagram
-
-#------------------------------------------------------------------------------
-
-stylesheet = StyleSheet('''
-    #q21 {
-      colour : pink ;
-    }
-    .cell {
-      shape: (12, 8);
-      colour: blue;
-      /* closed-cylinder, rectangle, circle/ellipse */
-      /* thickness, size, aspect-ratio, ... */
-    }
-    .sodium {
-      colour: yellow;
-      /* symbol, ... */
-    }
-    .potassium {
-      colour: green;
-    }
-    .channel {
-      position: bottom;
-    }
-    #i_Leak {
-      position: right;
-    }
-  ''')
+        if self._element_tag != 'cell-diagram': raise SyntaxError()
+        self._diagram = CellDiagram(**self._element_attributes)
+        self._parse_container(self._diagram)
+        if self._element_tag is not None: raise SyntaxError()
+        return self._diagram
 
 #------------------------------------------------------------------------------
 
@@ -262,19 +284,50 @@ def test_diagram():
 
 #------------------------------------------------------------------------------
 
-def test_parser(file):
+def parse(file, stylesheet=None):
     logging.debug('PARSE: %s', file)
     tree = etree.parse(file)
     selector_tree = cssselect2.ElementWrapper.from_xml_root(tree)
     parser = Parser(selector_tree, stylesheet)
     diagram = parser.parse()
     logging.debug('')
+    return diagram
 
 #------------------------------------------------------------------------------
 
 if __name__ == '__main__':
     logging.getLogger().setLevel(logging.DEBUG)
 
-    test_parser('bond_graph.xml')
+    stylesheet = StyleSheet('''
+        #q21 {
+          colour : pink ;
+        }
+        .cell {
+          shape: (12, 8);
+          colour: blue;
+          /* closed-cylinder, rectangle, circle/ellipse */
+          /* thickness, size, aspect-ratio, ... */
+        }
+        .sodium {
+          colour: yellow;
+          /* symbol, ... */
+        }
+        .potassium {
+          colour: green;
+        }
+        .channel {
+          position: bottom;
+        }
+        #i_Leak {
+          position: right;
+        }
+      ''')
 
-    test_parser('cell_diagram.xml')
+    diagram = parse('bond_graph.xml')
+
+    ## parse('cell_diagram.xml', stylesheet)
+
+    bond_graph = diagram.bond_graph()
+    layout = bond_graph.layout("kk")
+    igraph.plot(bond_graph, layout=layout)
+
