@@ -56,11 +56,16 @@ class Container(Element):
 class CellDiagram(Container):
     def __init__(self, **kwds):
         super().__init__(**kwds)
-        self._potentials = OrderedDict()
         self._flows = []
+        self._potentials = OrderedDict()
 
-    def add_potential(self, potential, quantity):
-        self._potentials[potential] = quantity
+    @property
+    def flows(self):
+        return self._flows
+
+    @property
+    def potentials(self):
+        return self._potentials
 
     def add_flow(self, flow):
         self._flows.append(flow)
@@ -75,6 +80,8 @@ class CellDiagram(Container):
                 edges.append((potentials.index(flux.from_potential), potentials.index(flux.to_potential)))
         g.add_edges(edges)
         return g
+    def add_potential(self, potential, quantity):
+        self._potentials[potential] = quantity
 
 #------------------------------------------------------------------------------
 
