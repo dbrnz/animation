@@ -1,0 +1,8 @@
+<cell-diagram>
+    <quantity potential="u24"/>
+    <quantity potential="u25"/>
+    <quantity potential="u26"/>
+    <flow id="v35">
+        <flux from="u24" to="u25 u26"/>
+    </flow>
+</cell-diagram>
