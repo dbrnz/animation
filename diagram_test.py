@@ -20,10 +20,11 @@ def bond_graph(diagram):
     g.add_vertices(potentials)
     g.vs['color'] = 'green'
     g.vs['label'] = potentials
-    for p in potentials:
-        q = p.replace('u', 'q')
-        g.add_vertex(q, label=q)
-        g.add_edge(p, q)
+    # Link potentials to corresponding quantities
+    for p, q in diagram.potentials.items():
+        g.add_vertex(q.id, label=q.id)
+        g.add_edge(p, q.id)
+    # Link potentials via flows and fluxes
     for flow in diagram.flows:
         g.add_vertex(flow.id, label=flow.id, color='blue')
         for flux in flow.fluxes:
@@ -69,11 +70,12 @@ if __name__ == '__main__':
 
     g = bond_graph(diagram)
     g.vs['x'] = [0,  2,   2,     0,    2,   2,   1]
-    g.vs['y'] = [0, -0.2, 0.2,  -0.1, -0.3, 0.3, 0]
+    g.vs['y'] = [0, -0.4, 0.4,  -0.3, -0.7, 0.7, 0]
+    g.vs['size'] = 40
     layout = g.layout("auto")
-    print(g)
-    for l in layout:
-        print(l)
-    igraph.plot(g, layout=layout) ##, bbox=(200, 100)) ## , target='atp.svg')
-
+#    print(g)
+#    for l in layout:
+#        print(l)
+    igraph.plot(g, layout=layout, keep_aspect_ratio=True, margin=50) ##, target='atp.svg')
+##  bbox=(500, 400),
 #------------------------------------------------------------------------------
