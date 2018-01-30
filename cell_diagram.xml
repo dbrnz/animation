@@ -1,23 +1,114 @@
 <!-- From http://sites.bioeng.auckland.ac.nz/mwu035/mpb/  -->
+<celldl>
 
-<cell-diagram>
+    <cell-diagram>
+        <quantity id="q1"  class="sodium"    label="$\text{q}_1^{[\text{Na}^+]_\text{o}}$"/>
+        <quantity id="q4"  class="potassium" label="$\text{q}_4^{[\text{K}^+]_\text{o}}$"/>
+        <quantity id="q7"  class="anion"     label="$\text{q}_7^{[\text{OH}^-]_\text{o}}$"/>
+        <quantity id="q9"  class="anion"     label="$\text{q}_9^{[\text{HCO}_3^-]_\text{o}}$"/>
+        <quantity id="q11" class="chloride"  label="$\text{q}_11^{[\text{Cl}^-]_\text{o}}$"/>
+        <quantity id="q13" class="hydrogen"  label="$\text{q}_13^{[\text{H}^+]_\text{o}}$"/>
+        <quantity id="q16" class="calcium"   label="$\text{q}_16^{[\text{Ca}^{2+}]_\text{o}}$"/>
 
-    <quantity class="sodium" id="q1" label="$\text{q}_1^{[\text{Na}^+]_o}$" potential="u1"/>
+        <compartment class="cell">
+            <transporters>
+                <transporter id="Na"   class="sodium channel" label="$\text{I}_\text{Na}"/>
+                <transporter id="Na-b" class="sodium channel" label="$\text{I}_\text{Na,b}"/>
+                <transporter id="pNa"  class="sodium channel" label="$\text{I}_\text{pNa}"/>
 
-    <quantity class="potassium" id="q4" label="$\text{q}_4^{[\text{K}^+]_o}$" potential="u4"/>
+                <transporter id="NKE"  class="metabolic sodium potassium exchanger"/>
 
-    <compartment class="cell">
-        <transporters>  <!-- See https://en.wikipedia.org/wiki/Membrane_transport_protein
-                             and https://en.wikipedia.org/wiki/Transporter_Classificatquantity_Database -->
-            <transporter class="sodium channel" id="Na" label="$\text{I}_\text{Na}"/>
-            <transporter class="sodium channel" id="Na-b" label="$\text{I}_\text{Na,b}"/>
-            <transporter class="sodium channel" id="pNa" label="$\text{I}_\text{pNa}"/>
-            <transporter class="sodium metabolic exchanger" id="NKE"/> <!-- label "[ATP]" ??  -->
-        </transporters>
+                <transporter id="K1"   class="potassium channel" label="$\text{I}_\text{K1}"/>
+                <transporter id="Kr"   class="potassium channel" label="$\text{I}_\text{Kr}"/>
+                <transporter id="Ks"   class="potassium channel" label="$\text{I}_\text{Ks}"/>
+                <transporter id="Katp" class="potassium channel" label="$\text{I}_{\text{K}_\text{ATP}}"/>
 
-        <quantity class="sodium" id="q2" label="$\text{q}_2^{[\text{Na}^+]_i}$" potential="u2"/>
+                <transporter id="NBC"  class="sodium bicarbonate exchanger"/>
+                <transporter id="CHE"  class="chloride hydrogen exchanger"/>
+                <transporter id="AE"   class="anion exchanger"/>
+                <transporter id="Cl"   class="chloride channel" label="$\text{I}_\text{Cl}"/>
+                <transporter id="NHE"  class="sodium hydrogen exchanger"/>
 
-        <quantity class="potassium" id="q5" label="$\text{q}_5^{[\text{K}^+]_i}$" potential="u5"/>
+                <transporter id="NCE"  class="sodium calcium exchanger"/>
+                <transporter id="pCa"  class="metabolic calcium exchanger"/>
+                <transporter id="Ca-b" class="calcium channel" label="$\text{I}_\text{Ca,b}"/>
+                <transporter id="Ca-t" class="calcium channel" label="$\text{I}_\text{Ca,t}"/>
+                <transporter id="CaL"  class="calcium channel" label="$\text{I}_\text{CaL}"/>
+            </transporters>
+
+            <quantity id="q2"  class="sodium"    label="$\text{q}_2^{[\text{Na}^+]_\text{i}}$"/>
+            <quantity id="q5"  class="potassium" label="$\text{q}_5^{[\text{K}^+]_\text{i}}$"/>
+
+            <quantity id="q8"  class="anion"     label="$\text{q}_8^{[\text{OH}^-]_\text{i}}$"/>
+            <quantity id="q10" class="anion"     label="$\text{q}_10^{[\text{HCO}_3^-]_\text{i}}$"/>
+            <quantity id="q12" class="chloride"  label="$\text{q}_12^{[\text{Cl}^-]_\text{i}}$"/>
+
+            <quantity id="q14" class="hydrogen"  label="$\text{q}_14^{[\text{H}^+]_\text{i}}$"/>
+
+            <quantity id="q17" class="calcium"   label="$\text{q}_17^{[\text{Ca}^{2+}]_\text{i}}$"/>
+            <quantity id="q18" class="calcium"   label="$\text{q}_18^{[\text{Ca}^{2+}]_\text{i}}$"/>
+            <quantity id="q19" class="calcium"   label="$\text{q}_19^{[\text{Ca}^{2+}\text{-CMDN}]_\text{i}}$"/>
+            <quantity id="q20" class="calcium"   label="$\text{q}_20^{[\text{Ca}^{2+}\text{-TRPN}]_\text{i}}$"/>
+
+            <compartment class="metabolic">
+                <quantity id="q24" class="metabolic" label="$\text{q}_24^{[\text{ATP}]_\text{i}}$"/>
+                <quantity id="q25" class="metabolic" label="$\text{q}_25^{[\text{ADP}]}$"/>
+                <quantity id="q26" class="metabolic" label="$\text{q}_26^{[\text{P}]_\text{i}}$"/>
+            </compartment>
+
+            <compartment class="organelle reticulum">
+                <transporters>
+                    <transporter id="SERCA" class="metabolic calcium exchanger"/>
+                    <transporter id="RyR"   class="calcium channel" />
+                </transporters>
+                <quantity id="q21" class="calcium" label="$\text{q}_21^{[\text{Ca}^{2+}]_\text{i}}$"/>
+                <quantity id="q22" class="calcium" label="$\text{q}_22^{[\text{Ca}^{2+}\text{-CSNQ}]_\text{i}}$"/>
+            </compartment>
+
+            <compartment class="organelle mitochondrion">
+                <transporters>
+                    <transporter id="m-NCE"  class="sodium calcium exchanger"/>
+                    <transporter id="m-NHE"  class="sodium hydrogen exchanger"/>
+                    <transporter id="m-KHE"  class="potassium hydrogen exchanger"/>
+                    <transporter id="m-CI"   class="hydrogen exchanger"/>
+                    <transporter id="m-CIII" class="hydrogen exchanger"/>
+                    <transporter id="m-CIV"  class="hydrogen exchanger"/>
+                    <transporter id="m-CII"  class="hydrogen exchanger"/>
+                </transporters>
+                <quantity id="q23" class="calcium"   label="$\text{q}_23^{[\text{Ca}^{2+}]_\text{i}}$"/>
+                <quantity id="q3"  class="sodium"    label="$\text{q}_3^{[\text{Na}^+]_\text{i}}$"/>
+                <quantity id="q6"  class="potassium" label="$\text{q}_6^{[\text{K}^+]_\text{i}}$"/>
+                <quantity id="q15" class="hydrogen"  label="$\text{q}_15^{[\text{H}^+]_\text{i}}$"/>
+            </compartment>
+        </compartment>
+    </cell-diagram>
+
+    <bond-graph>
+        <potential id="u1"  quantity="q1"/>
+        <potential id="u2"  quantity="q2"/>
+        <potential id="u4"  quantity="q4"/>
+        <potential id="u5"  quantity="q5"/>
+        <potential id="u6"  quantity="q6"/>
+        <potential id="u7"  quantity="q7"/>
+        <potential id="u8"  quantity="q8"/>
+        <potential id="u9"  quantity="q9"/>
+        <potential id="u10" quantity="q10"/>
+        <potential id="u11" quantity="q11"/>
+        <potential id="u12" quantity="q12"/>
+        <potential id="u13" quantity="q13"/>
+        <potential id="u14" quantity="q14"/>
+        <potential id="u15" quantity="q15"/>
+        <potential id="u16" quantity="q16"/>
+        <potential id="u17" quantity="q17"/>
+        <potential id="u18" quantity="q18"/>
+        <potential id="u19" quantity="q19"/>
+        <potential id="u20" quantity="q20"/>
+        <potential id="u21" quantity="q21"/>
+        <potential id="u22" quantity="q22"/>
+        <potential id="u23" quantity="q23"/>
+        <potential id="u24" quantity="q24"/>
+        <potential id="u25" quantity="q25"/>
+        <potential id="u26" quantity="q26"/>
 
         <flow id="v1" transporter="Na">
             <flux from="u1" to="u2"/>
@@ -32,25 +123,105 @@
             <flux from="u2" to="u1" count="3"/>
             <flux from="u4" to="u5" count="2"/>
         </flow>
+        <flow id="v5" transporter="NCE">
+            <flux from="u1" to="u2" count="3"/>
+            <flux from="u17" to="u16"/>
+        </flow>
+        <flow id="v6" transporter="NBC">
+            <flux from="u7" to="u2"/>
+            <flux from="u9" to="u10"/>
+        </flow>
+        <flow id="v7" transporter="NHE">
+            <flux from="u14" to="u13"/>
+            <flux from="u1" to="u2"/>
+        </flow>
+        <flow id="v8" transporter="m-NCE">
+            <flux from="u2" to="u3" count="3"/>
+            <flux from="u23" to="u17"/>
+        </flow>
+        <flow id="v9" transporter="m-NHE">
+            <flux from="u3" to="u2"/>
+            <flux from="u14" to="u15"/>
+        </flow>
+        <flow id="v10" transporter="K1">
+            <flux from="u4" to="u5"/>
+        </flow>
+        <flow id="v11" transporter="Kr">
+            <flux from="u4" to="u5"/>
+        </flow>
+        <flow id="v12" transporter="Ks">
+            <flux from="u4" to="u5"/>
+        </flow>
+        <flow id="v13" transporter="Katp">
+            <flux from="u4" to="u5"/>
+        </flow>
+        <flow id="v14" transporter="m-KHE">
+            <flux from="u6" to="u5"/>
+            <flux from="u14" to="u15"/>
+        </flow>
+        <flow id="v15">
+            <flux from="u5" to="u6"/>
+        </flow>
+        <flow id="v16" transporter="Cl">
+            <flux from="u12" to="u11"/>
+        </flow>
+        <flow id="v17" transporter="CHE">
+            <flux from="u11" to="u12"/>
+            <flux from="u8" to="u7"/>
+        </flow>
+        <flow id="v18" transporter="AE">
+            <flux from="u11" to="u12"/>
+            <flux from="u10" to="u9"/>
+        </flow>
+        <flow id="v19" transporter="pCa">
+            <flux from="u17" to="u16"/>
+        </flow>
+        <flow id="v20" transporter="Ca-b">
+            <flux from="u16" to="u17"/>
+        </flow>
+        <flow id="v21" transporter="Ca-t">
+            <flux from="u16" to="u17"/>
+        </flow>
+        <flow id="v22" transporter="CaL">
+            <flux from="u16" to="u18"/>
+        </flow>
+        <flow id="v23" transporter="RyR">
+            <flux from="u21" to="u18"/>
+        </flow>
+        <flow id="v24">
+            <flux from="u18" to="u17"/>
+        </flow>
+        <flow id="v25" class="dashed">  <!-- what does a dashed path signify?? -->
+            <flux from="u17" to="u19"/>
+        </flow>
+        <flow id="v26" class="dashed">
+            <flux from="u17" to="u20"/>
+        </flow>
+        <flow id="v27" transporter="SERCA">
+            <flux from="u17" to="u21" count="2"/>
+        </flow>
+        <flow id="v28">
+            <flux from="u21" to="u22"/>
+        </flow>
+        <flow id="v29">
+            <flux from="u23" to="u17"/>
+        </flow>
+        <!-- flow v30 ?? -->
+        <flow id="v31" transporter="m-CI">
+            <flux from="u14" to="u15"/>
+        </flow>
+        <flow id="v32" transporter="m-CIII">
+            <flux from="u14" to="u15"/>
+        </flow>
+        <flow id="v33" transporter="m-CIV">
+            <flux from="u14" to="u15"/>
+        </flow>
+        <flow id="v34" transporter="m-CII">
+            <flux from="u14" to="u15"/>
+        </flow>
+        <flow id="v35">
+            <flux from="u24" to="u25 u26"/>
+        </flow>
+    </bond-graph>
 
-        <compartment class="SR">
-            <transporters>
-                <transporter class="calcium channel" id="SERCA"/>  <!-- energy="ATP" ?? (styling only, so add 'ATP' to class??) -->
-                <transporter class="calcium channel" id="RyR"/>
-            </transporters>
-            <quantity class="calcium" id="q21" label="$\text{q}_21^{[\text{Ca}^{2+}]_i}$"/>
-            <quantity class="calcium" id="q22" label="$\text{q}_22^{[\text{Ca}^{2+}-\text{CSNQ}]_i}$"/>
-        </compartment>
-
-        <compartment class="ATP">
-            <quantity class="metabolism" id="q24" label="$\text{q}_24^{[\text{ATP}]_i}$" potential="u24"/>
-            <quantity class="metabolism" id="q25" label="$\text{q}_25^{[\text{ADP}]}$" potential="u25"/>
-            <quantity class="metabolism" id="q26" label="$\text{q}_26^{[\text{P}]_i}$" potential="u26"/>
-            <flow id="v35">  <!-- label "[ATP]" ??  -->
-                <flux from="u24" to="u25 u26"/>
-            </flow>
-        </compartment>
-
-    </compartment>
-
-</cell-diagram>
+</celldl>
