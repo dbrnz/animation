@@ -14,18 +14,19 @@ def parse(file, stylesheet=None):
 
 #------------------------------------------------------------------------------
 
-def bond_graph(diagram):
+def bond_graph(graph):
     g = igraph.Graph(directed=True)
-    potentials = list(diagram.potentials.keys())
+    potentials = [p.id for p in graph.potentials.keys()]
+    print(potentials)
     g.add_vertices(potentials)
     g.vs['color'] = 'green'
     g.vs['label'] = potentials
     # Link potentials to corresponding quantities
-    for p, q in diagram.potentials.items():
+    for p, q in graph.potentials.items():
         g.add_vertex(q.id, label=q.id)
-        g.add_edge(p, q.id)
+        g.add_edge(p.id, q.id)
     # Link potentials via flows and fluxes
-    for flow in diagram.flows:
+    for flow in graph.flows:
         g.add_vertex(flow.id, label=flow.id, color='blue')
         for flux in flow.fluxes:
             for n in range(flux.count):
@@ -63,19 +64,19 @@ if __name__ == '__main__':
         }
       '''
 
-    parse('cell_diagram.xml', stylesheet)
+#    diagram, graph = parse('cell_diagram.xml', stylesheet)
 ##  diagram = parse('bond_graph.xml')
 
-#    diagram, graph = parse('atp.xml')
+    diagram, graph = parse('atp.xml')
 
-#    g = bond_graph(diagram)
-#    g.vs['x'] = [0,  2,   2,     0,    2,   2,   1]
-#    g.vs['y'] = [0, -0.4, 0.4,  -0.3, -0.7, 0.7, 0]
-#    g.vs['size'] = 40
-#    layout = g.layout("auto")
+    g = bond_graph(graph)
+    g.vs['x'] = [0,  2,   2,     0,    2,   2,   1]
+    g.vs['y'] = [0, -0.4, 0.4,  -0.3, -0.7, 0.7, 0]
+    g.vs['size'] = 40
+    layout = g.layout("auto")
 #    print(g)
 #    for l in layout:
 #        print(l)
-#    igraph.plot(g, layout=layout, keep_aspect_ratio=True, margin=50) ##, target='atp.svg')
+    igraph.plot(g, layout=layout, keep_aspect_ratio=True, margin=50) ##, target='atp.svg')
 ##  bbox=(500, 400),
 #------------------------------------------------------------------------------

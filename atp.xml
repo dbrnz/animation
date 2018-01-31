@@ -26,9 +26,9 @@ OR:
     </cell-diagram>
 
     <bond-graph>
-        <potential id="q24" quantity="u24"/>
-        <potential id="q25" quantity="u25"/>
-        <potential id="q26" quantity="u26"/>
+        <potential id="u24" quantity="q24"/>
+        <potential id="u25" quantity="q25"/>
+        <potential id="u26" quantity="q26"/>
         <flow id="v35">
             <flux from="u24" to="u25 u26"/>
         </flow>

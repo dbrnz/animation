@@ -89,6 +89,7 @@
     <bond-graph>
         <potential id="u1"  quantity="q1"/>
         <potential id="u2"  quantity="q2"/>
+        <potential id="u3"  quantity="q3"/>
         <potential id="u4"  quantity="q4"/>
         <potential id="u5"  quantity="q5"/>
         <potential id="u6"  quantity="q6"/>
