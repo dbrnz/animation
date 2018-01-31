@@ -1,9 +1,37 @@
-<cell-diagram>
-    <!-- stylesheet href="" -->
-    <quantity id="q24" potential="u24"/>
-    <quantity id="q25" potential="u25"/>
-    <quantity id="q26" potential="u26"/>
-    <flow id="v35">
-        <flux from="u24" to="u25 u26"/>
-    </flow>
-</cell-diagram>
+<?xml version="1.0" encoding="utf-8"?>
+
+<diagram xmlns="http://www.cellml.org/celldl/1.0#">
+<!--
+    <style href="style.css"/>
+OR:
+    <link href="style.css" rel="stylesheet"/>
+OR:
+    <?xml-stylesheet type="text/css" href="externalStyle1.css" ?>
+OR:
+    <style>
+        /* <![CDATA[ */
+        #q24 { position: (-1, -0.3); }
+        #q25 { position: ( 1, -0.7); }
+        #q26 { position: ( 1,  0.7); }
+        #v35 { position: ( 0,  0); }
+        /* ]]> */
+    </style>
+-->
+    <cell-diagram>
+        <compartment class="metabolic">
+            <quantity id="q24" class="metabolic" label="$\text{q}_24^{[\text{ATP}]_\text{i}}$"/>
+            <quantity id="q25" class="metabolic" label="$\text{q}_25^{[\text{ADP}]}$"/>
+            <quantity id="q26" class="metabolic" label="$\text{q}_26^{[\text{P}]_\text{i}}$"/>
+        </compartment>
+    </cell-diagram>
+
+    <bond-graph>
+        <potential id="q24" quantity="u24"/>
+        <potential id="q25" quantity="u25"/>
+        <potential id="q26" quantity="u26"/>
+        <flow id="v35">
+            <flux from="u24" to="u25 u26"/>
+        </flow>
+    </bond-graph>
+
+</diagram>

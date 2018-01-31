@@ -4,7 +4,7 @@ import igraph
 
 #------------------------------------------------------------------------------
 
-from cell_diagram.parser import Parser, StyleSheet
+from cell_diagram.parser import Parser
 
 #------------------------------------------------------------------------------
 
@@ -38,7 +38,7 @@ def bond_graph(diagram):
 if __name__ == '__main__':
     logging.getLogger().setLevel(logging.DEBUG)
 
-    stylesheet = StyleSheet('''
+    stylesheet = '''
         #q21 {
           colour : pink ;
         }
@@ -61,21 +61,21 @@ if __name__ == '__main__':
         #i_Leak {
           position: right;
         }
-      ''')
+      '''
 
-##  parse('cell_diagram.xml', stylesheet)
+    parse('cell_diagram.xml', stylesheet)
 ##  diagram = parse('bond_graph.xml')
 
-    diagram = parse('atp.xml')
+#    diagram, graph = parse('atp.xml')
 
-    g = bond_graph(diagram)
-    g.vs['x'] = [0,  2,   2,     0,    2,   2,   1]
-    g.vs['y'] = [0, -0.4, 0.4,  -0.3, -0.7, 0.7, 0]
-    g.vs['size'] = 40
-    layout = g.layout("auto")
+#    g = bond_graph(diagram)
+#    g.vs['x'] = [0,  2,   2,     0,    2,   2,   1]
+#    g.vs['y'] = [0, -0.4, 0.4,  -0.3, -0.7, 0.7, 0]
+#    g.vs['size'] = 40
+#    layout = g.layout("auto")
 #    print(g)
 #    for l in layout:
 #        print(l)
-    igraph.plot(g, layout=layout, keep_aspect_ratio=True, margin=50) ##, target='atp.svg')
+#    igraph.plot(g, layout=layout, keep_aspect_ratio=True, margin=50) ##, target='atp.svg')
 ##  bbox=(500, 400),
 #------------------------------------------------------------------------------

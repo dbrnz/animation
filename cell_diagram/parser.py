@@ -8,7 +8,15 @@ import tinycss2.color3
 
 #------------------------------------------------------------------------------
 
-from . import CellDiagram, Compartment, Flow, Flux, Quantity, Transporter
+from . import CellDiagram, Compartment, Quantity, Transporter
+from . import BondGraph, Flow, Flux, Potential
+
+#------------------------------------------------------------------------------
+
+NAMESPACE = 'http://www.cellml.org/celldl/1.0#'
+
+def CellDL_namespace(tag):
+    return '{{{}}}{}'.format(NAMESPACE, tag)
 
 #------------------------------------------------------------------------------
 
@@ -56,92 +64,137 @@ class SyntaxError(Exception):
 
 #------------------------------------------------------------------------------
 
-class Parser(object):
+class Element(object):
     _reserved_words = ['class', 'from']
 
+    def __init__(self, element, stylesheets):
+        self._element = element
+        self._tag = element.etree_element.tag
+        self._attributes = dict(element.etree_element.items())
+        # The attribute dictionary is used for keyword arguments and since some
+        # attribute names are reserved words in Python we prefix these with `_`
+        for name in self._reserved_words:
+            if name in self._attributes:
+                    self._attributes['_' + name] = self._attributes.pop(name)
+        # Look in all style sheets in order, updating element style dictionary...
+        self._style = {}
+        for s in stylesheets:
+            self._style.update(s.match(element))
+        # Now check for a style attribute...
+        styling = self._attributes.pop('style', None)
+        if styling is not None:
+            for d in [obj for obj in tinycss2.parse_declaration_list(styling, skip_whitespace=True)
+                                  if obj.type == 'declaration']:
+                self._style[d.lower_name] = StyleSheet.style_value(d)
+        logging.debug("ELEMENT: %s %s %s", self._tag, self._attributes, self._style)
+
+    @property
+    def element(self):
+        return self._element
+
+    @property
+    def attributes(self):
+        return self._attributes
+
+    @property
+    def style(self):
+        return self._style
+
+    @property
+    def tag(self):
+        return self._tag
+
+#------------------------------------------------------------------------------
+
+class ElementChildren(object):
+    def __init__(self, root, stylesheets):
+        self._root_element = root.element
+        self._stylesheets = stylesheets
+
+    def __iter__(self):
+        for e in self._root_element.iter_children():
+            if not isinstance(e.etree_element, etree._Element):
+                continue
+            yield Element(e, self._stylesheets)
+        raise StopIteration
+
+#------------------------------------------------------------------------------
+
+class Parser(object):
     def __init__(self):
-        self._element_iter = None
-        self._stylesheet = None
-        self._diagram = None
-        self._element = None
-        self._element_tag = None
-        self._element_attributes = {}
-        self._style = None
+        self._stylesheets = []
 
-    def _next_element(self):
-        try:
-            self._element = self._element_iter.__next__()
-            while isinstance(self._element.etree_element, etree._Comment):
-                self._element = self._element_iter.__next__()
-            self._element_tag = self._element.etree_element.tag
-            self._element_attributes = dict(self._element.etree_element.items())
-            # The attribute dictionary is used for keyword arguments and since some
-            # attribute names are reserved words in Python we prefix these with `_`
-            for name in self._reserved_words:
-                if name in self._element_attributes:
-                    self._element_attributes['_' + name] = self._element_attributes.pop(name)
-            self._element_style = self._stylesheet.match(self._element) if self._stylesheet else None
-        except StopIteration:
-            self._element = None
-            self._element_tag = None
-            self._element_attributes = {}
-            self._style = None
-
-    def _parse_container(self, container=None):
-        self._next_element()
-        while self._element_tag is not None:
-            logging.debug("PROCESS: %s %s %s", self._element_tag, self._element_attributes, self._element_style)
-            if self._element_tag == 'compartment':
-                self.parse_compartment(container)
-            elif self._element_tag == 'flow':
-                self.parse_flow()
-            elif self._element_tag == 'quantity':
-                self.parse_quantity(container)
-            elif self._element_tag == 'transporters':
-                if isinstance(container, Compartment): self.parse_transporters(container)
-                else: raise SyntaxError
+    def parse_container(self, element, container=None):
+        for e in ElementChildren(element, self._stylesheets):
+            if e.tag == CellDL_namespace('compartment'):
+                self.parse_compartment(e, container)
+            elif e.tag == CellDL_namespace('quantity'):
+                self.parse_quantity(e, container)
+            elif (e.tag == CellDL_namespace('transporters')
+              and isinstance(container, Compartment)):
+                self.parse_transporters(e, container)
             else:
-                self._next_element()
+                raise SyntaxError
 
-    def parse_compartment(self, container=None):
-        compartment = Compartment(**self._element_attributes)
+    def parse_compartment(self, element, container=None):
+        compartment = Compartment(style=element.style, **element.attributes)
         if container: container.add_component(compartment)
-        self._parse_container(compartment)
+        self.parse_container(element, compartment)
 
-    def parse_flow(self):
-        flow = Flow(**self._element_attributes)
-        self._next_element()
-        while self._element_tag == 'flux':
-            flow.add_flux(Flux(**self._element_attributes))
-            self._next_element()
-        self._diagram.add_flow(flow)
+    def parse_quantity(self, element, container):
+        container.add_component(Quantity(style=element.style, **element.attributes))
 
-    def parse_quantity(self, container):
-        quantity = Quantity(**self._element_attributes)
-        container.add_component(quantity)
-        if quantity.potential is not None:
-            self._diagram.add_potential(quantity.potential, quantity)
-        self._next_element()
+    def parse_transporters(self, element, compartment):
+        for e in ElementChildren(element, self._stylesheets):
+            if e.tag == CellDL_namespace('transporter'):
+                compartment.add_transporter(Transporter(style=e.style, **e.attributes))
+            else:
+                raise SyntaxError
 
-    def parse_transporters(self, compartment):
-        self._next_element()
-        while self._element_tag == 'transporter':
-            compartment.add_transporter(Transporter(**self._element_attributes))
-            self._next_element()
+    def parse_bond_graph(self, element, bond_graph):
+        for e in ElementChildren(element, self._stylesheets):
+            if e.tag == CellDL_namespace('potential'):
+                self.parse_potential(e, bond_graph)
+            elif e.tag == CellDL_namespace('flow'):
+                self.parse_flow(e, bond_graph)
+            else:
+                raise SyntaxError
+
+    def parse_potential(self, element, bond_graph):
+        bond_graph.add_potential(Potential(style=element.style, **element.attributes))
+
+    def parse_flow(self, element, bond_graph):
+        flow = Flow(style=element.style, **element.attributes)
+        for e in ElementChildren(element, self._stylesheets):
+            if e.tag == CellDL_namespace('flux'):
+                flow.add_flux(Flux(style=e.style, **e.attributes))
+            else:
+                raise SyntaxError
+        bond_graph.add_flow(flow)
+
 
     def parse(self, file, stylesheet=None):
         logging.debug('PARSE: %s', file)
-        tree = etree.parse(file)
-        selector_tree = cssselect2.ElementWrapper.from_xml_root(tree)
-        self._element_iter = selector_tree.iter_subtree()
-        self._stylesheet = stylesheet
-        #
-        self._next_element()
-        if self._element_tag != 'cell-diagram': raise SyntaxError()
-        self._diagram = CellDiagram(**self._element_attributes)
-        self._parse_container(self._diagram)
-        if self._element_tag is not None: raise SyntaxError()
+        if stylesheet is not None:
+            self._stylesheets.append(StyleSheet(stylesheet))
+
+        xml_root = etree.parse(file)
+        root_element = Element(cssselect2.ElementWrapper.from_xml_root(xml_root), self._stylesheets)
+        if root_element.tag != CellDL_namespace('diagram'): raise SyntaxError()
+        cell_diagram = None
+        bond_graph = None
+        for e in ElementChildren(root_element, self._stylesheets):
+            if cell_diagram is None and e.tag == CellDL_namespace('cell-diagram'):
+                cell_diagram = CellDiagram(style=e.style, **e.attributes)
+                self.parse_container(e, cell_diagram)
+            elif bond_graph is None and e.tag == CellDL_namespace('bond-graph'):
+                bond_graph = BondGraph(style=e.style, **e.attributes)
+                self.parse_bond_graph(e, bond_graph)
+            elif e.tag == CellDL_namespace('style'):
+                pass ## Add <style> elements and to self._stylesheets.
+            else:
+                raise SyntaxError
         logging.debug('')
-        return self._diagram
+        return (cell_diagram, bond_graph)
 
 #------------------------------------------------------------------------------

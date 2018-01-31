@@ -1,5 +1,8 @@
-<!-- From http://sites.bioeng.auckland.ac.nz/mwu035/mpb/  -->
-<celldl>
+<?xml version="1.0" encoding="utf-8"?>
+
+<diagram xmlns="http://www.cellml.org/celldl/1.0#">
+
+    <!-- Representation of diagram at http://sites.bioeng.auckland.ac.nz/mwu035/mpb/  -->
 
     <cell-diagram>
         <quantity id="q1"  class="sodium"    label="$\text{q}_1^{[\text{Na}^+]_\text{o}}$"/>
@@ -224,4 +227,4 @@
         </flow>
     </bond-graph>
 
-</celldl>
+</diagram>

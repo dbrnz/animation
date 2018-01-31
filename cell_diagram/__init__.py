@@ -6,12 +6,13 @@ class Element(object):
     # Dictionary of all elements that have an id
     _elements = { }
 
-    def __init__(self, _class=None, id=None, label=None):
+    def __init__(self, _class=None, id=None, label=None, style=None):
         self._class = _class
         self._id = id
         self._label = label if label else id
         if id is not None:
             Element._elements[id] = self
+        self._style = style
 
     @property
     def id(self):
@@ -20,6 +21,10 @@ class Element(object):
     @property
     def label(self):
         return self._label
+
+    @property
+    def style(self):
+        return self._style
 
     def draw(self):
         return ''
@@ -47,22 +52,6 @@ class Container(Element):
 class CellDiagram(Container):
     def __init__(self, **kwds):
         super().__init__(**kwds)
-        self._flows = []
-        self._potentials = OrderedDict()
-
-    @property
-    def flows(self):
-        return self._flows
-
-    @property
-    def potentials(self):
-        return self._potentials
-
-    def add_flow(self, flow):
-        self._flows.append(flow)
-
-    def add_potential(self, potential, quantity):
-        self._potentials[potential] = quantity
 
 #------------------------------------------------------------------------------
 
@@ -77,19 +66,35 @@ class Compartment(Container):
 #------------------------------------------------------------------------------
 
 class Quantity(Element):
-    def __init__(self, potential=None, **kwds):
+    def __init__(self, **kwds):
         super().__init__(**kwds)
-        self._potential = potential
-
-    @property
-    def potential(self):
-        return self._potential
 
 #------------------------------------------------------------------------------
 
 class Transporter(Element):
     def __init__(self, **kwds):
         super().__init__(**kwds)
+
+#------------------------------------------------------------------------------
+
+class BondGraph(Element):
+    def __init__(self, **kwds):
+        self._flows = []
+        self._potentials = OrderedDict()
+
+    @property
+    def flows(self):
+        return self._flows
+
+    @property
+    def potentials(self):
+        return self._potentials
+
+    def add_flow(self, flow):
+        self._flows.append(flow)
+
+    def add_potential(self, potential):
+        self._potentials[potential] = potential.quantity
 
 #------------------------------------------------------------------------------
 
@@ -126,5 +131,20 @@ class Flux(Element):
     @property
     def count(self):
         return self._count
+
+#------------------------------------------------------------------------------
+
+class Potential(Element):
+    def __init__(self, quantity=None, **kwds):
+        super().__init__(**kwds)
+        self._quantity_id = quantity
+
+    @property
+    def quantity_id(self):
+        return self._quantity_id
+
+    @property
+    def quantity(self):
+        return Quantity.find(self._quantity_id)
 
 #------------------------------------------------------------------------------
