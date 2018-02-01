@@ -34,18 +34,17 @@ class StyleSheet(cssselect2.Matcher):
 
     @staticmethod
     def style_value(declaration):
-        components = [c for c in declaration.value if c.type != 'whitespace']
-        if not components:
-            return None
-        component = components[0]
-        if declaration.lower_name == 'colour':
-            return tinycss2.color3.parse_color(component)
-        elif component.type == 'function':
-            return component.name + ' (' + tinycss2.serialize(component.arguments) + ')'
-        elif component.type[3:] == 'block':
-            return component.type[0] + tinycss2.serialize(component.content) + component.type[1]
-        else:
-            return component.value
+        values = []
+        for component in declaration.value:
+            if declaration.lower_name in ['color', 'colour']:
+                return tinycss2.color3.parse_color(component)
+            elif component.type == 'function':
+                return component.name + ' (' + tinycss2.serialize(component.arguments) + ')'
+            elif component.type[3:] == 'block':
+                return component.type[0] + tinycss2.serialize(component.content) + component.type[1]
+            else:
+                values.append(component.value)
+        return ''.join(values).strip()
 
     def match(self, element):
         rules = {}
@@ -70,6 +69,7 @@ class Element(object):
     def __init__(self, element, stylesheets):
         self._element = element
         self._tag = element.etree_element.tag
+        self._text = element.etree_element.text
         self._attributes = dict(element.etree_element.items())
         # The attribute dictionary is used for keyword arguments and since some
         # attribute names are reserved words in Python we prefix these with `_`
@@ -103,6 +103,10 @@ class Element(object):
     @property
     def tag(self):
         return self._tag
+
+    @property
+    def text(self):
+        return self._text
 
 #------------------------------------------------------------------------------
 
@@ -172,7 +176,6 @@ class Parser(object):
                 raise SyntaxError
         bond_graph.add_flow(flow)
 
-
     def parse(self, file, stylesheet=None):
         logging.debug('PARSE: %s', file)
         if stylesheet is not None:
@@ -181,6 +184,15 @@ class Parser(object):
         xml_root = etree.parse(file)
         root_element = Element(cssselect2.ElementWrapper.from_xml_root(xml_root), self._stylesheets)
         if root_element.tag != CellDL_namespace('diagram'): raise SyntaxError()
+
+        # First load all stylesheets
+        for e in ElementChildren(root_element, self._stylesheets):
+            if e.tag == CellDL_namespace('style'):
+                if 'href' in e.attributes:
+                    pass
+                else:
+                    self._stylesheets.append(StyleSheet(e.text))
+
         cell_diagram = None
         bond_graph = None
         for e in ElementChildren(root_element, self._stylesheets):
@@ -191,7 +203,7 @@ class Parser(object):
                 bond_graph = BondGraph(style=e.style, **e.attributes)
                 self.parse_bond_graph(e, bond_graph)
             elif e.tag == CellDL_namespace('style'):
-                pass ## Add <style> elements and to self._stylesheets.
+                pass
             else:
                 raise SyntaxError
         logging.debug('')
