@@ -1,5 +1,10 @@
 #------------------------------------------------------------------------------
 
+class SyntaxError(Exception):
+    pass
+
+#------------------------------------------------------------------------------
+
 class Element(object):
     # Dictionary of all elements that have an id
     _elements = { }

@@ -252,7 +252,7 @@
 stylesheet might specify scale, position, size??
 -->
 
-    <geometry size="1040 685" units="percentage"> <!-- or "fractional" -->
+    <geometry size="1040 685" units="percentage"> <!-- or "fractional" or "bounding-box" -->
         <box ref="cell" pos="11 25" size="88 74">
             <!-- Cell membrane transporters -->
             <border>

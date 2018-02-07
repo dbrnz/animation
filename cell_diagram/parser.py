@@ -10,6 +10,8 @@ import tinycss2.color3
 
 #------------------------------------------------------------------------------
 
+from . import SyntaxError
+
 from .diagram import Diagram, Compartment, Quantity, Transporter
 from .bondgraph import BondGraph, Flow, Flux, Potential
 from .geometry import Geometry, Box, Item
@@ -67,11 +69,6 @@ class StyleSheet(cssselect2.Matcher):
                 for declaration in declarations:
                     rules[declaration.lower_name] = self.style_value(declaration)
         return rules
-
-#------------------------------------------------------------------------------
-
-class SyntaxError(Exception):
-    pass
 
 #------------------------------------------------------------------------------
 
@@ -189,13 +186,31 @@ class Parser(object):
         bond_graph.add_flow(flow)
 
     def parse_geometry(self, element, geometry):
+        # <geometry> doesn't have a border, <box> does
+        self.parse_box(element, geometry, border=False)
+
+    def parse_box(self, element, container, border=True):
         for e in ElementChildren(element):
-            if e.tag == CellDL_namespace('box'):
-                pass
+            if   border and e.tag == CellDL_namespace('border'):
+                self.parse_border(e, container)
+            elif e.tag == CellDL_namespace('box'):
+                box = Box(**e.attributes)
+                self.parse_box(e, box)
+                container.add_box(box)
             elif e.tag == CellDL_namespace('item'):
-                pass
+                container.add_item(Item(container, **e.attributes))
             else:
                 raise SyntaxError
+
+    def parse_border(self, element, box):
+        for e in ElementChildren(element):
+            if   e.tag == CellDL_namespace('top'):    border = 'top'
+            elif e.tag == CellDL_namespace('left'):   border = 'left'
+            elif e.tag == CellDL_namespace('bottom'): border = 'bottom'
+            elif e.tag == CellDL_namespace('right'):  border = 'right'
+            else:                                     raise SyntaxError
+            for item in ElementChildren(e):
+                box.add_item(Item(box, border=border, **e.attributes))
 
     def parse(self, file, stylesheet=None):
         logging.debug('PARSE: %s', file)
@@ -220,7 +235,7 @@ class Parser(object):
         for e in ElementChildren(root_element, self._stylesheets):
             if diagram is None and e.tag == CellDL_namespace('diagram'):
                 diagram = Diagram(style=e.style, **e.attributes)
-                self.parse_container(e, cell_diagram)
+                self.parse_container(e, diagram)
             elif bond_graph is None and e.tag == CellDL_namespace('bond-graph'):
                 bond_graph = BondGraph(style=e.style, **e.attributes)
                 self.parse_bond_graph(e, bond_graph)

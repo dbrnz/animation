@@ -1,9 +1,17 @@
 #------------------------------------------------------------------------------
 
+from . import SyntaxError
+
+#------------------------------------------------------------------------------
+
 class Geometry(object):
     def __init__(self, size=None, units='percentage'):
         self._size = Geometry.parse_numeric_tuple(size)
-        self._divisor = 1.0 if units == 'fractional' else 100.0
+        if 0.0 in self._size: raise ValueError
+        if   units == 'percentage': self._divisor = (100.0, 100.0)
+        elif units == 'fractional': self._divisor = (1.0, 1.0)
+        elif units == 'bounding-box': self._divisor = self._size
+        else: raise SyntaxError
 
     @staticmethod
     def parse_numeric_tuple(text):
@@ -13,49 +21,42 @@ class Geometry(object):
     def size(self):
         return self._size
 
-class Box(object):
+    def add_item(self, item):
+        pass
+
+    def add_box(self, item):
+        pass
+
+class Box(Geometry):
     def __init__(self, ref=None, size=None, pos=None):
+        super().__init__(size=size)
         self._ref = ref
-        self._size = Geometry.parse_numeric_tuple(size)
         self._pos = Geometry.parse_numeric_tuple(pos)
 
+    @property
+    def top(self):
+        return 0.0
+
+    @property
+    def left(self):
+        return 0.0
+
+    @property
+    def bottom(self):
+        return 1.0
+
+    @property
+    def right(self):
+        return 1.0
+
 class Item(object):
-    def __init__(self, box=box, ref=None, pos=None, border=None):
+    def __init__(self, box, ref=None, pos=None, border=None):
         self._ref = ref
         position = Geometry.parse_numeric_tuple(pos)
-        if   border == "left":   self._pos = (box.left, position[0])
-        elif border == "right":  self._pos = (box.right, position[0])
-        elif border == "top":    self._pos = (position[0], box.top)
+        if   border == "top":    self._pos = (position[0], box.top)
+        elif border == "left":   self._pos = (box.left, position[0])
         elif border == "bottom": self._pos = (position[0], box.bottom)
+        elif border == "right":  self._pos = (box.right, position[0])
         else:                    self._pos = position
-
-    @property
-    def fixed(self):
-        return self._fixed
-
-    @property
-    def fixed_coords(self):
-        return self._fixed_coords
-
-    def add_position(self, element=None, coords=None):
-        if element is not None and coords is not None:
-            c = coords.replace(',', ' ').split()
-            if len(c) >= 2:
-                self._positions[element] = tuple(float(x) for x in c[0:2])
-                if   c[-1].lower() == 'x-fixed':
-                    self._fixed_coords[element] = (True, False)
-                elif c[-1].lower() == 'y-fixed':
-                    self._fixed_coords[element] = (False, True)
-                else:
-                    self._fixed.append(element)
-    '''
-    def set_relative_position(self, left_of=None, below=None):
-        if left_of is not None:
-            self._elements_right.append(left_of)
-            left_of._elements_left.append(self)
-        if below is not None:
-            self._elements_above.append(below)
-            below._elements_below.append(self)
-    '''
 
 #------------------------------------------------------------------------------
