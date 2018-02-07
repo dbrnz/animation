@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<diagram xmlns="http://www.cellml.org/celldl/1.0#">
+<cell-diagram xmlns="http://www.cellml.org/celldl/1.0#">
 
     <!-- Representation of diagram at http://sites.bioeng.auckland.ac.nz/mwu035/mpb/  -->
 
-    <cell-diagram>
+    <diagram>
         <quantity id="q1"  class="sodium"    label="$\text{q}_1^{[\text{Na}^+]_\text{o}}$"/>
         <quantity id="q4"  class="potassium" label="$\text{q}_4^{[\text{K}^+]_\text{o}}$"/>
         <quantity id="q7"  class="anion"     label="$\text{q}_7^{[\text{OH}^-]_\text{o}}$"/>
@@ -13,7 +13,7 @@
         <quantity id="q13" class="hydrogen"  label="$\text{q}_13^{[\text{H}^+]_\text{o}}$"/>
         <quantity id="q16" class="calcium"   label="$\text{q}_16^{[\text{Ca}^{2+}]_\text{o}}$"/>
 
-        <compartment class="cell">
+        <compartment id="cell" class="cell">
             <transporters>
                 <transporter id="Na"   class="sodium channel" label="$\text{I}_\text{Na}"/>
                 <transporter id="Na-b" class="sodium channel" label="$\text{I}_\text{Na,b}"/>
@@ -53,13 +53,13 @@
             <quantity id="q19" class="calcium"   label="$\text{q}_19^{[\text{Ca}^{2+}\text{-CMDN}]_\text{i}}$"/>
             <quantity id="q20" class="calcium"   label="$\text{q}_20^{[\text{Ca}^{2+}\text{-TRPN}]_\text{i}}$"/>
 
-            <compartment class="metabolic">
+            <compartment id="atp" class="metabolic">
                 <quantity id="q24" class="metabolic" label="$\text{q}_24^{[\text{ATP}]_\text{i}}$"/>
                 <quantity id="q25" class="metabolic" label="$\text{q}_25^{[\text{ADP}]}$"/>
                 <quantity id="q26" class="metabolic" label="$\text{q}_26^{[\text{P}]_\text{i}}$"/>
             </compartment>
 
-            <compartment class="organelle reticulum">
+            <compartment id="SR" class="organelle reticulum">
                 <transporters>
                     <transporter id="SERCA" class="metabolic calcium exchanger"/>
                     <transporter id="RyR"   class="calcium channel" />
@@ -68,15 +68,15 @@
                 <quantity id="q22" class="calcium" label="$\text{q}_22^{[\text{Ca}^{2+}\text{-CSNQ}]_\text{i}}$"/>
             </compartment>
 
-            <compartment class="organelle mitochondrion">
+            <compartment id="mitochrondion" class="organelle mitochondrion">
                 <transporters>
-                    <transporter id="m-NCE"  class="sodium calcium exchanger"/>
-                    <transporter id="m-NHE"  class="sodium hydrogen exchanger"/>
-                    <transporter id="m-KHE"  class="potassium hydrogen exchanger"/>
-                    <transporter id="m-CI"   class="hydrogen exchanger"/>
-                    <transporter id="m-CIII" class="hydrogen exchanger"/>
-                    <transporter id="m-CIV"  class="hydrogen exchanger"/>
-                    <transporter id="m-CII"  class="hydrogen exchanger"/>
+                    <transporter id="m-NCE"  label="NCE"  class="sodium calcium exchanger"/>
+                    <transporter id="m-NHE"  label="NHE"  class="sodium hydrogen exchanger"/>
+                    <transporter id="m-KHE"  label="KHE"  class="potassium hydrogen exchanger"/>
+                    <transporter id="m-CI"   label="CI"   class="hydrogen exchanger"/>
+                    <transporter id="m-CIII" label="CIII" class="hydrogen exchanger"/>
+                    <transporter id="m-CIV"  label="CIV"  class="hydrogen exchanger"/>
+                    <transporter id="m-CII"  label="CII"  class="hydrogen exchanger"/>
                 </transporters>
                 <quantity id="q23" class="calcium"   label="$\text{q}_23^{[\text{Ca}^{2+}]_\text{i}}$"/>
                 <quantity id="q3"  class="sodium"    label="$\text{q}_3^{[\text{Na}^+]_\text{i}}$"/>
@@ -84,7 +84,7 @@
                 <quantity id="q15" class="hydrogen"  label="$\text{q}_15^{[\text{H}^+]_\text{i}}$"/>
             </compartment>
         </compartment>
-    </cell-diagram>
+    </diagram>
 
     <bond-graph>
         <potential id="u1"  quantity="q1"/>
@@ -101,6 +101,8 @@
         <potential id="u12" quantity="q12"/>
         <potential id="u13" quantity="q13"/>
         <potential id="u14" quantity="q14"/>
+
+<!--
         <potential id="u15" quantity="q15"/>
         <potential id="u16" quantity="q16"/>
         <potential id="u17" quantity="q17"/>
@@ -113,6 +115,7 @@
         <potential id="u24" quantity="q24"/>
         <potential id="u25" quantity="q25"/>
         <potential id="u26" quantity="q26"/>
+-->
 
         <flow id="v1" transporter="Na">
             <flux from="u1" to="u2"/>
@@ -127,10 +130,7 @@
             <flux from="u2" to="u1" count="3"/>
             <flux from="u4" to="u5" count="2"/>
         </flow>
-        <flow id="v5" transporter="NCE">
-            <flux from="u1" to="u2" count="3"/>
-            <flux from="u17" to="u16"/>
-        </flow>
+
         <flow id="v6" transporter="NBC">
             <flux from="u7" to="u2"/>
             <flux from="u9" to="u10"/>
@@ -139,6 +139,12 @@
             <flux from="u14" to="u13"/>
             <flux from="u1" to="u2"/>
         </flow>
+<!--
+        <flow id="v5" transporter="NCE">
+            <flux from="u1" to="u2" count="3"/>
+            <flux from="u17" to="u16"/>
+        </flow>
+
         <flow id="v8" transporter="m-NCE">
             <flux from="u2" to="u3" count="3"/>
             <flux from="u23" to="u17"/>
@@ -147,6 +153,7 @@
             <flux from="u3" to="u2"/>
             <flux from="u14" to="u15"/>
         </flow>
+-->
         <flow id="v10" transporter="K1">
             <flux from="u4" to="u5"/>
         </flow>
@@ -163,9 +170,7 @@
             <flux from="u6" to="u5"/>
             <flux from="u14" to="u15"/>
         </flow>
-        <flow id="v15">
-            <flux from="u5" to="u6"/>
-        </flow>
+
         <flow id="v16" transporter="Cl">
             <flux from="u12" to="u11"/>
         </flow>
@@ -177,6 +182,11 @@
             <flux from="u11" to="u12"/>
             <flux from="u10" to="u9"/>
         </flow>
+<!--
+        <flow id="v15">
+            <flux from="u5" to="u6"/>
+        </flow>
+
         <flow id="v19" transporter="pCa">
             <flux from="u17" to="u16"/>
         </flow>
@@ -195,7 +205,7 @@
         <flow id="v24">
             <flux from="u18" to="u17"/>
         </flow>
-        <flow id="v25" class="dashed">  <!-- what does a dashed path signify?? -->
+        <flow id="v25" class="dashed">  <! - what does a dashed path signify?? ->
             <flux from="u17" to="u19"/>
         </flow>
         <flow id="v26" class="dashed">
@@ -210,7 +220,7 @@
         <flow id="v29">
             <flux from="u23" to="u17"/>
         </flow>
-        <!-- flow v30 ?? -->
+        <! - flow v30 ?? ->
         <flow id="v31" transporter="m-CI">
             <flux from="u14" to="u15"/>
         </flow>
@@ -226,6 +236,104 @@
         <flow id="v35">
             <flux from="u24" to="u25 u26"/>
         </flow>
+-->
     </bond-graph>
+<!--
+    <group position="" spacing=""/> ???
 
-</diagram>
+    All coordinates are wrt the object containing the element.
+
+    Origin is at top left corner of containing object's bounding box.
+
+    Bounding box has size (bounds-X bounds-Y).
+
+
+
+stylesheet might specify scale, position, size??
+-->
+
+    <geometry size="1040 685" units="percentage"> <!-- or "fractional" -->
+        <box ref="cell" pos="11 25" size="88 74">
+            <!-- Cell membrane transporters -->
+            <border>
+                <top>
+                    <item ref="Na"   pos="9"/>
+                    <item ref="Na-b" pos="13"/>
+                    <item ref="pNa"  pos="17"/>
+                    <item ref="NKE"  pos="24"/>
+                    <item ref="K1"   pos="29"/>
+                    <item ref="Kr"   pos="33"/>
+                    <item ref="Ks"   pos="37"/>
+                    <item ref="Katp" pos="41"/>
+                    <item ref="NBC"  pos="46"/>
+                    <item ref="CHE"  pos="51"/>
+                    <item ref="AE"   pos="56"/>
+                    <item ref="Cl"   pos="61"/>
+                    <item ref="NHE"  pos="69"/>
+                </top>
+                <left>
+                    <item ref="NCE"  pos="14"/>
+                    <item ref="pCa"  pos="31"/>
+                    <item ref="Ca-b" pos="37"/>
+                    <item ref="Ca-t" pos="43"/>
+                    <item ref="CaL"  pos="75"/>
+                </left>
+            </border>
+
+            <item ref="q1"  pos="13 -25"/>
+            <item ref="q4"  pos="35 -25"/>
+            <item ref="q7"  pos="49 -25"/>
+            <item ref="q9"  pos="58 -25"/>
+            <item ref="q11" pos="61 -25"/>
+            <item ref="q13" pos="77 -16"/>
+            <item ref="q16" pos="-9  28"/>
+            <item ref="q2"  pos="13 20"/>
+            <item ref="q5"  pos="35 20"/>
+            <item ref="q8"  pos="49 20"/>
+            <item ref="q10" pos="58 20"/>
+            <item ref="q12" pos="61 20"/>
+            <item ref="q14" pos="77 29"/>
+            <item ref="q17" pos="10 28"/>
+            <item ref="q18" pos=" 8 90"/>
+            <item ref="q19" pos="35 42"/>
+            <item ref="q20" pos="35 50"/>
+
+            <box ref="mitochrondion" pos="46 50" size="37 27">
+                <!-- Mitochrondion transporters -->
+                <border>
+                    <top>
+                        <item ref="m-NCE"  pos="15"/>
+                        <item ref="m-NHE"  pos="25"/>
+                        <item ref="m-KHE"  pos="35"/>
+                        <item ref="m-CI"   pos="45"/>
+                        <item ref="m-CII"  pos="55"/>
+                        <item ref="m-CIII" pos="65"/>
+                        <item ref="m-CIV"  pos="75"/>
+                    </top>
+                </border>
+                <item ref="q3"  pos="12 48"/>
+                <item ref="q6"  pos="24 48"/>
+                <item ref="q15" pos="36 48"/>
+                <item ref="q23" pos="75 27"/>
+            </box>
+
+        </box>
+    </geometry>
+
+
+            <!-- Sarcoplasmic reticulum transporters -->
+<!--            <element ref="SERCA" class="metabolic calcium exchanger"/>
+            <element ref="RyR"   class="calcium channel" />
+      <position element="q21" coords="0.0 0.7 x-fixed"/>
+      <position element="q22" coords="0.0 0.7 x-fixed"/>
+
+-->
+
+<!--
+ATP box
+      <position element="q24" coords="0.0 0.7 x-fixed"/>
+      <position element="q25" coords="1.0 1.0 x-fixed"/>
+      <position element="q26" coords="1.0 0.0 x-fixed"/>
+-->
+
+</cell-diagram>

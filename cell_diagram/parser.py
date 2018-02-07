@@ -1,3 +1,5 @@
+#------------------------------------------------------------------------------
+
 import logging
 
 from lxml import etree
@@ -8,8 +10,9 @@ import tinycss2.color3
 
 #------------------------------------------------------------------------------
 
-from . import CellDiagram, Compartment, Quantity, Transporter
-from . import BondGraph, Flow, Flux, Potential
+from .diagram import Diagram, Compartment, Quantity, Transporter
+from .bondgraph import BondGraph, Flow, Flux, Potential
+from .geometry import Geometry, Box, Item
 
 #------------------------------------------------------------------------------
 
@@ -38,10 +41,19 @@ class StyleSheet(cssselect2.Matcher):
         for component in declaration.value:
             if declaration.lower_name in ['color', 'colour']:
                 return tinycss2.color3.parse_color(component)
+            # special parsing for position, width, height??
             elif component.type == 'function':
                 return component.name + ' (' + tinycss2.serialize(component.arguments) + ')'
             elif component.type[3:] == 'block':
                 return component.type[0] + tinycss2.serialize(component.content) + component.type[1]
+            elif component.type == 'ident':
+                values.append(component.lower_value)
+            elif component.type == 'number':
+                pass # value/is_integer/int_value
+            elif component.type == 'percentage':
+                pass # value/is_integer/int_value
+            elif component.type == 'dimension':
+                pass # value/is_integer/int_value, unit/lower_unit
             else:
                 values.append(component.value)
         return ''.join(values).strip()
@@ -111,9 +123,9 @@ class Element(object):
 #------------------------------------------------------------------------------
 
 class ElementChildren(object):
-    def __init__(self, root, stylesheets):
+    def __init__(self, root, stylesheets=None):
         self._root_element = root.element
-        self._stylesheets = stylesheets
+        self._stylesheets = stylesheets if stylesheets else []
 
     def __iter__(self):
         for e in self._root_element.iter_children():
@@ -176,6 +188,15 @@ class Parser(object):
                 raise SyntaxError
         bond_graph.add_flow(flow)
 
+    def parse_geometry(self, element, geometry):
+        for e in ElementChildren(element):
+            if e.tag == CellDL_namespace('box'):
+                pass
+            elif e.tag == CellDL_namespace('item'):
+                pass
+            else:
+                raise SyntaxError
+
     def parse(self, file, stylesheet=None):
         logging.debug('PARSE: %s', file)
         if stylesheet is not None:
@@ -183,7 +204,7 @@ class Parser(object):
 
         xml_root = etree.parse(file)
         root_element = Element(cssselect2.ElementWrapper.from_xml_root(xml_root), self._stylesheets)
-        if root_element.tag != CellDL_namespace('diagram'): raise SyntaxError()
+        if root_element.tag != CellDL_namespace('cell-diagram'): raise SyntaxError()
 
         # First load all stylesheets
         for e in ElementChildren(root_element, self._stylesheets):
@@ -193,20 +214,24 @@ class Parser(object):
                 else:
                     self._stylesheets.append(StyleSheet(e.text))
 
-        cell_diagram = None
+        diagram = None
         bond_graph = None
+        geometry = None
         for e in ElementChildren(root_element, self._stylesheets):
-            if cell_diagram is None and e.tag == CellDL_namespace('cell-diagram'):
-                cell_diagram = CellDiagram(style=e.style, **e.attributes)
+            if diagram is None and e.tag == CellDL_namespace('diagram'):
+                diagram = Diagram(style=e.style, **e.attributes)
                 self.parse_container(e, cell_diagram)
             elif bond_graph is None and e.tag == CellDL_namespace('bond-graph'):
                 bond_graph = BondGraph(style=e.style, **e.attributes)
                 self.parse_bond_graph(e, bond_graph)
+            elif e.tag == CellDL_namespace('geometry'):
+                geometry = Geometry(**e.attributes)
+                self.parse_geometry(e, geometry)
             elif e.tag == CellDL_namespace('style'):
                 pass
             else:
                 raise SyntaxError
         logging.debug('')
-        return (cell_diagram, bond_graph)
+        return (diagram, bond_graph, geometry)
 
 #------------------------------------------------------------------------------

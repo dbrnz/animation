@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<diagram xmlns="http://www.cellml.org/celldl/1.0#">
+
+    <compartment id="mitochrondion">
+       <transporters>
+            <transporter id="NCE"  label="NCE"  class="sodium calcium exchanger"/>
+            <transporter id="NHE"  label="NHE"  class="sodium hydrogen exchanger"/>
+            <transporter id="KHE"  label="KHE"  class="potassium hydrogen exchanger"/>
+            <transporter id="CI"   label="CI"   class="hydrogen exchanger"/>
+            <transporter id="CIII" label="CIII" class="hydrogen exchanger"/>
+            <transporter id="CIV"  label="CIV"  class="hydrogen exchanger"/>
+            <transporter id="CII"  label="CII"  class="hydrogen exchanger"/>
+        </transporters>
+        <quantity id="q23" class="calcium"   label="$\text{q}_23^{[\text{Ca}^{2+}]_\text{i}}$"/>
+        <quantity id="q3"  class="sodium"    label="$\text{q}_3^{[\text{Na}^+]_\text{i}}$"/>
+        <quantity id="q6"  class="potassium" label="$\text{q}_6^{[\text{K}^+]_\text{i}}$"/>
+        <quantity id="q15" class="hydrogen"  label="$\text{q}_15^{[\text{H}^+]_\text{i}}$"/>
+    </compartment>
+
+    <geometry>
+        <box ref="mitochrondion" bounds="100 66" pos="">
+            <border>
+                <top>
+                    <item ref="NCE"  pos="15"/>
+                    <item ref="NHE"  pos="25"/>
+                    <item ref="KHE"  pos="35"/>
+                    <item ref="CI"   pos="45"/>
+                    <item ref="CII"  pos="55"/>
+                    <item ref="CIII" pos="65"/>
+                    <item ref="CIV"  pos="75"/>
+                </top>
+            </border>
+            <item ref="q3"/>
+            <item ref="q6"/>
+            <item ref="q15"/>
+            <item ref="q23"/>
+        </box>
+    </geometry>
+
+</diagram>
