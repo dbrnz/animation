@@ -22,8 +22,8 @@ from collections import OrderedDict
 
 #------------------------------------------------------------------------------
 
+from . import diagram as dia
 from . import Element
-from .diagram import Quantity
 
 #------------------------------------------------------------------------------
 
@@ -95,6 +95,6 @@ class Potential(Element):
 
     @property
     def quantity(self):
-        return Quantity.find(self._quantity_id)
+        return dia.Quantity.find(self._quantity_id)
 
 #------------------------------------------------------------------------------

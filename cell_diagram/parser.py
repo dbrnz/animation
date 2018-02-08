@@ -30,8 +30,8 @@ import tinycss2.color3
 
 from . import SyntaxError
 
-from .diagram import Diagram, Compartment, Quantity, Transporter
-from .bondgraph import BondGraph, Flow, Flux, Potential
+from . import bondgraph as bg
+from . import diagram as dia
 from . import geometry as geo
 
 #------------------------------------------------------------------------------
@@ -162,23 +162,23 @@ class Parser(object):
             elif e.tag == CellDL_namespace('quantity'):
                 self.parse_quantity(e, container)
             elif (e.tag == CellDL_namespace('transporters')
-              and isinstance(container, Compartment)):
+              and isinstance(container, dia.Compartment)):
                 self.parse_transporters(e, container)
             else:
                 raise SyntaxError
 
     def parse_compartment(self, element, container=None):
-        compartment = Compartment(style=element.style, **element.attributes)
+        compartment = dia.Compartment(style=element.style, **element.attributes)
         if container: container.add_component(compartment)
         self.parse_container(element, compartment)
 
     def parse_quantity(self, element, container):
-        container.add_component(Quantity(style=element.style, **element.attributes))
+        container.add_component(dia.Quantity(style=element.style, **element.attributes))
 
     def parse_transporters(self, element, compartment):
         for e in ElementChildren(element, self._stylesheets):
             if e.tag == CellDL_namespace('transporter'):
-                compartment.add_transporter(Transporter(style=e.style, **e.attributes))
+                compartment.add_transporter(dia.Transporter(style=e.style, **e.attributes))
             else:
                 raise SyntaxError
 
@@ -192,13 +192,13 @@ class Parser(object):
                 raise SyntaxError
 
     def parse_potential(self, element, bond_graph):
-        bond_graph.add_potential(Potential(style=element.style, **element.attributes))
+        bond_graph.add_potential(bg.Potential(style=element.style, **element.attributes))
 
     def parse_flow(self, element, bond_graph):
-        flow = Flow(style=element.style, **element.attributes)
+        flow = bg.Flow(style=element.style, **element.attributes)
         for e in ElementChildren(element, self._stylesheets):
             if e.tag == CellDL_namespace('flux'):
-                flow.add_flux(Flux(style=e.style, **e.attributes))
+                flow.add_flux(bg.Flux(style=e.style, **e.attributes))
             else:
                 raise SyntaxError
         bond_graph.add_flow(flow)
@@ -252,10 +252,10 @@ class Parser(object):
         geometry = None
         for e in ElementChildren(root_element, self._stylesheets):
             if diagram is None and e.tag == CellDL_namespace('diagram'):
-                diagram = Diagram(style=e.style, **e.attributes)
+                diagram = dia.Diagram(style=e.style, **e.attributes)
                 self.parse_container(e, diagram)
             elif bond_graph is None and e.tag == CellDL_namespace('bond-graph'):
-                bond_graph = BondGraph(style=e.style, **e.attributes)
+                bond_graph = bg.BondGraph(style=e.style, **e.attributes)
                 self.parse_bond_graph(e, bond_graph)
             elif e.tag == CellDL_namespace('geometry'):
                 geometry = geo.Diagram(**e.attributes)
