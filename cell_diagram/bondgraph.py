@@ -71,6 +71,31 @@ class BondGraph(Element):
             if flow.transporter:
                 flow.set_position(relative_position(flow.transporter.position, pos, FLOW_OFFSET))
 
+    def svg(self):
+        svg = [ ]
+        for p, q in self.potentials.items():
+            svg.append('<circle r="5.0" stroke="#ff0000" stroke-width="1.0" fill="#80ffff" opacity="0.6"'
+                     + ' cx="{cx:g}" cy="{cy:g}"/>'.format(cx=p.position[0], cy=p.position[1]))
+            svg.append('<path fill="#eeeeee" stroke="#222222" stroke-width="4.0" opacity="0.6"'
+                     + ' d="M{start_x:g},{start_y:g} L{end_x:g},{end_y:g}"/>'.format(start_x=p.position[0], start_y=p.position[1],
+                                                                                     end_x=q.position[0], end_y=q.position[1]))
+        '''# Link potentials via flows and fluxes
+        for flow in graph.flows:
+            pos = flow.style.get('pos', 'above')
+            if flow.transporter:
+                flow.transporter.position
+                flow.set_position()
+
+            g.add_node(flow.id, color='blue')
+            labels[flow.id] = flow.id
+            for flux in flow.fluxes:
+                g.add_edge(flux.from_potential, flow.id)
+                to_potentials = flux.to_potential.split()
+                weighting = 1.0/float(len(to_potentials))
+                for p in to_potentials: g.add_edge(flow.id, p, weight=weighting)
+        '''
+        return svg
+
 #------------------------------------------------------------------------------
 
 class Flow(Element):
