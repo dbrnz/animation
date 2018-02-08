@@ -308,12 +308,13 @@ class Diagram(Box):
         super().__init__(**kwds)
 
     def svg(self, width=None, height=None):
-        if width is None: width=self._pixel_size[0].length
-        if height is None: height=self._pixel_size[1].length
+        if width is None: width = self._pixel_size[0].length
+        if height is None: height = self._pixel_size[1].length
         svg = ['<?xml version="1.0" encoding="UTF-8"?>',
-               '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 {width:g} {height:g}" version="1.1">'
-               .format(width=width, height=height)]
-        svg.extend(super().svg(LengthTuple((Length(0, 'px'), Length(0, 'px'))), LengthTuple((Length(width, 'px'), Length(height, 'px')))))
+               '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"'
+             + ' viewBox="0 0 {width:g} {height:g}">'.format(width=width, height=height)]
+        svg.extend(super().svg(LengthTuple((Length(0, 'px'), Length(0, 'px'))),
+                               LengthTuple((Length(width, 'px'), Length(height, 'px')))))
         svg.append('</svg>')
         return '\n'.join(svg)
 
