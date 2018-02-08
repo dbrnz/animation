@@ -328,10 +328,10 @@ stylesheet might specify scale, position, size??
                         <item ref="m-CIV"  pos="75%"/>
                     </top>
                 </boundary>
-                <item ref="q3"  pos="12% 48%"/>
-                <item ref="q6"  pos="24% 48%"/>
-                <item ref="q15" pos="36% 48%"/>
-                <item ref="q23" pos="75% 27%"/>
+                <item ref="q23" pos="12% 48%"/>
+                <item ref="q3"  pos="24% 48%"/>
+                <item ref="q6"  pos="36% 48%"/>
+                <item ref="q15" pos="75% 27%"/>
             </box>
 
             <box ref="SR" pos="13% 70%" size="25% 25%">
@@ -341,7 +341,7 @@ stylesheet might specify scale, position, size??
                         <item ref="SERCA" pos="20%"/>
                     </top>
                     <left>
-                        <item ref="RyR"  pos="15%"/>
+                        <item ref="RyR"  pos="30%"/>
                     </left>
                 </boundary>
                 <item ref="q21"  pos="20% 75%"/>
