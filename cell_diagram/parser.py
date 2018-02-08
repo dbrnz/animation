@@ -14,7 +14,7 @@ from . import SyntaxError
 
 from .diagram import Diagram, Compartment, Quantity, Transporter
 from .bondgraph import BondGraph, Flow, Flux, Potential
-from .geometry import Geometry, Box, Item
+from . import geometry as geo
 
 #------------------------------------------------------------------------------
 
@@ -186,31 +186,31 @@ class Parser(object):
         bond_graph.add_flow(flow)
 
     def parse_geometry(self, element, geometry):
-        # <geometry> doesn't have a border, <box> does
-        self.parse_box(element, geometry, border=False)
+        # <geometry> doesn't have a boundary, <box> does
+        return self.parse_box(element, geometry, boundary=False)
 
-    def parse_box(self, element, container, border=True):
+    def parse_box(self, element, container=None, boundary=True):
+        box = geo.Box(container=container, **element.attributes)
         for e in ElementChildren(element):
-            if   border and e.tag == CellDL_namespace('border'):
-                self.parse_border(e, container)
+            if   boundary and e.tag == CellDL_namespace('boundary'):
+                self.parse_boundary(e, box)
             elif e.tag == CellDL_namespace('box'):
-                box = Box(**e.attributes)
                 self.parse_box(e, box)
-                container.add_box(box)
             elif e.tag == CellDL_namespace('item'):
-                container.add_item(Item(container, **e.attributes))
+                geo.Item(container=box, **e.attributes)
             else:
                 raise SyntaxError
+        return box
 
-    def parse_border(self, element, box):
+    def parse_boundary(self, element, box):
         for e in ElementChildren(element):
-            if   e.tag == CellDL_namespace('top'):    border = 'top'
-            elif e.tag == CellDL_namespace('left'):   border = 'left'
-            elif e.tag == CellDL_namespace('bottom'): border = 'bottom'
-            elif e.tag == CellDL_namespace('right'):  border = 'right'
+            if   e.tag == CellDL_namespace('top'):    boundary = 'top'
+            elif e.tag == CellDL_namespace('left'):   boundary = 'left'
+            elif e.tag == CellDL_namespace('bottom'): boundary = 'bottom'
+            elif e.tag == CellDL_namespace('right'):  boundary = 'right'
             else:                                     raise SyntaxError
             for item in ElementChildren(e):
-                box.add_item(Item(box, border=border, **e.attributes))
+                geo.Item(container=box, boundary=boundary, **item.attributes)
 
     def parse(self, file, stylesheet=None):
         logging.debug('PARSE: %s', file)
@@ -240,7 +240,7 @@ class Parser(object):
                 bond_graph = BondGraph(style=e.style, **e.attributes)
                 self.parse_bond_graph(e, bond_graph)
             elif e.tag == CellDL_namespace('geometry'):
-                geometry = Geometry(**e.attributes)
+                geometry = geo.Diagram(**e.attributes)
                 self.parse_geometry(e, geometry)
             elif e.tag == CellDL_namespace('style'):
                 pass

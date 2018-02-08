@@ -73,11 +73,18 @@ if __name__ == '__main__':
 #    diagram, graph = parse('cell_diagram.xml', stylesheet)
 ##  diagram = parse('bond_graph.xml')
 
-    diagram, graph = parse('atp.xml')
+    diagram, graph, geometry = parse('cell_diagram.xml') # atp.xml')
 
-    bond_graph(graph)
+    print(geometry.svg())
+#    bond_graph(graph, layout)
+
+#    g.vs['x'] = [0,  2,   2,     0,    2,   2,   1]
+#    g.vs['y'] = [0, -0.4, 0.4,  -0.3, -0.7, 0.7, 0]
+#    g.vs['size'] = 40
+#    layout = g.layout("auto")
 #    print(g)
 #    for l in layout:
 #        print(l)
+##    igraph.plot(g, layout=layout, keep_aspect_ratio=True, margin=50) ##, target='atp.svg')
 ##  bbox=(500, 400),
 #------------------------------------------------------------------------------

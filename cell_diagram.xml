@@ -252,82 +252,94 @@
 stylesheet might specify scale, position, size??
 -->
 
-    <geometry size="1040 685" units="percentage"> <!-- or "fractional" or "bounding-box" -->
-        <box ref="cell" pos="11 25" size="88 74">
+    <geometry size="1040px 685px">
+        <box ref="cell" pos="11% 25%" size="88% 74%">
             <!-- Cell membrane transporters -->
-            <border>
+            <boundary>
                 <top>
-                    <item ref="Na"   pos="9"/>
-                    <item ref="Na-b" pos="13"/>
-                    <item ref="pNa"  pos="17"/>
-                    <item ref="NKE"  pos="24"/>
-                    <item ref="K1"   pos="29"/>
-                    <item ref="Kr"   pos="33"/>
-                    <item ref="Ks"   pos="37"/>
-                    <item ref="Katp" pos="41"/>
-                    <item ref="NBC"  pos="46"/>
-                    <item ref="CHE"  pos="51"/>
-                    <item ref="AE"   pos="56"/>
-                    <item ref="Cl"   pos="61"/>
-                    <item ref="NHE"  pos="69"/>
+                    <item ref="Na"   pos="9%"/>
+                    <item ref="Na-b" pos="13%"/>
+                    <item ref="pNa"  pos="17%"/>
+                    <item ref="NKE"  pos="24%"/>
+                    <item ref="K1"   pos="29%"/>
+                    <item ref="Kr"   pos="33%"/>
+                    <item ref="Ks"   pos="37%"/>
+                    <item ref="Katp" pos="41%"/>
+                    <item ref="NBC"  pos="46%"/>
+                    <item ref="CHE"  pos="51%"/>
+                    <item ref="AE"   pos="56%"/>
+                    <item ref="Cl"   pos="61%"/>
+                    <item ref="NHE"  pos="69%"/>
                 </top>
                 <left>
-                    <item ref="NCE"  pos="14"/>
-                    <item ref="pCa"  pos="31"/>
-                    <item ref="Ca-b" pos="37"/>
-                    <item ref="Ca-t" pos="43"/>
-                    <item ref="CaL"  pos="75"/>
+                    <item ref="NCE"  pos="14%"/>
+                    <item ref="pCa"  pos="31%"/>
+                    <item ref="Ca-b" pos="37%"/>
+                    <item ref="Ca-t" pos="43%"/>
+                    <item ref="CaL"  pos="75%"/>
                 </left>
-            </border>
+            </boundary>
 
-            <item ref="q1"  pos="13 -25"/>
-            <item ref="q4"  pos="35 -25"/>
-            <item ref="q7"  pos="49 -25"/>
-            <item ref="q9"  pos="58 -25"/>
-            <item ref="q11" pos="61 -25"/>
-            <item ref="q13" pos="77 -16"/>
-            <item ref="q16" pos="-9  28"/>
-            <item ref="q2"  pos="13 20"/>
-            <item ref="q5"  pos="35 20"/>
-            <item ref="q8"  pos="49 20"/>
-            <item ref="q10" pos="58 20"/>
-            <item ref="q12" pos="61 20"/>
-            <item ref="q14" pos="77 29"/>
-            <item ref="q17" pos="10 28"/>
-            <item ref="q18" pos=" 8 90"/>
-            <item ref="q19" pos="35 42"/>
-            <item ref="q20" pos="35 50"/>
+            <item ref="q1"  pos="13% -25%"/>
+            <item ref="q4"  pos="35% -25%"/>
+            <item ref="q7"  pos="49% -25%"/>
+            <item ref="q9"  pos="58% -25%"/>
+            <item ref="q11" pos="61% -25%"/>
+            <item ref="q13" pos="77% -16%"/>
+            <item ref="q16" pos="-9%  28%"/>
+            <item ref="q2"  pos="13%  20%"/>
+            <item ref="q5"  pos="35%  20%"/>
+            <item ref="q8"  pos="49%  20%"/>
+            <item ref="q10" pos="58%  20%"/>
+            <item ref="q12" pos="61%  20%"/>
+            <item ref="q14" pos="77%  29%"/>
+            <item ref="q17" pos="10%  28%"/>
+            <item ref="q18" pos=" 8%  90%"/>
+            <item ref="q19" pos="35%  42%"/>
+            <item ref="q20" pos="35%  50%"/>
 
-            <box ref="mitochrondion" pos="46 50" size="37 27">
+            <box ref="mitochrondion" pos="46% 50%" size="37% 27%">
                 <!-- Mitochrondion transporters -->
-                <border>
+                <boundary>
                     <top>
-                        <item ref="m-NCE"  pos="15"/>
-                        <item ref="m-NHE"  pos="25"/>
-                        <item ref="m-KHE"  pos="35"/>
-                        <item ref="m-CI"   pos="45"/>
-                        <item ref="m-CII"  pos="55"/>
-                        <item ref="m-CIII" pos="65"/>
-                        <item ref="m-CIV"  pos="75"/>
+                        <item ref="m-NCE"  pos="15%"/>
+                        <item ref="m-NHE"  pos="25%"/>
+                        <item ref="m-KHE"  pos="35%"/>
+                        <item ref="m-CI"   pos="45%"/>
+                        <item ref="m-CII"  pos="55%"/>
+                        <item ref="m-CIII" pos="65%"/>
+                        <item ref="m-CIV"  pos="75%"/>
                     </top>
-                </border>
-                <item ref="q3"  pos="12 48"/>
-                <item ref="q6"  pos="24 48"/>
-                <item ref="q15" pos="36 48"/>
-                <item ref="q23" pos="75 27"/>
+                </boundary>
+                <item ref="q3"  pos="12% 48%"/>
+                <item ref="q6"  pos="24% 48%"/>
+                <item ref="q15" pos="36% 48%"/>
+                <item ref="q23" pos="75% 27%"/>
+            </box>
+
+            <box ref="SR" pos="13% 70%" size="25% 25%">
+                <!-- Sarcoplasmic reticulum transporters -->
+                <boundary>
+                    <top>
+                        <item ref="SERCA" pos="20%"/>
+                    </top>
+                    <left>
+                        <item ref="RyR"  pos="15%"/>
+                    </left>
+                </boundary>
+                <item ref="q21"  pos="20% 75%"/>
+                <item ref="q22"  pos="70% 75%"/>
+            </box>
+
+            <box ref="atp" pos="85% 5%" size="12% 30%">
+                <item ref="q24"  pos="15% 15%"/>
+                <item ref="q25"  pos="85% 10%"/>
+                <item ref="q26"  pos="85% 90%"/>
             </box>
 
         </box>
     </geometry>
 
-
-            <!-- Sarcoplasmic reticulum transporters -->
-<!--            <element ref="SERCA" class="metabolic calcium exchanger"/>
-            <element ref="RyR"   class="calcium channel" />
-      <position element="q21" coords="0.0 0.7 x-fixed"/>
-      <position element="q22" coords="0.0 0.7 x-fixed"/>
-
--->
 
 <!--
 ATP box
