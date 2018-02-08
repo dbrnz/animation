@@ -281,7 +281,7 @@ class Box(GeometricObject):
     def add_item(self, item):
         self._items.append(item)
 
-    def svg(self, container_offset, container_size):
+    def layout_diagram_elements(self, container_offset, container_size):
         top_left = container_offset + container_size * self.position
         size = container_size * self.size
         bottom_right = top_left + size
@@ -292,14 +292,10 @@ class Box(GeometricObject):
             else:
                 element.set_position((top_left[0].length, top_left[1].length))
                 element.set_size((size[0].length, size[1].length))
-        svg = ['<path fill="#eeeeee" stroke="#222222" stroke-width="2.0" opacity="0.6"'
-             + ' d="M{left:g},{top:g} L{right:g},{top:g} L{right:g},{bottom:g} L{left:g},{bottom:g} L{left},{top:g} z"/>'
-                .format(left=top_left[0].length, right=bottom_right[0].length, top=top_left[1].length, bottom=bottom_right[1].length)]
         for box in self._boxes:
-            svg.extend(box.svg(top_left, size))
+            box.layout_diagram_elements(top_left, size)
         for item in self._items:
-            svg.append(item.svg(top_left, size))
-        return svg
+            item.layout_diagram_elements(top_left, size)
 
 #------------------------------------------------------------------------------
 
@@ -307,16 +303,11 @@ class Diagram(Box):
     def __init__(self, **kwds):
         super().__init__(**kwds)
 
-    def svg(self, width=None, height=None):
+    def layout_diagram_elements(self, width=None, height=None):
         if width is None: width = self._pixel_size[0].length
         if height is None: height = self._pixel_size[1].length
-        svg = ['<?xml version="1.0" encoding="UTF-8"?>',
-               '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"'
-             + ' viewBox="0 0 {width:g} {height:g}">'.format(width=width, height=height)]
-        svg.extend(super().svg(LengthTuple((Length(0, 'px'), Length(0, 'px'))),
-                               LengthTuple((Length(width, 'px'), Length(height, 'px')))))
-        svg.append('</svg>')
-        return '\n'.join(svg)
+        super().layout_diagram_elements(LengthTuple((Length(0, 'px'), Length(0, 'px'))),
+                                        LengthTuple((Length(width, 'px'), Length(height, 'px'))))
 
 #------------------------------------------------------------------------------
 
@@ -338,7 +329,7 @@ class Item(GeometricObject):
         if container:
             container.add_item(self)
 
-    def svg(self, container_offset, container_size):
+    def layout_diagram_elements(self, container_offset, container_size):
         offset = container_offset + container_size * self.position
         pos = (offset[0].length, offset[1].length)
         if self._ref is not None:
@@ -347,7 +338,5 @@ class Item(GeometricObject):
                 raise KeyError("Unknown diagram element '{}".format(self._ref))
             else:
                 element.set_position(pos)
-        return ('<circle r="3.0" stroke="#ff0000" stroke-width="1.0" fill="#80ffff" opacity="0.6"'
-              + ' cx="{cx:g}" cy="{cy:g}"/>'.format(cx=pos[0], cy=pos[1]))
 
 #------------------------------------------------------------------------------

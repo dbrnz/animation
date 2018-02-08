@@ -121,8 +121,6 @@
         <potential id="u12" quantity="q12"/>
         <potential id="u13" quantity="q13"/>
         <potential id="u14" quantity="q14"/>
-
-<!--
         <potential id="u15" quantity="q15"/>
         <potential id="u16" quantity="q16"/>
         <potential id="u17" quantity="q17"/>
@@ -135,7 +133,6 @@
         <potential id="u24" quantity="q24"/>
         <potential id="u25" quantity="q25"/>
         <potential id="u26" quantity="q26"/>
--->
 
         <flow id="v1" transporter="Na">
             <flux from="u1" to="u2"/>
@@ -159,7 +156,7 @@
             <flux from="u14" to="u13"/>
             <flux from="u1" to="u2"/>
         </flow>
-<!--
+
         <flow id="v5" transporter="NCE">
             <flux from="u1" to="u2" count="3"/>
             <flux from="u17" to="u16"/>
@@ -173,7 +170,7 @@
             <flux from="u3" to="u2"/>
             <flux from="u14" to="u15"/>
         </flow>
--->
+
         <flow id="v10" transporter="K1">
             <flux from="u4" to="u5"/>
         </flow>
@@ -202,7 +199,7 @@
             <flux from="u11" to="u12"/>
             <flux from="u10" to="u9"/>
         </flow>
-<!--
+
         <flow id="v15">
             <flux from="u5" to="u6"/>
         </flow>
@@ -225,7 +222,7 @@
         <flow id="v24">
             <flux from="u18" to="u17"/>
         </flow>
-        <flow id="v25" class="dashed">  <! - what does a dashed path signify?? ->
+        <flow id="v25" class="dashed">  <!-- what does a dashed path signify?? -->
             <flux from="u17" to="u19"/>
         </flow>
         <flow id="v26" class="dashed">
@@ -240,7 +237,9 @@
         <flow id="v29">
             <flux from="u23" to="u17"/>
         </flow>
-        <! - flow v30 ?? ->
+
+        <!-- flow v30 ?? -->
+
         <flow id="v31" transporter="m-CI">
             <flux from="u14" to="u15"/>
         </flow>
@@ -256,18 +255,16 @@
         <flow id="v35">
             <flux from="u24" to="u25 u26"/>
         </flow>
--->
     </bond-graph>
+
+
 <!--
-    <group position="" spacing=""/> ???
 
     All coordinates are wrt the object containing the element.
 
     Origin is at top left corner of containing object's bounding box.
 
     Bounding box has size (bounds-X bounds-Y).
-
-
 
 stylesheet might specify scale, position, size??
 -->
@@ -360,12 +357,65 @@ stylesheet might specify scale, position, size??
         </box>
     </geometry>
 
+    <style>
+        /* Potentials wrt quantities */
+        #u1 { pos: below ; }
+        #u2 { pos: above ; }
+        #u3 { pos: above ; }
+        #u4 { pos: below ; }
+        #u5 { pos: above ; }
+        #u6 { pos: above ; }
+        #u7 { pos: below ; }
+        #u8 { pos: above ; }
+        #u9 { pos: below ; }
+        #u10 { pos: above ; }
+        #u11 { pos: below ; }
+        #u12 { pos: above ; }
+        #u13 { pos: left ; }
+        #u14 { pos: left ; }
+        #u15 { pos: left ; }
+        #u16 { pos: below ; }
+        #u17 { pos: below ; }
+        #u18 { pos: above ; }
+        #u19 { pos: left ; }
+        #u20 { pos: left ; }
+        #u21 { pos: above ; }
+        #u22 { pos: above ; }
+        #u23 { pos: above ; }
+        #u24 { pos: below ; }
+        #u25 { pos: below ; }
+        #u26 { pos: above ; }
 
-<!--
-ATP box
-      <position element="q24" coords="0.0 0.7 x-fixed"/>
-      <position element="q25" coords="1.0 1.0 x-fixed"/>
-      <position element="q26" coords="1.0 0.0 x-fixed"/>
--->
+        /* Flows wrt transporters */
+        #v1 { pos: above ; }
+        #v2 { pos: above ; }
+        #v3 { pos: above ; }
+        #v4 { pos: above ; }
+        #v5 { pos: left ; }
+        #v6 { pos: above ; }
+        #v7 { pos: above ; }
+        #v8 { pos: above ; }
+        #v9 { pos: above ; }
+        #v10 { pos: above ; }
+        #v11 { pos: above ; }
+        #v12 { pos: above ; }
+        #v13 { pos: above ; }
+        #v14 { pos: above ; }
+        #v15 { pos: above ; }
+        #v16 { pos: above ; }
+        #v17 { pos: above ; }
+        #v18 { pos: above ; }
+        #v19 { pos: left ; }
+        #v20 { pos: left ; }
+        #v21 { pos: left ; }
+        #v22 { pos: left ; }
+        #v23 { pos: right ; }
+        #v27 { pos: above ; }
+        #v29 { pos: above ; }
+        #v31 { pos: above ; }
+        #v32 { pos: above ; }
+        #v33 { pos: above ; }
+        #v34 { pos: above ; }
+    </style>
 
 </cell-diagram>

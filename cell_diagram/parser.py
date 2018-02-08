@@ -265,6 +265,14 @@ class Parser(object):
             else:
                 raise SyntaxError
         logging.debug('')
-        return (diagram, bond_graph, geometry)
+        if geometry:
+            width = diagram.style.get('width')
+            height = diagram.style.get('height')
+            geometry.layout_diagram_elements(width=(float(width) if width else None),
+                                             height=(float(height) if height else None))
+        if bond_graph:
+            bond_graph.position_elements()
+
+        return (diagram, bond_graph)
 
 #------------------------------------------------------------------------------

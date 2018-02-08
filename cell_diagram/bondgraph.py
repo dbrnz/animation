@@ -27,6 +27,17 @@ from . import Element
 
 #------------------------------------------------------------------------------
 
+FLOW_OFFSET      = 15  # pixels   ### From stylesheet??
+POTENTIAL_OFFSET = 20  # pixels
+
+def relative_position(position, direction, offset):
+    if   direction == 'left': return  (position[0] - offset, position[1])
+    elif direction == 'right': return (position[0] + offset, position[1])
+    elif direction == 'above': return (position[0], position[1] - offset)
+    elif direction == 'below': return (position[0], position[1] + offset)
+
+#------------------------------------------------------------------------------
+
 class BondGraph(Element):
     def __init__(self, **kwds):
         self._flows = []
@@ -46,17 +57,35 @@ class BondGraph(Element):
     def add_potential(self, potential):
         self._potentials[potential] = potential.quantity
 
+    def position_elements(self):
+        ###self.style.get('flow-offset')
+        ###self.style.get('potential-offset')
+
+        # Position potentials wrt corresponding quantities
+        for p, q in self.potentials.items():
+            p.set_position(relative_position(q.position, p.style.get('pos', 'left'), POTENTIAL_OFFSET))
+
+        # Position flows wrt their transporters
+        for flow in self.flows:
+            pos = flow.style.get('pos', 'above')
+            if flow.transporter:
+                flow.set_position(relative_position(flow.transporter.position, pos, FLOW_OFFSET))
+
 #------------------------------------------------------------------------------
 
 class Flow(Element):
     def __init__(self, transporter=None, **kwds):
         super().__init__(**kwds)
         self._fluxes = []
-        self._transporter = transporter
+        self._transporter_id = transporter
 
     @property
     def fluxes(self):
         return self._fluxes
+
+    @property
+    def transporter(self):
+        return dia.Transporter.find(self._transporter_id)
 
     def add_flux(self, flux):
         self._fluxes.append(flux)
