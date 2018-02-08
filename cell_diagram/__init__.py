@@ -34,7 +34,8 @@ class Element(object):
         if id is not None:
             Element._elements[id] = self
         self._style = style
-        self._geometry = None
+        self._position = None
+        self._size = None
 
     @property
     def id(self):
@@ -49,15 +50,26 @@ class Element(object):
         return self._style
 
     @classmethod
+    def reset(cls):
+        Element._elements.clear()
+
+    @classmethod
     def find(cls, id):
         e = Element._elements.get(id)
         return e if e is not None and isinstance(e, cls) else None
 
-    def set_geometry(self, geometry):
-        self._geometry = geometry
+    def set_position(self, position):
+        self._position = position
+
+    def set_size(self, size):
+        self._size = size
 
     @property
-    def geometry(self):
-        return self._geometry
+    def position(self):
+        return self._position
+
+    @property
+    def size(self):
+        return self._size
 
 #------------------------------------------------------------------------------

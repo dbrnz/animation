@@ -18,6 +18,7 @@
 #
 #------------------------------------------------------------------------------
 
+from . import diagram as dia
 from . import SyntaxError
 
 #------------------------------------------------------------------------------
@@ -284,6 +285,13 @@ class Box(GeometricObject):
         top_left = container_offset + container_size * self.position
         size = container_size * self.size
         bottom_right = top_left + size
+        if self._ref is not None:
+            element = dia.Element.find(self._ref)
+            if element is None:
+                raise KeyError("Unknown diagram element '{}".format(self._ref))
+            else:
+                element.set_position((top_left[0].length, top_left[1].length))
+                element.set_size((size[0].length, size[1].length))
         svg = ['<path fill="#eeeeee" stroke="#222222" stroke-width="2.0" opacity="0.6"'
              + ' d="M{left:g},{top:g} L{right:g},{top:g} L{right:g},{bottom:g} L{left:g},{bottom:g} L{left},{top:g} z"/>'
                 .format(left=top_left[0].length, right=bottom_right[0].length, top=top_left[1].length, bottom=bottom_right[1].length)]
@@ -331,7 +339,14 @@ class Item(GeometricObject):
 
     def svg(self, container_offset, container_size):
         offset = container_offset + container_size * self.position
-        return ('<circle cx="{cx:g}" cy="{cy:g}" r="3.0" stroke="#ff0000" stroke-width="1.0" fill="#80ffff" opacity="0.6"/>'
-                .format(cx=offset[0].length, cy=offset[1].length))
+        pos = (offset[0].length, offset[1].length)
+        if self._ref is not None:
+            element = dia.Element.find(self._ref)
+            if element is None:
+                raise KeyError("Unknown diagram element '{}".format(self._ref))
+            else:
+                element.set_position(pos)
+        return ('<circle r="3.0" stroke="#ff0000" stroke-width="1.0" fill="#80ffff" opacity="0.6"'
+              + ' cx="{cx:g}" cy="{cy:g}"/>'.format(cx=pos[0], cy=pos[1]))
 
 #------------------------------------------------------------------------------
