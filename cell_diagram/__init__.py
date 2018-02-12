@@ -72,4 +72,19 @@ class Element(object):
     def size(self):
         return self._size
 
+    def id_class(self):
+        s = []
+        if self._id is not None: s.append(' id="{}"'.format(self._id))
+        if self._class is not None: s.append(' class="{}"'.format(self._class))
+        return ''.join(s)
+
+    def svg(self, stroke='none', fill='#cccccc'):
+        svg = ['<g{}>'.format(self.id_class())]
+        if self._position is not None:
+            (x, y) = self._position
+            svg.append('  <circle r="10.0" stroke="{stroke:s}" fill="{fill:s}" cx="{cx:g}" cy="{cy:g}"/>'.format(cx=x, cy=y, stroke=stroke, fill=fill))
+            svg.append('  <text x="{x:g}" y="{y:g}">{text:s}</text>'.format(x=x-9, y=y+6, text=self._id))
+        svg.append('</g>')
+        return svg
+
 #------------------------------------------------------------------------------

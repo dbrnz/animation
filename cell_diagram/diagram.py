@@ -35,7 +35,8 @@ class Container(Element):
         self._components.append(component)
 
     def svg(self):
-        svg = []
+        # Put everything into a group with id and class attributes
+        svg = ['<g{}>'.format(self.id_class())]
         if self.position:
             top_left = self.position
             bottom_right = (top_left[0] + self.size[0], top_left[1] + self.size[1])
@@ -44,6 +45,7 @@ class Container(Element):
                         .format(left=top_left[0], right=bottom_right[0], top=top_left[1], bottom=bottom_right[1]))
         for component in self._components:
             svg.extend(component.svg())
+        svg.append('</g>')
         return svg
 
 #------------------------------------------------------------------------------
@@ -53,16 +55,10 @@ class Diagram(Container):
         super().__init__(**kwds)
 
     def svg(self, bond_graph):
-        ##    width = diagram.style.get('width')
-        ##    height = diagram.style.get('height')
-        self.set_size((1040, 685))  ### TEMP ## MUST come from geometry...
-#        if width is None: width = self._pixel_size[0].length
-#        if height is None: height = self._pixel_size[1].length
-
-
         svg = ['<?xml version="1.0" encoding="UTF-8"?>',
                '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"'
              + ' viewBox="0 0 {width:g} {height:g}">'.format(width=self.size[0], height=self.size[1])]
+## Add <def>s for common shapes??
         svg.extend(super().svg())
         svg.extend(bond_graph.svg())
         svg.append('</svg>')
@@ -95,8 +91,7 @@ class Quantity(Element):
         super().__init__(**kwds)
 
     def svg(self):
-        return['<circle r="5.0" stroke="#ff0000" stroke-width="1.0" fill="#0000FF"'
-              + ' cx="{cx:g}" cy="{cy:g}"/>'.format(cx=self.position[0], cy=self.position[1])]
+        return super().svg(stroke='#ff0000', fill='#FF80ff')
 
 #------------------------------------------------------------------------------
 
@@ -105,8 +100,7 @@ class Transporter(Element):
         super().__init__(**kwds)
 
     def svg(self):
-        return['<circle r="5.0" stroke="#ffff00" stroke-width="1.0" fill="#800000" opacity="0.6"'
-              + ' cx="{cx:g}" cy="{cy:g}"/>'.format(cx=self.position[0], cy=self.position[1])]
+        return super().svg(stroke='#ffff00', fill='#80FFFF')
 
 #------------------------------------------------------------------------------
 

@@ -258,7 +258,7 @@ class Parser(object):
                 bond_graph = bg.BondGraph(style=e.style, **e.attributes)
                 self.parse_bond_graph(e, bond_graph)
             elif e.tag == CellDL_namespace('geometry'):
-                geometry = geo.Diagram(**e.attributes)
+                geometry = geo.Geometry(**e.attributes)
                 self.parse_geometry(e, geometry)
             elif e.tag == CellDL_namespace('style'):
                 pass
@@ -268,8 +268,7 @@ class Parser(object):
         if geometry:
             width = diagram.style.get('width')
             height = diagram.style.get('height')
-            geometry.layout_diagram_elements(width=(float(width) if width else None),
-                                             height=(float(height) if height else None))
+            geometry.layout_diagram_elements(diagram)
         if bond_graph:
             bond_graph.position_elements()
 

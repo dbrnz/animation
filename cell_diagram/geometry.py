@@ -299,13 +299,16 @@ class Box(GeometricObject):
 
 #------------------------------------------------------------------------------
 
-class Diagram(Box):
+class Geometry(Box):
     def __init__(self, **kwds):
         super().__init__(**kwds)
 
-    def layout_diagram_elements(self, width=None, height=None):
+    def layout_diagram_elements(self, diagram):
+        width = diagram.style.get('width')
         if width is None: width = self._pixel_size[0].length
+        height = diagram.style.get('height')
         if height is None: height = self._pixel_size[1].length
+        diagram.set_size((width, height))
         super().layout_diagram_elements(LengthTuple((Length(0, 'px'), Length(0, 'px'))),
                                         LengthTuple((Length(width, 'px'), Length(height, 'px'))))
 

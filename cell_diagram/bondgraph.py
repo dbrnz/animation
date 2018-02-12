@@ -27,8 +27,8 @@ from . import Element
 
 #------------------------------------------------------------------------------
 
-FLOW_OFFSET      = 15  # pixels   ### From stylesheet??
-POTENTIAL_OFFSET = 20  # pixels
+FLOW_OFFSET      = 30  # pixels   ### From stylesheet??
+POTENTIAL_OFFSET = 30  # pixels
 
 def relative_position(position, direction, offset):
     if   direction == 'left': return  (position[0] - offset, position[1])
@@ -70,30 +70,43 @@ class BondGraph(Element):
             pos = flow.style.get('pos', 'above')
             if flow.transporter:
                 flow.set_position(relative_position(flow.transporter.position, pos, FLOW_OFFSET))
+            else:
+                # Position flow at centroid of to/from potentials
+                from_position = [0.0, 0.0]
+                from_count = 0
+                to_position = [0.0, 0.0]
+                to_count = 0
+                for flux in flow.fluxes:
+                    from_position[0] += flux.from_potential.position[0]
+                    from_position[1] += flux.from_potential.position[1]
+                    from_count += 1
+                    for p in flux.to_potentials:
+                        to_position[0] += p.position[0]
+                        to_position[1] += p.position[1]
+                        to_count += 1
+                if from_count and to_count:
+                    flow.set_position(((from_position[0]/float(from_count) + to_position[0]/float(to_count))/2.0,
+                                       (from_position[1]/float(from_count) + to_position[1]/float(to_count))/2.0))
 
     def svg(self):
         svg = [ ]
         for p, q in self.potentials.items():
-            svg.append('<circle r="5.0" stroke="#ff0000" stroke-width="1.0" fill="#80ffff" opacity="0.6"'
-                     + ' cx="{cx:g}" cy="{cy:g}"/>'.format(cx=p.position[0], cy=p.position[1]))
+            (x, y) = p.position
+            (qx, qy) = q.position
             svg.append('<path fill="#eeeeee" stroke="#222222" stroke-width="4.0" opacity="0.6"'
-                     + ' d="M{start_x:g},{start_y:g} L{end_x:g},{end_y:g}"/>'.format(start_x=p.position[0], start_y=p.position[1],
-                                                                                     end_x=q.position[0], end_y=q.position[1]))
-        '''# Link potentials via flows and fluxes
-        for flow in graph.flows:
-            pos = flow.style.get('pos', 'above')
-            if flow.transporter:
-                flow.transporter.position
-                flow.set_position()
-
-            g.add_node(flow.id, color='blue')
-            labels[flow.id] = flow.id
+                     + ' d="M{start_x:g},{start_y:g} L{end_x:g},{end_y:g}"/>'
+                       .format(start_x=x, start_y=y, end_x=qx, end_y=qy))
+            svg.extend(p.svg(fill='#c0ffc0'))
+        # Link potentials via flows and fluxes
+        for flow in self.flows:
+            if flow.position is not None:
+                svg.extend(flow.svg(fill='#ff80ff'))
             for flux in flow.fluxes:
-                g.add_edge(flux.from_potential, flow.id)
-                to_potentials = flux.to_potential.split()
-                weighting = 1.0/float(len(to_potentials))
-                for p in to_potentials: g.add_edge(flow.id, p, weight=weighting)
-        '''
+                pass
+                # Path from flux.from_potential to flux.to_potentials
+                # via flow.transporter and flow nodes
+                # repeated flux.count times
+                #for p in to_potentials: g.add_edge(flow.id, p, weight=weighting)
         return svg
 
 #------------------------------------------------------------------------------
@@ -120,17 +133,17 @@ class Flow(Element):
 class Flux(Element):
     def __init__(self, _from=None, to=None, count=1, **kwds):
         super().__init__(**kwds)
-        self._from = _from
-        self._to = to
+        self._from_potential_id = _from
+        self._to_potential_ids = to.split()
         self._count = int(count)
 
     @property
     def from_potential(self):
-        return self._from
+        return Potential.find(self._from_potential_id)
 
     @property
-    def to_potential(self):
-        return self._to
+    def to_potentials(self):
+        return [Potential.find(id) for id in self._to_potential_ids]
 
     @property
     def count(self):

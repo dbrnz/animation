@@ -341,15 +341,15 @@ stylesheet might specify scale, position, size??
                         <item ref="SERCA" pos="20%"/>
                     </top>
                     <left>
-                        <item ref="RyR"  pos="30%"/>
+                        <item ref="RyR"  pos="40%"/>
                     </left>
                 </boundary>
                 <item ref="q21"  pos="20% 75%"/>
                 <item ref="q22"  pos="70% 75%"/>
             </box>
 
-            <box ref="atp" pos="85% 5%" size="12% 30%">
-                <item ref="q24"  pos="15% 15%"/>
+            <box ref="atp" pos="85% 5%" size="12% 25%">
+                <item ref="q24"  pos="15% 35%"/>
                 <item ref="q25"  pos="85% 10%"/>
                 <item ref="q26"  pos="85% 90%"/>
             </box>
