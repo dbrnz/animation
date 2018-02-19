@@ -39,9 +39,15 @@ def relative_position(position, direction, offset):
 #------------------------------------------------------------------------------
 
 class BondGraph(Element):
-    def __init__(self, **kwds):
+    def __init__(self, diagram, **kwds):
+        super().__init__(None, **kwds)
+        self._diagram = diagram
         self._flows = []
         self._potentials = OrderedDict()
+
+    @property
+    def diagram(self):
+        return self._diagram
 
     @property
     def flows(self):
@@ -112,10 +118,10 @@ class BondGraph(Element):
 #------------------------------------------------------------------------------
 
 class Flow(Element):
-    def __init__(self, transporter=None, **kwds):
-        super().__init__(**kwds)
+    def __init__(self, bond_graph, transporter=None, **kwds):
+        super().__init__(bond_graph, **kwds)
         self._fluxes = []
-        self._transporter_id = transporter
+        self._transporter = bond_graph.diagram.find_element(transporter, dia.Transporter)
 
     @property
     def fluxes(self):
@@ -123,7 +129,7 @@ class Flow(Element):
 
     @property
     def transporter(self):
-        return dia.Transporter.find(self._transporter_id)
+        return self._transporter
 
     def add_flux(self, flux):
         self._fluxes.append(flux)
@@ -131,19 +137,20 @@ class Flow(Element):
 #------------------------------------------------------------------------------
 
 class Flux(Element):
-    def __init__(self, _from=None, to=None, count=1, **kwds):
-        super().__init__(**kwds)
-        self._from_potential_id = _from
-        self._to_potential_ids = to.split()
+    def __init__(self, bond_graph, _from=None, to=None, count=1, line=None, **kwds):
+        super().__init__(bond_graph, **kwds)
+        self._from_potential = bond_graph.diagram.find_element(_from, Potential)
+        self._to_potentials = [bond_graph.diagram.find_element(_from, Potential) for id in to.split()]
         self._count = int(count)
+        self._line = line
 
     @property
     def from_potential(self):
-        return Potential.find(self._from_potential_id)
+        return self._from_potential
 
     @property
     def to_potentials(self):
-        return [Potential.find(id) for id in self._to_potential_ids]
+        return self._to_potential_ids
 
     @property
     def count(self):
@@ -152,16 +159,16 @@ class Flux(Element):
 #------------------------------------------------------------------------------
 
 class Potential(Element):
-    def __init__(self, quantity=None, **kwds):
-        super().__init__(**kwds)
-        self._quantity_id = quantity
+    def __init__(self, bond_graph, quantity=None, **kwds):
+        super().__init__(bond_graph, **kwds)
+        self._quantity = bond_graph.diagram.find_element(quantity, dia.Quantity)
 
     @property
     def quantity_id(self):
-        return self._quantity_id
+        return self._quantity.id
 
     @property
     def quantity(self):
-        return dia.Quantity.find(self._quantity_id)
+        return self._quantity
 
 #------------------------------------------------------------------------------

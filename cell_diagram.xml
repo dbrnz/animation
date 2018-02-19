@@ -38,9 +38,9 @@
         <quantity id="q13" class="hydrogen"  label="$\text{q}_13^{[\text{H}^+]_\text{o}}$"  pos="right #u13"/>
         <quantity id="q16" class="calcium"   label="$\text{q}_16^{[\text{Ca}^{2+}]_\text{o}}$" pos="above #u16"/>
 
-        <compartment id="cell" class="cell"> <!-- pos="(110, 250)" size="(880, 740)" -->
+        <compartment id="cell" class="cell" pos="(110, 250)" size="(880, 740)">
             <transporters>
-                <transporter id="Na"   class="sodium channel" label="$\text{I}_\text{Na}" pos="top 90"/>
+                <transporter id="Na"   class="sodium channel" label="$\text{I}_\text{Na}" pos="90 top"/>
                 <transporter id="Na-b" class="sodium channel" label="$\text{I}_\text{Na,b}"/>
                 <transporter id="pNa"  class="sodium channel" label="$\text{I}_\text{pNa}"/>
 
@@ -189,7 +189,7 @@
             <flux from="u6" to="u5"/>
             <flux from="u14" to="u15"/>
         </flow>
-        <flow id="v15" pos="middle #v9 #v14">
+        <flow id="v15" pos="middle #v9, #v14">
             <flux from="u5" to="u6"/>
         </flow>
         <flow id="v16" transporter="Cl" pos="above">
@@ -231,7 +231,7 @@
         <flow id="v27" transporter="SERCA" pos="above">
             <flux from="u17" to="u21" count="2"/>
         </flow>
-        <flow id="v28" pos="middle #u21 #u22">  <!-- implicit default ?? -->
+        <flow id="v28" pos="middle #u21, #u22">  <!-- implicit default ?? -->
             <flux from="u21" to="u22"/>
         </flow>
         <flow id="v29" pos="left #v8">

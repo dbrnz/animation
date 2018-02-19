@@ -32,7 +32,7 @@ from . import SyntaxError
 
 from . import bondgraph as bg
 from . import diagram as dia
-from . import geometry as geo
+#from . import geometry as geo
 
 #------------------------------------------------------------------------------
 
@@ -90,7 +90,7 @@ class StyleSheet(cssselect2.Matcher):
 
 #------------------------------------------------------------------------------
 
-class Element(object):
+class ElementWrapper(object):
     _reserved_words = ['class', 'from']
 
     def __init__(self, element, stylesheets):
@@ -146,16 +146,17 @@ class ElementChildren(object):
         for e in self._root_element.iter_children():
             if not isinstance(e.etree_element, etree._Element):
                 continue
-            yield Element(e, self._stylesheets)
+            yield ElementWrapper(e, self._stylesheets)
         raise StopIteration
 
 #------------------------------------------------------------------------------
 
 class Parser(object):
     def __init__(self):
+        self._diagram = None
         self._stylesheets = []
 
-    def parse_container(self, element, container=None):
+    def parse_container(self, element, container):
         for e in ElementChildren(element, self._stylesheets):
             if e.tag == CellDL_namespace('compartment'):
                 self.parse_compartment(e, container)
@@ -167,20 +168,30 @@ class Parser(object):
             else:
                 raise SyntaxError
 
-    def parse_compartment(self, element, container=None):
-        compartment = dia.Compartment(style=element.style, **element.attributes)
-        if container: container.add_component(compartment)
+    def parse_compartment(self, element, container):
+        compartment = dia.Compartment(container, style=element.style, **element.attributes)
+        self._diagram.add_element(compartment)
+        if compartment.has_position_dependencies is False and container:
+            compartment.add_position_dependency(container.id)
+        container.add_component(compartment)
         self.parse_container(element, compartment)
 
     def parse_quantity(self, element, container):
-        container.add_component(dia.Quantity(style=element.style, **element.attributes))
+        quantity = dia.Quantity(container, style=element.style, **element.attributes)
+        self._diagram.add_element(quantity)
+        container.add_component(quantity)
 
     def parse_transporters(self, element, compartment):
         for e in ElementChildren(element, self._stylesheets):
             if e.tag == CellDL_namespace('transporter'):
-                compartment.add_transporter(dia.Transporter(style=e.style, **e.attributes))
+                transporter = dia.Transporter(compartment, style=e.style, **e.attributes)
+                if transporter.has_position_dependencies is False:
+                    transporter.add_position_dependency(compartment.id)
+                # also no pos attribute ==> set position wrt previous transporter
+                self._diagram.add_element(transporter)
+                compartment.add_transporter(transporter)
             else:
-                raise SyntaxError
+                raise SyntaxError("Expected 'transporter' element")
 
     def parse_bond_graph(self, element, bond_graph):
         for e in ElementChildren(element, self._stylesheets):
@@ -189,20 +200,28 @@ class Parser(object):
             elif e.tag == CellDL_namespace('flow'):
                 self.parse_flow(e, bond_graph)
             else:
-                raise SyntaxError
+                raise SyntaxError("Invalid 'bond-graph' element")
 
     def parse_potential(self, element, bond_graph):
-        bond_graph.add_potential(bg.Potential(style=element.style, **element.attributes))
+        potential = bg.Potential(bond_graph, style=element.style, **element.attributes)
+        self._diagram.add_element(potential)
+        bond_graph.add_potential(potential)
 
     def parse_flow(self, element, bond_graph):
-        flow = bg.Flow(style=element.style, **element.attributes)
+        flow = bg.Flow(bond_graph, style=element.style, **element.attributes)
+        self._diagram.add_element(flow)
+        if flow.has_position_dependencies is False and flow.transporter:
+            flow.add_position_dependency(flow.transporter.id)
         for e in ElementChildren(element, self._stylesheets):
             if e.tag == CellDL_namespace('flux'):
-                flow.add_flux(bg.Flux(style=e.style, **e.attributes))
+                flux = bg.Flux(bond_graph, style=e.style, **e.attributes)
+                self._diagram.add_element(flux)
+                flow.add_flux(flux)
             else:
                 raise SyntaxError
         bond_graph.add_flow(flow)
 
+    '''
     def parse_geometry(self, element, geometry):
         # <geometry> doesn't have a boundary, <box> does
         return self.parse_box(element, geometry, boundary=False)
@@ -229,49 +248,64 @@ class Parser(object):
             else:                                     raise SyntaxError
             for item in ElementChildren(e):
                 geo.Item(container=box, boundary=boundary, **item.attributes)
-
+    '''
     def parse(self, file, stylesheet=None):
         logging.debug('PARSE: %s', file)
         if stylesheet is not None:
             self._stylesheets.append(StyleSheet(stylesheet))
 
+        # Parse the XML file and wrap the resulting root element so
+        # we can easily iterate through its children
         xml_root = etree.parse(file)
-        root_element = Element(cssselect2.ElementWrapper.from_xml_root(xml_root), self._stylesheets)
+        root_element = ElementWrapper(cssselect2.ElementWrapper.from_xml_root(xml_root), self._stylesheets)
         if root_element.tag != CellDL_namespace('cell-diagram'): raise SyntaxError()
 
-        # First load all stylesheets
+        # Parse top-level children, loading stylesheets and
+        # finding any diagram and bond-graph elements
+        diagram_element = None
+        bond_graph_element = None
         for e in ElementChildren(root_element, self._stylesheets):
-            if e.tag == CellDL_namespace('style'):
-                if 'href' in e.attributes:
-                    pass
-                else:
-                    self._stylesheets.append(StyleSheet(e.text))
-
-        diagram = None
-        bond_graph = None
-        geometry = None
-        for e in ElementChildren(root_element, self._stylesheets):
-            if diagram is None and e.tag == CellDL_namespace('diagram'):
-                diagram = dia.Diagram(style=e.style, **e.attributes)
-                self.parse_container(e, diagram)
-            elif bond_graph is None and e.tag == CellDL_namespace('bond-graph'):
-                bond_graph = bg.BondGraph(style=e.style, **e.attributes)
-                self.parse_bond_graph(e, bond_graph)
-            elif e.tag == CellDL_namespace('geometry'):
-                geometry = geo.Geometry(**e.attributes)
-                self.parse_geometry(e, geometry)
+            if   e.tag == CellDL_namespace('bond-graph'):
+                if bond_graph_element is None: bond_graph_element = e
+                else: raise SyntaxError
+            elif e.tag == CellDL_namespace('diagram'):
+                if diagram_element is None: diagram_element = e
+                else: raise SyntaxError
             elif e.tag == CellDL_namespace('style'):
-                pass
+                if 'href' in e.attributes: pass          ### TODO: Load external stylesheets...
+                else: self._stylesheets.append(StyleSheet(e.text))
             else:
                 raise SyntaxError
-        logging.debug('')
-        if geometry:
-            width = diagram.style.get('width')
-            height = diagram.style.get('height')
-            geometry.layout_diagram_elements(diagram)
-        if bond_graph:
-            bond_graph.position_elements()
 
-        return (diagram, bond_graph)
+        # Parse the diagram element
+        if diagram_element is not None:
+            self._diagram = dia.Diagram(style=diagram_element.style, **diagram_element.attributes)
+            self.parse_container(diagram_element, self._diagram)
+
+        # Parse the bond-graph element
+        if bond_graph_element is not None:
+            bond_graph = bg.BondGraph(self._diagram, style=bond_graph_element.style, **bond_graph_element.attributes)
+            self.parse_bond_graph(bond_graph_element, bond_graph)
+
+        logging.debug('')
+
+#        if geometry:
+        width = self._diagram.style.get('width')
+        height = self._diagram.style.get('height')
+        self._diagram.position_elements()
+
+        # For all elements, parse 'pos' attribute
+        # Build position dependency graph
+        # Assign positions
+
+        # For all fluxes
+        # parse 'line' attribute
+        # assign line segments
+
+#            geometry.layout_diagram_elements(diagram)
+#        if bond_graph:
+#            bond_graph.position_elements()
+
+        return (self._diagram, bond_graph)
 
 #------------------------------------------------------------------------------
