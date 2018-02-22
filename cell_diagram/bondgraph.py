@@ -23,7 +23,7 @@ from collections import OrderedDict
 #------------------------------------------------------------------------------
 
 from . import diagram as dia
-from . import Element
+from .element import Element
 
 #------------------------------------------------------------------------------
 
@@ -40,7 +40,7 @@ def relative_position(position, direction, offset):
 
 class BondGraph(Element):
     def __init__(self, diagram, **kwds):
-        super().__init__(None, **kwds)
+        super().__init__(None, class_name='BondGraph', **kwds)
         self._diagram = diagram
         self._flows = []
         self._potentials = OrderedDict()
@@ -119,7 +119,7 @@ class BondGraph(Element):
 
 class Flow(Element):
     def __init__(self, bond_graph, transporter=None, **kwds):
-        super().__init__(bond_graph, **kwds)
+        super().__init__(bond_graph, class_name='Flow', **kwds)
         self._fluxes = []
         self._transporter = bond_graph.diagram.find_element(transporter, dia.Transporter)
 
@@ -138,7 +138,7 @@ class Flow(Element):
 
 class Flux(Element):
     def __init__(self, bond_graph, _from=None, to=None, count=1, line=None, **kwds):
-        super().__init__(bond_graph, **kwds)
+        super().__init__(bond_graph, class_name='Flux', **kwds)
         self._from_potential = bond_graph.diagram.find_element(_from, Potential)
         self._to_potentials = [bond_graph.diagram.find_element(_from, Potential) for id in to.split()]
         self._count = int(count)
@@ -160,7 +160,7 @@ class Flux(Element):
 
 class Potential(Element):
     def __init__(self, bond_graph, quantity=None, **kwds):
-        super().__init__(bond_graph, **kwds)
+        super().__init__(bond_graph, class_name='Potential', **kwds)
         self._quantity = bond_graph.diagram.find_element(quantity, dia.Quantity)
 
     @property

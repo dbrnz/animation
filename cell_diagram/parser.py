@@ -171,25 +171,28 @@ class Parser(object):
     def parse_compartment(self, element, container):
         compartment = dia.Compartment(container, style=element.style, **element.attributes)
         self._diagram.add_element(compartment)
-        if compartment.has_position_dependencies is False and container:
-            compartment.add_position_dependency(container.id)
         container.add_component(compartment)
+        # A compartment's position and size is always in terms of its container
+        compartment.add_position_dependency(container)
+        print(compartment, 'is in', container)
         self.parse_container(element, compartment)
 
     def parse_quantity(self, element, container):
         quantity = dia.Quantity(container, style=element.style, **element.attributes)
         self._diagram.add_element(quantity)
+        if not quantity.has_position_dependencies:
+            quantity.add_position_dependency(container)
         container.add_component(quantity)
 
     def parse_transporters(self, element, compartment):
         for e in ElementChildren(element, self._stylesheets):
             if e.tag == CellDL_namespace('transporter'):
                 transporter = dia.Transporter(compartment, style=e.style, **e.attributes)
-                if transporter.has_position_dependencies is False:
-                    transporter.add_position_dependency(compartment.id)
-                # also no pos attribute ==> set position wrt previous transporter
                 self._diagram.add_element(transporter)
                 compartment.add_transporter(transporter)
+                # A transporter's position always depends on its compartment
+                transporter.add_position_dependency(compartment)
+                # TODO: no pos attribute ==> set position wrt previous transporter
             else:
                 raise SyntaxError("Expected 'transporter' element")
 
@@ -204,14 +207,16 @@ class Parser(object):
 
     def parse_potential(self, element, bond_graph):
         potential = bg.Potential(bond_graph, style=element.style, **element.attributes)
+        if not potential.has_position_dependencies:
+            potential.add_position_dependency(potential.quantity.parent)
         self._diagram.add_element(potential)
         bond_graph.add_potential(potential)
 
     def parse_flow(self, element, bond_graph):
         flow = bg.Flow(bond_graph, style=element.style, **element.attributes)
         self._diagram.add_element(flow)
-        if flow.has_position_dependencies is False and flow.transporter:
-            flow.add_position_dependency(flow.transporter.id)
+        if not flow.has_position_dependencies and flow.transporter:
+            flow.add_position_dependency(flow.transporter)
         for e in ElementChildren(element, self._stylesheets):
             if e.tag == CellDL_namespace('flux'):
                 flux = bg.Flux(bond_graph, style=e.style, **e.attributes)
@@ -289,22 +294,11 @@ class Parser(object):
 
         logging.debug('')
 
-#        if geometry:
-        width = self._diagram.style.get('width')
-        height = self._diagram.style.get('height')
         self._diagram.position_elements()
-
-        # For all elements, parse 'pos' attribute
-        # Build position dependency graph
-        # Assign positions
 
         # For all fluxes
         # parse 'line' attribute
         # assign line segments
-
-#            geometry.layout_diagram_elements(diagram)
-#        if bond_graph:
-#            bond_graph.position_elements()
 
         return (self._diagram, bond_graph)
 

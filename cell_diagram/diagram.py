@@ -22,19 +22,27 @@ from collections import OrderedDict
 
 #------------------------------------------------------------------------------
 
-from . import Element
 from . import layout
+from .element import Element
 
 #------------------------------------------------------------------------------
 
 class Container(Element):
-    def __init__(self, container, **kwds):
-        super().__init__(container, **kwds)
+    def __init__(self, container, class_name='Container', **kwds):
+        super().__init__(container, class_name=class_name, **kwds)
         self._components = []
 
     @property
     def components(self):
         return self._components
+
+    @property
+    def height(self):
+        return self._height
+
+    @property
+    def width(self):
+        return self._width
 
     def add_component(self, component):
         self._components.append(component)
@@ -44,7 +52,7 @@ class Container(Element):
         svg = ['<g{}>'.format(self.id_class())]
         if self.position:
             top_left = self.position
-            bottom_right = (top_left[0] + self.size[0], top_left[1] + self.size[1])
+            bottom_right = (top_left[0] + self.width, top_left[1] + self.height)
             svg.append('<path fill="#eeeeee" stroke="#222222" stroke-width="2.0" opacity="0.6"'
                      + ' d="M{left:g},{top:g} L{right:g},{top:g} L{right:g},{bottom:g} L{left:g},{bottom:g} z"/>'
                         .format(left=top_left[0], right=bottom_right[0], top=top_left[1], bottom=bottom_right[1]))
@@ -56,40 +64,33 @@ class Container(Element):
 #------------------------------------------------------------------------------
 
 class Diagram(Container):
-    def __init__(self, **kwds):
-        super().__init__(None, **kwds)
+    def __init__(self, width=0, height=0, **kwds):
+        super().__init__(None, class_name='Diagram', **kwds)
+        self._width = float(self.style.get('width', width))
+        self._height = float(self.style.get('height', height))
         self._elements = list()
         self._elements_by_id = OrderedDict()
+        self._layout = None
+
+    @property
+    def elements(self):
+        return self._elements
+
+    @property
+    def pixel_size(self):
+        return (self._width, self._height)
 
     def add_element(self, element):
         self._elements.append(element)
         if element.id is not None:
-            self._elements_by_id[id] = element
+            self._elements_by_id[element.id] = element
 
     def find_element(self, id, cls=Element):
         e = self._elements_by_id.get(id)
         return e if e is not None and isinstance(e, cls) else None
 
-    '''
-    # Dictionary of all elements that have an id
-    _positioned_elements = list()
-
-            Element._positioned_elements.append(self)
-
-    @property
-    def positioned_elements(self):
-        return self._positioned_elements
-
-    def add_dependency(self, id):
-        if self._position is not None:
-            self._position.add_dependency(id)
-
-    @property
-    def dependencies(self):
-        return self._position.dependencies if self._position is not None else []
-    '''
     def position_elements(self):
-        layout.position_elements(self._elements)
+        layout.position_diagram(self)
 
     def svg(self, bond_graph):
         svg = ['<?xml version="1.0" encoding="UTF-8"?>',
@@ -104,9 +105,14 @@ class Diagram(Container):
 #------------------------------------------------------------------------------
 
 class Compartment(Container):
-    def __init__(self, container, **kwds):
-        super().__init__(container, **kwds)
+    def __init__(self, container, size=None, **kwds):
+        super().__init__(container, class_name='Compartment', **kwds)
+        self._size = layout.Size(size)
         self._transporters = []
+
+    @property
+    def size(self):
+        return self._size
 
     @property
     def transporters(self):
@@ -125,7 +131,7 @@ class Compartment(Container):
 
 class Quantity(Element):
     def __init__(self, container, **kwds):
-        super().__init__(container, **kwds)
+        super().__init__(container, class_name='Quantity', **kwds)
 
     def svg(self):
         return super().svg(stroke='#ff0000', fill='#FF80ff')
@@ -134,7 +140,7 @@ class Quantity(Element):
 
 class Transporter(Element):
     def __init__(self, container, **kwds):
-        super().__init__(container, **kwds)
+        super().__init__(container, class_name='Transporter', **kwds)
 
     def svg(self):
         return super().svg(stroke='#ffff00', fill='#80FFFF')
