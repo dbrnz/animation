@@ -88,6 +88,47 @@ Positioning
         + in relation to container: `l`
         + modifiers to specify bounding box side: `gx`, `gy`, `lx`, `ly`.
 
+    - simplified (27 Feb 2018)
+
+        + diagram has a width and height specified in `pixels`
+        + diagram units, 1000 units make up diagram width/weight; different
+          pixel size in X and Y directions.
+        + `%` units as percentage of a containers width/height.
+        + suffix modifiers of `x` and `y` to indicate use of `X` or `Y` unit.
+        + Examples:
+
+            * 300 == 300/1000 of diagram's width or height, depending on
+              context.
+            * 300x == 300/1000 of diagram's width.
+            * 300y == 300/1000 of diagram's height.
+            * 30% == 30/100 of current container's width or height, depending
+              on context
+            * 30%x == 30/100 of current container's width.
+
+        + Contexts:
+
+            * left/right ==> 'X' unit.
+            * above/below ==> 'Y' unit.
+
+        + Context:
+
+            * Diagram width/height: pixels
+            * Compartment size/position: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
+            * Quantity position as coords: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
+            * Quantity position as offset: relation with absolute offset from element(s) -- `300 above #q1 #q2`
+            * Transporter position: side of container along with offset from
+              top-right as % of container -- `left 10%`, `top 20%`
+            * Transporter position: side of container along with offset from
+              another transporter on side with same orientation, as % of container -- `left 10% below #t1`
+            * Potential position: same as for Quantity.
+            * Flow position: same as for Quantity.
+            * NB. `absolute` units are in fact relative to the diagram (== 1/1000 of diagram size).
+            * NB. Should we just use `tinycss2` parsing rather than building a string to parse
+              with `pyparsing`??
+            * Can we drop #id and require/use names. Local name is value of `name` attribute but
+              then combine with container name(s) to get global name (e.g. `/cell/mitochrondion/NCE`)
+              and relative names (e.g. `./mitochrondion/NCE` and/or `mitochrondion/NCE`)??
+
 * points
 * lines
 
