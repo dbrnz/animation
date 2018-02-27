@@ -79,10 +79,10 @@ class Grammer(object):
 
     name = pp.Word(pp.alphas, '_' + '-' + '/' + pp.alphanums)
     identifier = pp.Suppress(pp.Literal('#')) + name
-    id_list = pp.delimitedList(identifier)
+    id_list = pp.delimitedList(identifier, '+')
 
     relative_position = pp.Group(pp.Optional(length, '') + relation + pp.Optional(id_list))
-    relative_position_list = pp.delimitedList(relative_position, ';')
+    relative_position_list = pp.delimitedList(relative_position, ',')
 
     numeric_coords = (length + pp.Optional(',').suppress() + length)
     coord_pair = pp.Suppress('(') + numeric_coords + pp.Suppress(')')
@@ -129,7 +129,7 @@ class Position(object):
             try:
                 tokens = Grammer.position.parseString(text.strip())
             except pp.ParseException as msg:
-                raise SyntaxError("Invalid syntax for 'pos': {}".format(text))
+                raise SyntaxError("Syntax error in position: {}".format(text))
             if isinstance(tokens[0], tuple):
                 self._lengths = tuple(tokens)
                 if isinstance(element, bg.Potential):

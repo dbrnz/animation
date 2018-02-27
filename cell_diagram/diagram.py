@@ -77,13 +77,15 @@ class Container(Element):
 
 
 class Diagram(Container):
-    def __init__(self, width=0, height=0, **kwds):
+    def __init__(self, **kwds):
         super().__init__(None, class_name='Diagram', **kwds)
-        self._width = float(self.style.get('width', width))
-        self._height = float(self.style.get('height', height))
         self._elements = list()
         self._elements_by_id = OrderedDict()
         self._layout = None
+        self._width = float(self.style.get('width', 0)
+                            if self.style is not None else 0)
+        self._height = float(self.style.get('height', 0)
+                            if self.style is not None else 0)
 
     @property
     def elements(self):
@@ -126,9 +128,10 @@ class Diagram(Container):
 
 
 class Compartment(Container):
-    def __init__(self, container, size=None, **kwds):
+    def __init__(self, container, **kwds):
         super().__init__(container, class_name='Compartment', **kwds)
-        self._size = layout.Size(size)
+        self._size = layout.Size(self.style.get('size', None)
+                                 if self.style is not None else None)
         self._transporters = []
 
     @property

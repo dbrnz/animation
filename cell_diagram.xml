@@ -29,18 +29,31 @@
 
     <!-- Representation of diagram at http://sites.bioeng.auckland.ac.nz/mwu035/mpb/  -->
 
-    <diagram>
-        <quantity id="q1"  class="sodium"    label="$\text{q}_1^{[\text{Na}^+]_\text{o}}$" pos="above #u1"/>
-        <quantity id="q4"  class="potassium" label="$\text{q}_4^{[\text{K}^+]_\text{o}}$" pos="above #u4"/>
-        <quantity id="q7"  class="anion"     label="$\text{q}_7^{[\text{OH}^-]_\text{o}}$"  pos="above #u7"/>
-        <quantity id="q9"  class="anion"     label="$\text{q}_9^{[\text{HCO}_3^-]_\text{o}}$" pos="above #u9"/>
-        <quantity id="q11" class="chloride"  label="$\text{q}_11^{[\text{Cl}^-]_\text{o}}$" pos="above #u11"/>
-        <quantity id="q13" class="hydrogen"  label="$\text{q}_13^{[\text{H}^+]_\text{o}}$"  pos="right #u13"/>
-        <quantity id="q16" class="calcium"   label="$\text{q}_16^{[\text{Ca}^{2+}]_\text{o}}$" pos="above #u16"/>
 
-        <compartment id="cell" class="cell" pos="(110, 250)" size="(880, 740)">
+
+<!--
+
+    All coordinates are wrt the object containing the element.
+
+    Origin is at top left corner of containing object's bounding box.
+
+    Bounding box has size (bounds-X bounds-Y).
+
+stylesheet might specify scale, position, size??
+-->
+
+    <diagram>
+        <quantity id="q1"  class="sodium"    label="$\text{q}_1^{[\text{Na}^+]_\text{o}}$"/>
+        <quantity id="q4"  class="potassium" label="$\text{q}_4^{[\text{K}^+]_\text{o}}$"/>
+        <quantity id="q7"  class="anion"     label="$\text{q}_7^{[\text{OH}^-]_\text{o}}$" />
+        <quantity id="q9"  class="anion"     label="$\text{q}_9^{[\text{HCO}_3^-]_\text{o}}$"/>
+        <quantity id="q11" class="chloride"  label="$\text{q}_11^{[\text{Cl}^-]_\text{o}}$"/>
+        <quantity id="q13" class="hydrogen"  label="$\text{q}_13^{[\text{H}^+]_\text{o}}$" />
+        <quantity id="q16" class="calcium"   label="$\text{q}_16^{[\text{Ca}^{2+}]_\text{o}}$"/>
+
+        <compartment id="cell" class="cell">
             <transporters>
-                <transporter id="Na"   class="sodium channel" label="$\text{I}_\text{Na}" pos="90 top"/>
+                <transporter id="Na"   class="sodium channel" label="$\text{I}_\text{Na}"/>
                 <transporter id="Na-b" class="sodium channel" label="$\text{I}_\text{Na,b}"/>
                 <transporter id="pNa"  class="sodium channel" label="$\text{I}_\text{pNa}"/>
 
@@ -64,33 +77,33 @@
                 <transporter id="CaL"  class="calcium channel" label="$\text{I}_\text{CaL}"/>
             </transporters>
 
-            <quantity id="q2"  class="sodium"    label="$\text{q}_2^{[\text{Na}^+]_\text{i}}$" pos="below #u2"/>
-            <quantity id="q5"  class="potassium" label="$\text{q}_5^{[\text{K}^+]_\text{i}}$" pos="below #u5"/>
+            <quantity id="q2"  class="sodium"    label="$\text{q}_2^{[\text{Na}^+]_\text{i}}$"/>
+            <quantity id="q5"  class="potassium" label="$\text{q}_5^{[\text{K}^+]_\text{i}}$"/>
 
-            <quantity id="q8"  class="anion"     label="$\text{q}_8^{[\text{OH}^-]_\text{i}}$" pos="below #u8"/>
-            <quantity id="q10" class="anion"     label="$\text{q}_10^{[\text{HCO}_3^-]_\text{i}}$" pos="below #u10"/>
-            <quantity id="q12" class="chloride"  label="$\text{q}_12^{[\text{Cl}^-]_\text{i}}$" pos="below #u12"/>
+            <quantity id="q8"  class="anion"     label="$\text{q}_8^{[\text{OH}^-]_\text{i}}$"/>
+            <quantity id="q10" class="anion"     label="$\text{q}_10^{[\text{HCO}_3^-]_\text{i}}$"/>
+            <quantity id="q12" class="chloride"  label="$\text{q}_12^{[\text{Cl}^-]_\text{i}}$"/>
 
-            <quantity id="q14" class="hydrogen"  label="$\text{q}_14^{[\text{H}^+]_\text{i}}$" pos="right #u14"/>
+            <quantity id="q14" class="hydrogen"  label="$\text{q}_14^{[\text{H}^+]_\text{i}}$"/>
 
-            <quantity id="q17" class="calcium"   label="$\text{q}_17^{[\text{Ca}^{2+}]_\text{i}}$" pos="above #u17"/>
-            <quantity id="q18" class="calcium"   label="$\text{q}_18^{[\text{Ca}^{2+}]_\text{i}}$" pos="below #u18"/>
-            <quantity id="q19" class="calcium"   label="$\text{q}_19^{[\text{Ca}^{2+}\text{-CMDN}]_\text{i}}$" pos="right #u19"/>
-            <quantity id="q20" class="calcium"   label="$\text{q}_20^{[\text{Ca}^{2+}\text{-TRPN}]_\text{i}}$" pos="right #u20"/>
+            <quantity id="q17" class="calcium"   label="$\text{q}_17^{[\text{Ca}^{2+}]_\text{i}}$"/>
+            <quantity id="q18" class="calcium"   label="$\text{q}_18^{[\text{Ca}^{2+}]_\text{i}}$"/>
+            <quantity id="q19" class="calcium"   label="$\text{q}_19^{[\text{Ca}^{2+}\text{-CMDN}]_\text{i}}$"/>
+            <quantity id="q20" class="calcium"   label="$\text{q}_20^{[\text{Ca}^{2+}\text{-TRPN}]_\text{i}}$"/>
 
             <compartment id="atp" class="metabolic">
-                <quantity id="q24" class="metabolic" label="$\text{q}_24^{[\text{ATP}]_\text{i}}$" pos="above #u24"/>
-                <quantity id="q25" class="metabolic" label="$\text{q}_25^{[\text{ADP}]}$" pos="(850, 150)"/>
-                <quantity id="q26" class="metabolic" label="$\text{q}_26^{[\text{P}]_\text{i}}$" pos="(850, 850)"/>
+                <quantity id="q24" class="metabolic" label="$\text{q}_24^{[\text{ATP}]_\text{i}}$"/>
+                <quantity id="q25" class="metabolic" label="$\text{q}_25^{[\text{ADP}]}$"/>
+                <quantity id="q26" class="metabolic" label="$\text{q}_26^{[\text{P}]_\text{i}}$"/>
             </compartment>
 
             <compartment id="SR" class="organelle reticulum">
                 <transporters>
                     <transporter id="SERCA" class="metabolic calcium exchanger"/>
-                    <transporter id="RyR"   class="calcium channel" />
+                    <transporter id="RyR"   class="calcium channel"/>
                 </transporters>
-                <quantity id="q21" class="calcium" label="$\text{q}_21^{[\text{Ca}^{2+}]_\text{i}}$" pos="below #u21"/>
-                <quantity id="q22" class="calcium" label="$\text{q}_22^{[\text{Ca}^{2+}\text{-CSNQ}]_\text{i}}$" pos="below #u22"/>
+                <quantity id="q21" class="calcium" label="$\text{q}_21^{[\text{Ca}^{2+}]_\text{i}}$"/>
+                <quantity id="q22" class="calcium" label="$\text{q}_22^{[\text{Ca}^{2+}\text{-CSNQ}]_\text{i}}$"/>
             </compartment>
 
             <compartment id="mitochrondion" class="organelle mitochondrion">
@@ -103,153 +116,153 @@
                     <transporter id="m-CIV"  label="CIV"  class="hydrogen exchanger"/>
                     <transporter id="m-CII"  label="CII"  class="hydrogen exchanger"/>
                 </transporters>
-                <quantity id="q23" class="calcium"   label="$\text{q}_23^{[\text{Ca}^{2+}]_\text{i}}$" pos="below #u23"/>
-                <quantity id="q3"  class="sodium"    label="$\text{q}_3^{[\text{Na}^+]_\text{i}}$" pos="below #u3"/>
-                <quantity id="q6"  class="potassium" label="$\text{q}_6^{[\text{K}^+]_\text{i}}$" pos="below #u6"/>
-                <quantity id="q15" class="hydrogen"  label="$\text{q}_15^{[\text{H}^+]_\text{i}}$" pos="right #u15"/>
+                <quantity id="q23" class="calcium"   label="$\text{q}_23^{[\text{Ca}^{2+}]_\text{i}}$"/>
+                <quantity id="q3"  class="sodium"    label="$\text{q}_3^{[\text{Na}^+]_\text{i}}$"/>
+                <quantity id="q6"  class="potassium" label="$\text{q}_6^{[\text{K}^+]_\text{i}}$"/>
+                <quantity id="q15" class="hydrogen"  label="$\text{q}_15^{[\text{H}^+]_\text{i}}$"/>
             </compartment>
         </compartment>
     </diagram>
 
     <bond-graph>
-        <potential id="u1"  quantity="q1" pos="above #Na"/>
-        <potential id="u2"  quantity="q2" pos="below #Na"/>
-        <potential id="u3"  quantity="q3" pos="below #m-NCE, #m-NHE"/>
-        <potential id="u4"  quantity="q4" pos="above #Kr, #Ks"/>
-        <potential id="u5"  quantity="q5" pos="below #Kr, #Ks"/>
-        <potential id="u6"  quantity="q6" pos="below #m-KHE"/>
-        <potential id="u7"  quantity="q7" pos="above #CHE"/>
-        <potential id="u8"  quantity="q8" pos="below #CHE"/>
-        <potential id="u9"  quantity="q9" pos="above #AE"/>
-        <potential id="u10" quantity="q10" pos="below #AE"/>
-        <potential id="u11" quantity="q11" pos="above #Cl"/>
-        <potential id="u12" quantity="q12" pos="below #Cl"/>
-        <potential id="u13" quantity="q13" pos="above #NHE"/>
-        <potential id="u14" quantity="q14" pos="above #m-CIII, #m-CIV"/>
-        <potential id="u15" quantity="q15" pos="below #m-CIII, #m-CIV"/>
-        <potential id="u16" quantity="q16" pos="left #Ca-b"/>
-        <potential id="u17" quantity="q17" pos="right #Ca-b"/>
-        <potential id="u18" quantity="q18" pos="right #CaL"/>
-        <potential id="u19" quantity="q19" pos="right #Ca-b, #Ca-t; below #NKE, #K1"/>
-        <potential id="u20" quantity="q20" pos="below #u19"/>
-        <potential id="u21" quantity="q21" pos="right #RyR; below #SERCA"/>
-        <potential id="u22" quantity="q22" pos="right #u21"/>
-        <potential id="u23" quantity="q23" pos="below #NCE"/>
-        <potential id="u24" quantity="q24" pos="(150, 500)"/>
-        <potential id="u25" quantity="q25" pos="below #q25"/>
-        <potential id="u26" quantity="q26" pos="above #q26"/>
+        <potential id="u1"  quantity="q1"/>
+        <potential id="u2"  quantity="q2"/>
+        <potential id="u3"  quantity="q3"/>
+        <potential id="u4"  quantity="q4"/>
+        <potential id="u5"  quantity="q5"/>
+        <potential id="u6"  quantity="q6"/>
+        <potential id="u7"  quantity="q7"/>
+        <potential id="u8"  quantity="q8"/>
+        <potential id="u9"  quantity="q9"/>
+        <potential id="u10" quantity="q10"/>
+        <potential id="u11" quantity="q11"/>
+        <potential id="u12" quantity="q12"/>
+        <potential id="u13" quantity="q13"/>
+        <potential id="u14" quantity="q14"/>
+        <potential id="u15" quantity="q15"/>
+        <potential id="u16" quantity="q16"/>
+        <potential id="u17" quantity="q17"/>
+        <potential id="u18" quantity="q18"/>
+        <potential id="u19" quantity="q19"/>
+        <potential id="u20" quantity="q20"/>
+        <potential id="u21" quantity="q21"/>
+        <potential id="u22" quantity="q22"/>
+        <potential id="u23" quantity="q23"/>
+        <potential id="u24" quantity="q24"/>
+        <potential id="u25" quantity="q25"/>
+        <potential id="u26" quantity="q26"/>
 
-        <flow id="v1" transporter="Na" pos="above">
+        <flow id="v1" transporter="Na">
             <flux from="u1" to="u2"/>
         </flow>
-        <flow id="v2" transporter="Na-b" pos="above">
+        <flow id="v2" transporter="Na-b">
             <flux from="u1" to="u2"/>
         </flow>
-        <flow id="v3" transporter="pNa" pos="above">
+        <flow id="v3" transporter="pNa">
             <flux from="u1" to="u2"/>
         </flow>
-        <flow id="v4" transporter="NKE" pos="above">
+        <flow id="v4" transporter="NKE">
             <flux from="u2" to="u1" count="3"/>
             <flux from="u4" to="u5" count="2"/>
         </flow>
-        <flow id="v5" transporter="NCE" pos="left">
-            <flux from="u1" to="u2" count="3" line="-120 until left #u16, #v5; 180 until left #NCE;"/>
+        <flow id="v5" transporter="NCE">
+            <flux from="u1" to="u2" count="3"/>
             <flux from="u17" to="u16"/>
         </flow>
-        <flow id="v6" transporter="NBC" pos="above">
+        <flow id="v6" transporter="NBC">
             <flux from="u7" to="u2"/>
             <flux from="u9" to="u10"/>
         </flow>
-        <flow id="v7" transporter="NHE" pos="above">
+        <flow id="v7" transporter="NHE">
             <flux from="u14" to="u13"/>
             <flux from="u1" to="u2"/>
         </flow>
-        <flow id="v8" transporter="m-NCE" pos="above">
+        <flow id="v8" transporter="m-NCE">
             <flux from="u2" to="u3" count="3"/>
             <flux from="u23" to="u17"/>
         </flow>
-        <flow id="v9" transporter="m-NHE" pos="above">
+        <flow id="v9" transporter="m-NHE">
             <flux from="u3" to="u2"/>
             <flux from="u14" to="u15"/>
         </flow>
 
-        <flow id="v10" transporter="K1" pos="above">
+        <flow id="v10" transporter="K1">
             <flux from="u4" to="u5"/>
         </flow>
-        <flow id="v11" transporter="Kr" pos="above">
+        <flow id="v11" transporter="Kr">
             <flux from="u4" to="u5"/>
         </flow>
-        <flow id="v12" transporter="Ks" pos="above">
+        <flow id="v12" transporter="Ks">
             <flux from="u4" to="u5"/>
         </flow>
-        <flow id="v13" transporter="Katp" pos="above">
+        <flow id="v13" transporter="Katp">
             <flux from="u4" to="u5"/>
         </flow>
-        <flow id="v14" transporter="m-KHE" pos="above">
+        <flow id="v14" transporter="m-KHE">
             <flux from="u6" to="u5"/>
             <flux from="u14" to="u15"/>
         </flow>
-        <flow id="v15" pos="middle #v9, #v14">
+        <flow id="v15">
             <flux from="u5" to="u6"/>
         </flow>
-        <flow id="v16" transporter="Cl" pos="above">
+        <flow id="v16" transporter="Cl">
             <flux from="u12" to="u11"/>
         </flow>
-        <flow id="v17" transporter="CHE" pos="above">
+        <flow id="v17" transporter="CHE">
             <flux from="u11" to="u12"/>
             <flux from="u8" to="u7"/>
         </flow>
-        <flow id="v18" transporter="AE" pos="above">
+        <flow id="v18" transporter="AE">
             <flux from="u11" to="u12"/>
             <flux from="u10" to="u9"/>
         </flow>
-        <flow id="v19" transporter="pCa" pos="left">
+        <flow id="v19" transporter="pCa">
             <flux from="u17" to="u16"/>
         </flow>
-        <flow id="v20" transporter="Ca-b" pos="left">
+        <flow id="v20" transporter="Ca-b">
             <flux from="u16" to="u17"/>
         </flow>
-        <flow id="v21" transporter="Ca-t" pos="left">
+        <flow id="v21" transporter="Ca-t">
             <flux from="u16" to="u17"/>
         </flow>
-        <flow id="v22" transporter="CaL" pos="left">
+        <flow id="v22" transporter="CaL">
             <flux from="u16" to="u18"/>
         </flow>
-        <flow id="v23" transporter="RyR" pos="right">
+        <flow id="v23" transporter="RyR">
             <flux from="u21" to="u18"/>
         </flow>
-        <flow id="v24" pos="above #u18">
+        <flow id="v24">
             <flux from="u18" to="u17"/>
         </flow>
-        <flow id="v25" class="dashed" pos="left #u19">
+        <flow id="v25" class="dashed">
             <!-- what does a dashed path signify?? -->
             <flux from="u17" to="u19"/>
         </flow>
-        <flow id="v26" class="dashed" pos="left #u20">
+        <flow id="v26" class="dashed">
             <flux from="u17" to="u20"/>
         </flow>
-        <flow id="v27" transporter="SERCA" pos="above">
+        <flow id="v27" transporter="SERCA">
             <flux from="u17" to="u21" count="2"/>
         </flow>
-        <flow id="v28" pos="middle #u21, #u22">  <!-- implicit default ?? -->
+        <flow id="v28">  <!-- implicit default ?? -->
             <flux from="u21" to="u22"/>
         </flow>
-        <flow id="v29" pos="left #v8">
+        <flow id="v29">
             <flux from="u23" to="u17"/>
         </flow>
 
         <!-- flow v30 ?? -->
 
-        <flow id="v31" transporter="m-CI" pos="above">
+        <flow id="v31" transporter="m-CI">
             <flux from="u14" to="u15"/>
         </flow>
-        <flow id="v32" transporter="m-CIII" pos="above">
+        <flow id="v32" transporter="m-CIII">
             <flux from="u14" to="u15"/>
         </flow>
-        <flow id="v33" transporter="m-CIV" pos="above">
+        <flow id="v33" transporter="m-CIV">
             <flux from="u14" to="u15"/>
         </flow>
-        <flow id="v34" transporter="m-CII" pos="above">
+        <flow id="v34" transporter="m-CII">
             <flux from="u14" to="u15"/>
         </flow>
         <flow id="v35">
@@ -257,81 +270,161 @@
         </flow>
     </bond-graph>
 
+    <style>
+        diagram {
+            width: 1600; height: 900;
+        }
 
-<!--
+        #q1 { position: above #u1; }
+        #q4 { position: above #u4; }
+        #q7 { position: above #u7; }
+        #q9 { position: above #u9; }
+        #q11 { position: above #u11; }
+        #q13 { position: right #u13; }
+        #q16 { position: above #u16; }
 
-    All coordinates are wrt the object containing the element.
+        #u1 { position: 100 above #Na-b; }
+        #u2 { position: 100 below #Na-b; }
+        #u3 { position: 100 below #m-NCE + #m-NHE; }
+        #u4 { position: 100 above #Kr + #Ks; }
+        #u5 { position: 100 below #Kr + #Ks; }
+        #u6 { position: 100 below #m-KHE; }
+        #u7 { position: 100 above #CHE; }
+        #u8 { position: 100 below #CHE; }
+        #u9 { position: 100 above #AE; }
+        #u10 { position: 100 below #AE; }
+        #u11 { position: 100 above #Cl; }
+        #u12 { position: 100 below #Cl; }
+        #u13 { position: 100 above #NHE; }
 
-    Origin is at top left corner of containing object's bounding box.
+        #q2 { position: below #u2; }
+        #q5 { position: below #u5; }
 
-    Bounding box has size (bounds-X bounds-Y).
+        #q8 { position: below #u8; }
+        #q10 { position: below #u10; }
+        #q12 { position: below #u12; }
 
-stylesheet might specify scale, position, size??
--->
-<!--
-    <geometry size="1040px 685px">
-        <box ref="cell" pos="11% 25%" size="88% 74%">
-            <!- - Cell membrane transporters - ->
-            <boundary>
-                <top>
-                    <item ref="Na"   pos="9%"/>
-                    <item ref="Na-b" pos="13%"/>
-                    <item ref="pNa"  pos="17%"/>
-                    <item ref="NKE"  pos="24%"/>
-                    <item ref="K1"   pos="29%"/>
-                    <item ref="Kr"   pos="33%"/>
-                    <item ref="Ks"   pos="37%"/>
-                    <item ref="Katp" pos="41%"/>
-                    <item ref="NBC"  pos="46%"/>
-                    <item ref="CHE"  pos="51%"/>
-                    <item ref="AE"   pos="56%"/>
-                    <item ref="Cl"   pos="61%"/>
-                    <item ref="NHE"  pos="69%"/>
-                </top>
-                <left>
-                    <item ref="NCE"  pos="14%"/>
-                    <item ref="pCa"  pos="31%"/>
-                    <item ref="Ca-b" pos="37%"/>
-                    <item ref="Ca-t" pos="43%"/>
-                    <item ref="CaL"  pos="75%"/>
-                </left>
-            </boundary>
+        #cell {
+            size: (800, 700);
+            position: (110, 250);
+        }
+        #Na { position: 90 top; }
+        #Na-b { position: 130 top; }
+        #pNa { position: 170 top; }
+        #NKE { position: 240 top; }
+        #K1 { position: 290 top; }
+        #Kr { position: 330 top; }
+        #Ks { position: 370 top; }
+        #Katp { position: 410 top; }
+        #NBC { position: 460 top; }
+        #CHE { position: 510 top; }
+        #AE { position: 560 top; }
+        #Cl { position: 610 top; }
+        #NHE { position: 690 top; }
+        #NCE { position: 140 left; }
+        #pCa { position: 310 left; }
+        #Ca-b { position: 370 left; }
+        #Ca-t { position: 430 left; }
+        #CaL { position: 750 left; }
 
-            <box ref="mitochrondion" pos="46% 50%" size="37% 27%">
-                <!- - Mitochrondion transporters - ->
-                <boundary>
-                    <top>
-                        <item ref="m-NCE"  pos="15%"/>
-                        <item ref="m-NHE"  pos="25%"/>
-                        <item ref="m-KHE"  pos="35%"/>
-                        <item ref="m-CI"   pos="45%"/>
-                        <item ref="m-CII"  pos="55%"/>
-                        <item ref="m-CIII" pos="65%"/>
-                        <item ref="m-CIV"  pos="75%"/>
-                    </top>
-                </boundary>
-            </box>
+        #q14 { position: right #u14; }
 
-            <box ref="SR" pos="13% 70%" size="25% 25%">
-                <!- - Sarcoplasmic reticulum transporters - ->
-                <boundary>
-                    <top>
-                        <item ref="SERCA" pos="20%"/>
-                    </top>
-                    <left>
-                        <item ref="RyR"  pos="40%"/>
-                    </left>
-                </boundary>
-            </box>
+        #q17 { position: above #u17; }
+        #q18 { position: below #u18; }
+        #q19 { position: right #u19; }
+        #q20 { position: right #u20; }
 
-            <box ref="atp" pos="85% 5%" size="12% 25%">
-                <item ref="q24"  pos="15% 35%"/>
-                <item ref="q25"  pos="85% 10%"/>
-                <item ref="q26"  pos="85% 90%"/>
-            </box>
+        #atp {
+              size: (150, 300);
+              position: (800, 50);
+        }
+        #q24 { position: above #u24; }
+        #u24 { position: (150, 500); }
+        #q25 { position: (850, 150); }
+        #u25 { position: below #q25; }
+        #q26 { position: (850, 850); }
+        #u26 { position: above #q26; }
 
-        </box>
-    </geometry>
--->
+        #SR {
+             size: (250, 250);
+             position: (100, 700);
+        }
+        #SERCA { position: 200 top; }
+        #RyR { position: 400 left; }
+        #q21 { position: below #u21; }
+        #u21 { position: 100 right #RyR, below #SERCA; }
+        #q22 { position: below #u22; }
+        #u22 { position: 100 right #u21; }
+
+
+        #mitochrondion {
+             size: (300, 300);
+             position: (500, 550);
+        }
+        #m-NCE { position: 150 top; }
+        #m-NHE { position: 250 top; }
+        #m-KHE { position: 350 top; }
+        #m-CI { position: 450 top; }
+        #m-CIII { position: 550 top; }
+        #m-CIV { position: 650 top; }
+        #m-CII { position: 750 top; }
+
+        #q23 { position: below #u23; }
+        #q3 { position: below #u3; }
+        #q6 { position: below #u6; }
+        #q15 { position: right #u15; }
+
+
+        #u14 { position: 100 above #m-CIII + #m-CIV; }
+        #u15 { position: 100 below #m-CIII + #m-CIV; }
+        #u16 { position: 50 left #Ca-b; }
+        #u17 { position: 100 right #Ca-b; }
+        #u18 { position: 100 right #CaL; }
+        #u19 { position: 100 right #Ca-b + #Ca-t, below #NKE + #K1; }
+        #u20 { position: 100 below #u19; }
+        #u23 { position: 100 below #m-NCE; }
+
+        #v1 { position: above; }
+        #v2 { position: above; }
+        #v3 { position: above; }
+        #v4 { position: above; }
+
+        flow[transporter="NCE"] {
+            position: left;
+            }
+        flow[transporter="NCE"] > flux[from="u1"][to="u2"] {
+            curve: -120 until above #u16 + #v5, 180 until left #NCE;
+            }
+
+        #v6 { position: above; }
+        #v7 { position: above; }
+        #v8 { position: above; }
+        #v9 { position: above; }
+
+        #v10 { position: above; }
+        #v11 { position: above; }
+        #v12 { position: above; }
+        #v13 { position: above; }
+        #v14 { position: above; }
+        #v15 { position: centre #v9 + #v14; }
+        #v16 { position: above; }
+        #v17 { position: above; }
+        #v18 { position: above; }
+        #v19 { position: left; }
+        #v20 { position: left; }
+        #v21 { position: left; }
+        #v22 { position: left; }
+        #v23 { position: right; }
+        #v24 { position: above #u18; }
+        #v25 { position: left #u19; }
+        #v26 { position: left #u20; }
+        #v27 { position: above; }
+        #v28 { position: centre #u21 + #u22; }
+        #v29 { position: left #v8; }
+        #v31 { position: above; }
+        #v32 { position: above; }
+        #v33 { position: above; }
+        #v34 { position: above; }
+    </style>
 
 </cell-diagram>

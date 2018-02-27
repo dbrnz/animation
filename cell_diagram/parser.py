@@ -74,11 +74,15 @@ class StyleSheet(cssselect2.Matcher):
             elif component.type == 'ident':
                 values.append(component.lower_value)
             elif component.type == 'number':
-                pass # value/is_integer/int_value
-            elif component.type == 'percentage':
-                pass # value/is_integer/int_value
-            elif component.type == 'dimension':
-                pass # value/is_integer/int_value, unit/lower_unit
+                # value/is_integer/int_value
+                values.append(str(component.value))
+            #elif component.type == 'percentage':
+            #    pass # value/is_integer/int_value
+            #elif component.type == 'dimension':
+            #    pass # value/is_integer/int_value, unit/lower_unit
+            elif component.type == 'hash':
+                values.append('#')
+                values.append(component.value)
             else:
                 values.append(component.value)
         return ''.join(values).strip()
@@ -263,8 +267,19 @@ class Parser(object):
         # Parse the XML file and wrap the resulting root element so
         # we can easily iterate through its children
         xml_root = etree.parse(file)
-        root_element = ElementWrapper(cssselect2.ElementWrapper.from_xml_root(xml_root), self._stylesheets)
-        if root_element.tag != CellDL_namespace('cell-diagram'): raise SyntaxError()
+
+        # Load all style information before wrapping the root element
+        for e in xml_root.iterfind(CellDL_namespace('style')):
+            if 'href' in e.attrib:
+                pass          ### TODO: Load external stylesheets...
+            else:
+                self._stylesheets.append(StyleSheet(e.text))
+
+        root_element = ElementWrapper(
+            cssselect2.ElementWrapper.from_xml_root(xml_root),
+            self._stylesheets)
+        if root_element.tag != CellDL_namespace('cell-diagram'):
+            raise SyntaxError()
 
         # Parse top-level children, loading stylesheets and
         # finding any diagram and bond-graph elements
@@ -282,8 +297,7 @@ class Parser(object):
                 else:
                     raise SyntaxError
             elif e.tag == CellDL_namespace('style'):
-                if 'href' in e.attributes: pass          ### TODO: Load external stylesheets...
-                else: self._stylesheets.append(StyleSheet(e.text))
+                pass
             else:
                 raise SyntaxError
 

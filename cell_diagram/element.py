@@ -24,13 +24,15 @@ from . import layout
 
 
 class Element(object):
-    def __init__(self, parent, class_name='Element', _class=None, id=None, label=None, pos=None, style=None):
-        self._parent = parent
+    def __init__(self, container, class_name='Element',
+                 _class=None, id=None, label=None, style=None):
+        self._container = container
         self._class_name = class_name
         self._class = _class
         self._id = id
         self._label = label if label else id if id else ''
-        self._position = layout.Position(self, pos)
+        self._position = layout.Position(self, style.pop('position', '')
+                                         if style is not None else '')
         self._style = style
 
     def __str__(self):
