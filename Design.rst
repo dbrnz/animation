@@ -43,7 +43,7 @@ Interfacing
 
 
 Identifying elements
-~~~~~~~~~~~~~~~~~~~~
+--------------------
 
 * `id` attribute
 * `ref` attribute (or use `xlink:href` ??)
@@ -68,8 +68,8 @@ Positioning
 * absolute
 * relative to another element
 
-    - `y="10px above id1 id2"`
-    - if no `x` given then calculated as mean of x-coordinate of ids
+    - `y="10px above #id1 #id2"`
+    - if no `x` given then calculated as mean of x-coordinate of #ids
     - `y` above/below
     - `x` left/right (-of)
     - also for box/container postioning
@@ -77,14 +77,16 @@ Positioning
 
 * units
 
-    - global (absolute)
+    - absolute
 
-        + e.g. 'pixel'
+        + e.g. pixel: `px`
 
     - proportional (relative)
 
-        + in relation to diagram
-        + in relation to container
+        + 1000 units per side of bounding box
+        + in relation to diagram: `g`
+        + in relation to container: `l`
+        + modifiers to specify bounding box side: `gx`, `gy`, `lx`, `ly`.
 
 * points
 * lines
@@ -103,18 +105,67 @@ Positioning
 
     - a connected set of lines
     - polygon boundary
+
 * polygons
 
 
 ::
 
-    implicit and explicit rules.
+    # implicit and explicit rules.
+    # units default to `l`
 
-    <point ref="id1">
-        <x offset="10" dirn="left" rel="id2"/>
-        <y/>
-    </point>
+    pos="100 right #id"                  ## x = x(id) + 100; y = y(id)
+    pos="10 below #id"                   ## x = x(id); y = y(id) + 10
+    pos="100 right #id1, 10 below #id2"  ## x = x(id1) + 100; y = y(id2) + 10
+    pos="100 above #id1, 10 left #id2"   ## x = x(id2) - 10; y = y(id1) - 100
 
-    <line ref="id3">
-        <mid-point>
-            <x
+    # Multiple defining elements
+    pos="100 right #id1 #id2"           ## x = (x(id1) + x(id2))/2 + 100; y = (y(id1) + y(id2))/2
+
+    # Can't overspecify
+    pos="100 right/left #id1, 10 right/left #id2"    ## ERROR
+    pos="100 above/below #id1, 10 above/below #id2"  ## ERROR
+
+    pos="(100, 10)"                      ## x = 100; y = 10
+
+    pos="100 right"  ## Of what??
+    pos="right #id"  ## How much?? Do we have default offsets?
+                     ## `transporter-spacing`, `potential-offset`, `flow-offset` ??
+                     ## and override this via style sheet??
+
+    # Transporters are always on a compartment boundary
+    pos="100 top"    ## x = x(compartment) + 100; y = y(compartment)
+    pos="bottom"     ## y = y(compartment) + height(compartment)
+
+    pos="100 top"    ## same as pos="100 right #compartment"
+    pos="100 bottom" ## same as pos="100 right #compartment; 1000 below #compartment"
+
+    pos="top, 10 right #t1"    ## same as pos="0 below #compartment; 10 right #t1"
+    pos="right, 10 below #t2"  ## same as pos="1000 right #compartment; 10 below #t2"
+
+    pos="top, 10 above/below #t1"  ## ERROR: multiple `y` constraints
+    pos="left, 10 left/right #t1"  ## ERROR: multiple `y` constraints
+    pos="10 right, 10 below #t2"   ## ERROR: multiple `y` constraints
+    pos="5 left #t1, 100 bottom"   ## ERROR: multiple `x` constraints
+
+    # Autopositioning
+    pos="top"  # default is top  }
+    pos="top"  #                 } Centered in top, spaced evenly (`transporter-spacing`?)
+    pos="top"  #                 }
+
+
+
+    Transporter posn:
+
+    <posn> ::=  <side> [ , <offset> ]
+    <offset> ::= <length>  // From top/left of compartment
+              |  <length> <reln> <element-ref>
+
+
+    Compartment posn:
+
+    Compartment size:
+
+    Quantity/Potential/Flow posn:
+
+
