@@ -35,7 +35,8 @@ class Element(object):
 
     def __str__(self):
         s = [self._class_name]
-        if self._id: s.append('({})'.format(self._id))
+        if self._id:
+            s.append('({})'.format(self._id))
         return ' '.join(s)
 
     @property

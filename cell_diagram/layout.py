@@ -113,6 +113,7 @@ TRANSPORTER_SIDE = ['top', 'bottom', 'left', 'right']
 
 #------------------------------------------------------------------------------
 
+
 class Position(object):
     def __init__(self, element, text):
         self._element = element
@@ -300,6 +301,7 @@ class Position(object):
 
 #------------------------------------------------------------------------------
 
+
 class Size(object):
     def __init__(self, text):
         self._lengths = None
@@ -352,6 +354,7 @@ class UnitConverter(object):
 
 #------------------------------------------------------------------------------
 
+
 def position_diagram(diagram):
     # Build a dependency graph
     g = nx.DiGraph()
@@ -388,6 +391,7 @@ def position_diagram(diagram):
     return g
 
 #------------------------------------------------------------------------------
+
 
 if __name__ == "__main__":
     import doctest
