@@ -1,4 +1,4 @@
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #
 #  Cell Diagramming Language
 #
@@ -16,11 +16,12 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 from . import layout
 
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
 
 class Element(object):
     def __init__(self, parent, class_name='Element', _class=None, id=None, label=None, pos=None, style=None):
@@ -66,17 +67,22 @@ class Element(object):
 
     def id_class(self):
         s = []
-        if self._id is not None: s.append(' id="{}"'.format(self._id))
-        if self._class is not None: s.append(' class="{}"'.format(self._class))
+        if self._id is not None:
+            s.append(' id="{}"'.format(self._id))
+        if self._class is not None:
+            s.append(' class="{}"'.format(self._class))
         return ''.join(s)
 
     def svg(self, stroke='none', fill='#cccccc'):
         svg = ['<g{}>'.format(self.id_class())]
-        if self._position is not None:
-            (x, y) = self._position.position()
-            svg.append('  <circle r="10.0" stroke="{stroke:s}" fill="{fill:s}" cx="{cx:g}" cy="{cy:g}"/>'.format(cx=x, cy=y, stroke=stroke, fill=fill))
-            svg.append('  <text x="{x:g}" y="{y:g}">{text:s}</text>'.format(x=x-9, y=y+6, text=self._id))
+        if self.position.has_coords:
+            (x, y) = self.position.coords
+            svg.append(('  <circle r="10.0" cx="{:g}" cy="{:g}"'
+                        ' stroke="{:s}" fill="{:s}"/>')
+                       .format(x, y, stroke, fill))
+            svg.append('  <text x="{:g}" y="{:g}">{:s}</text>'
+                       .format(x-9, y+6, self._id))
         svg.append('</g>')
         return svg
 
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #
 #  Cell Diagramming Language
 #
@@ -16,24 +16,26 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 import logging
 
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 from cell_diagram.parser import Parser
 
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
 
 def parse(file, stylesheet=None):
     parser = Parser()
     return parser.parse(file, stylesheet)
 
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
 
 if __name__ == '__main__':
-##    logging.getLogger().setLevel(logging.DEBUG)
+    # logging.getLogger().setLevel(logging.DEBUG)
 
     stylesheet = '''
         #q21 {
@@ -60,8 +62,8 @@ if __name__ == '__main__':
         }
       '''
 
-#    diagram, graph = parse('cell_diagram.xml', stylesheet)
-##  diagram = parse('bond_graph.xml')
+    #    diagram, graph = parse('cell_diagram.xml', stylesheet)
+    # #  diagram = parse('bond_graph.xml')
 
     diagram, graph = parse('cell_diagram.xml') # atp.xml')
 
@@ -76,6 +78,7 @@ if __name__ == '__main__':
 #    print(g)
 #    for l in layout:
 #        print(l)
-##    igraph.plot(g, layout=layout, keep_aspect_ratio=True, margin=50) ##, target='atp.svg')
-##  bbox=(500, 400),
-#------------------------------------------------------------------------------
+# #    igraph.plot(g, layout=layout, keep_aspect_ratio=True,
+# #                margin=50) ##, target='atp.svg')
+# #  bbox=(500, 400),
+# -----------------------------------------------------------------------------

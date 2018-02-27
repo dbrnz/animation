@@ -1,4 +1,4 @@
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #
 #  Cell Diagramming Language
 #
@@ -16,7 +16,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 import logging
 
@@ -26,7 +26,7 @@ import cssselect2
 import tinycss2
 import tinycss2.color3
 
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 from . import SyntaxError
 
@@ -34,24 +34,29 @@ from . import bondgraph as bg
 from . import diagram as dia
 #from . import geometry as geo
 
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 NAMESPACE = 'http://www.cellml.org/celldl/1.0#'
+
 
 def CellDL_namespace(tag):
     return '{{{}}}{}'.format(NAMESPACE, tag)
 
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
 
 class StyleSheet(cssselect2.Matcher):
     def __init__(self, stylesheet):
         '''Parse CSS and add rules to the matcher.'''
         super().__init__()
-        rules = tinycss2.parse_stylesheet(stylesheet, skip_comments=True, skip_whitespace=True)
+        rules = tinycss2.parse_stylesheet(stylesheet, skip_comments=True,
+                                          skip_whitespace=True)
         for rule in rules:
             selectors = cssselect2.compile_selector_list(rule.prelude)
-            declarations = [obj for obj in tinycss2.parse_declaration_list(rule.content, skip_whitespace=True)
-                                        if obj.type == 'declaration']
+            declarations = [obj for obj in tinycss2.parse_declaration_list(
+                                               rule.content,
+                                               skip_whitespace=True)
+                            if obj.type == 'declaration']
             for selector in selectors:
                 self.add_selector(selector, declarations)
 
@@ -88,7 +93,8 @@ class StyleSheet(cssselect2.Matcher):
                     rules[declaration.lower_name] = self.style_value(declaration)
         return rules
 
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
 
 class ElementWrapper(object):
     _reserved_words = ['class', 'from']
@@ -102,7 +108,7 @@ class ElementWrapper(object):
         # attribute names are reserved words in Python we prefix these with `_`
         for name in self._reserved_words:
             if name in self._attributes:
-                    self._attributes['_' + name] = self._attributes.pop(name)
+                self._attributes['_' + name] = self._attributes.pop(name)
         # Look in all style sheets in order, updating element style dictionary...
         self._style = {}
         for s in stylesheets:
@@ -135,7 +141,8 @@ class ElementWrapper(object):
     def text(self):
         return self._text
 
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
 
 class ElementChildren(object):
     def __init__(self, root, stylesheets=None):
@@ -149,7 +156,8 @@ class ElementChildren(object):
             yield ElementWrapper(e, self._stylesheets)
         raise StopIteration
 
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
 
 class Parser(object):
     def __init__(self):
@@ -271,11 +279,15 @@ class Parser(object):
         bond_graph_element = None
         for e in ElementChildren(root_element, self._stylesheets):
             if   e.tag == CellDL_namespace('bond-graph'):
-                if bond_graph_element is None: bond_graph_element = e
-                else: raise SyntaxError
+                if bond_graph_element is None:
+                    bond_graph_element = e
+                else:
+                    raise SyntaxError
             elif e.tag == CellDL_namespace('diagram'):
-                if diagram_element is None: diagram_element = e
-                else: raise SyntaxError
+                if diagram_element is None:
+                    diagram_element = e
+                else:
+                    raise SyntaxError
             elif e.tag == CellDL_namespace('style'):
                 if 'href' in e.attributes: pass          ### TODO: Load external stylesheets...
                 else: self._stylesheets.append(StyleSheet(e.text))
@@ -284,7 +296,8 @@ class Parser(object):
 
         # Parse the diagram element
         if diagram_element is not None:
-            self._diagram = dia.Diagram(style=diagram_element.style, **diagram_element.attributes)
+            self._diagram = dia.Diagram(style=diagram_element.style,
+                                        **diagram_element.attributes)
             self.parse_container(diagram_element, self._diagram)
 
         # Parse the bond-graph element
@@ -301,5 +314,5 @@ class Parser(object):
         # assign line segments
 
         return (self._diagram, bond_graph)
+# -----------------------------------------------------------------------------
 
-#------------------------------------------------------------------------------

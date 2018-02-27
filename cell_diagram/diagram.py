@@ -1,4 +1,4 @@
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 #
 #  Cell Diagramming Language
 #
@@ -16,16 +16,17 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 from collections import OrderedDict
 
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
 
 from . import layout
 from .element import Element
 
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
 
 class Container(Element):
     def __init__(self, container, class_name='Container', **kwds):
@@ -61,7 +62,8 @@ class Container(Element):
         svg.append('</g>')
         return svg
 
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
 
 class Diagram(Container):
     def __init__(self, width=0, height=0, **kwds):
@@ -93,16 +95,19 @@ class Diagram(Container):
         layout.position_diagram(self)
 
     def svg(self, bond_graph):
-        svg = ['<?xml version="1.0" encoding="UTF-8"?>',
-               '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"'
-             + ' viewBox="0 0 {width:g} {height:g}">'.format(width=self.size[0], height=self.size[1])]
-## Add <def>s for common shapes??
+        svg = ['<?xml version="1.0" encoding="UTF-8"?>']
+        svg.append(('<svg xmlns="http://www.w3.org/2000/svg"'
+                    ' xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"'
+                    ' viewBox="0 0 {:g} {:g}">')
+                   .format(self._width, self._height))
+# # Add <def>s for common shapes??
         svg.extend(super().svg())
         svg.extend(bond_graph.svg())
         svg.append('</svg>')
         return '\n'.join(svg)
 
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
 
 class Compartment(Container):
     def __init__(self, container, size=None, **kwds):
@@ -127,7 +132,8 @@ class Compartment(Container):
             svg.extend(transporter.svg())
         return svg
 
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
 
 class Quantity(Element):
     def __init__(self, container, **kwds):
@@ -136,7 +142,8 @@ class Quantity(Element):
     def svg(self):
         return super().svg(stroke='#ff0000', fill='#FF80ff')
 
-#------------------------------------------------------------------------------
+# -----------------------------------------------------------------------------
+
 
 class Transporter(Element):
     def __init__(self, container, **kwds):
@@ -145,5 +152,4 @@ class Transporter(Element):
     def svg(self):
         return super().svg(stroke='#ffff00', fill='#80FFFF')
 
-#------------------------------------------------------------------------------
-
+# -----------------------------------------------------------------------------
