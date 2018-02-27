@@ -47,23 +47,19 @@ class Element(object):
         return self._label
 
     @property
-    def parent(self):
-        return self._parent
+    def container(self):
+        return self._container
 
     @property
     def position(self):
         return self._position
 
     @property
-    def has_position_dependencies(self):
-        return len(self._position.dependencies) > 0
-
-    def add_position_dependency(self, dependency):
-        self._position.add_dependency(dependency)
-
-    @property
     def style(self):
         return self._style
+
+    def set_container(self, container):
+        self._container = container
 
     def id_class(self):
         s = []

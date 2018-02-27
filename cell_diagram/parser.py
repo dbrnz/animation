@@ -162,6 +162,7 @@ class ElementChildren(object):
 class Parser(object):
     def __init__(self):
         self._diagram = None
+        self._bond_graph = None
         self._stylesheets = []
 
     def parse_container(self, element, container):
@@ -180,16 +181,11 @@ class Parser(object):
         compartment = dia.Compartment(container, style=element.style, **element.attributes)
         self._diagram.add_element(compartment)
         container.add_component(compartment)
-        # A compartment's position and size is always in terms of its container
-        compartment.add_position_dependency(container)
-        print(compartment, 'is in', container)
         self.parse_container(element, compartment)
 
     def parse_quantity(self, element, container):
         quantity = dia.Quantity(container, style=element.style, **element.attributes)
         self._diagram.add_element(quantity)
-        if not quantity.has_position_dependencies:
-            quantity.add_position_dependency(container)
         container.add_component(quantity)
 
     def parse_transporters(self, element, compartment):
@@ -198,41 +194,38 @@ class Parser(object):
                 transporter = dia.Transporter(compartment, style=e.style, **e.attributes)
                 self._diagram.add_element(transporter)
                 compartment.add_transporter(transporter)
-                # A transporter's position always depends on its compartment
-                transporter.add_position_dependency(compartment)
                 # TODO: no pos attribute ==> set position wrt previous transporter
             else:
                 raise SyntaxError("Expected 'transporter' element")
 
-    def parse_bond_graph(self, element, bond_graph):
+    def parse_bond_graph(self, element):
         for e in ElementChildren(element, self._stylesheets):
             if e.tag == CellDL_namespace('potential'):
-                self.parse_potential(e, bond_graph)
+                self.parse_potential(e)
             elif e.tag == CellDL_namespace('flow'):
-                self.parse_flow(e, bond_graph)
+                self.parse_flow(e)
             else:
                 raise SyntaxError("Invalid 'bond-graph' element")
 
-    def parse_potential(self, element, bond_graph):
-        potential = bg.Potential(bond_graph, style=element.style, **element.attributes)
-        if not potential.has_position_dependencies:
-            potential.add_position_dependency(potential.quantity.parent)
+    def parse_potential(self, element):
+        potential = bg.Potential(self._diagram, style=element.style, **element.attributes)
+        if potential.quantity is None:
+            raise SyntaxError("Missing or unknown quantity.")
+        potential.set_container(potential.quantity.container)
         self._diagram.add_element(potential)
-        bond_graph.add_potential(potential)
+        self._bond_graph.add_potential(potential)
 
-    def parse_flow(self, element, bond_graph):
-        flow = bg.Flow(bond_graph, style=element.style, **element.attributes)
+    def parse_flow(self, element):
+        flow = bg.Flow(self._diagram, style=element.style, **element.attributes)
         self._diagram.add_element(flow)
-        if not flow.has_position_dependencies and flow.transporter:
-            flow.add_position_dependency(flow.transporter)
         for e in ElementChildren(element, self._stylesheets):
             if e.tag == CellDL_namespace('flux'):
-                flux = bg.Flux(bond_graph, style=e.style, **e.attributes)
+                flux = bg.Flux(self._diagram, style=e.style, **e.attributes)
                 self._diagram.add_element(flux)
                 flow.add_flux(flux)
             else:
                 raise SyntaxError
-        bond_graph.add_flow(flow)
+        self._bond_graph.add_flow(flow)
 
     '''
     def parse_geometry(self, element, geometry):
@@ -299,11 +292,17 @@ class Parser(object):
             self._diagram = dia.Diagram(style=diagram_element.style,
                                         **diagram_element.attributes)
             self.parse_container(diagram_element, self._diagram)
+        else:
+            self._diagram = dia.Diagram()
 
         # Parse the bond-graph element
         if bond_graph_element is not None:
-            bond_graph = bg.BondGraph(self._diagram, style=bond_graph_element.style, **bond_graph_element.attributes)
-            self.parse_bond_graph(bond_graph_element, bond_graph)
+            self._bond_graph = bg.BondGraph(self._diagram,
+                                            style=bond_graph_element.style,
+                                            **bond_graph_element.attributes)
+            self.parse_bond_graph(bond_graph_element)
+        else:
+            bond_graph = bg.BondGraph(self._diagram)
 
         logging.debug('')
 
@@ -313,6 +312,7 @@ class Parser(object):
         # parse 'line' attribute
         # assign line segments
 
-        return (self._diagram, bond_graph)
+        return (self._diagram, self._bond_graph)
+
 # -----------------------------------------------------------------------------
 

@@ -40,14 +40,9 @@ def relative_position(position, direction, offset):
 
 class BondGraph(Element):
     def __init__(self, diagram, **kwds):
-        super().__init__(None, class_name='BondGraph', **kwds)
-        self._diagram = diagram
+        super().__init__(diagram, class_name='BondGraph', **kwds)
         self._flows = []
         self._potentials = OrderedDict()
-
-    @property
-    def diagram(self):
-        return self._diagram
 
     @property
     def flows(self):
@@ -97,8 +92,8 @@ class BondGraph(Element):
     def svg(self):
         svg = [ ]
         for p, q in self.potentials.items():
-            (x, y) = p.position
-            (qx, qy) = q.position
+            (x, y) = p.position.coords
+            (qx, qy) = q.position.coords
             svg.append('<path fill="#eeeeee" stroke="#222222" stroke-width="4.0" opacity="0.6"'
                      + ' d="M{start_x:g},{start_y:g} L{end_x:g},{end_y:g}"/>'
                        .format(start_x=x, start_y=y, end_x=qx, end_y=qy))
@@ -106,7 +101,7 @@ class BondGraph(Element):
         # Link potentials via flows and fluxes
         for flow in self.flows:
             if flow.position is not None:
-                svg.extend(flow.svg(fill='#ff80ff'))
+                svg.extend(flow.svg(fill='#ff8080'))
             for flux in flow.fluxes:
                 pass
                 # Path from flux.from_potential to flux.to_potentials
@@ -118,10 +113,10 @@ class BondGraph(Element):
 #------------------------------------------------------------------------------
 
 class Flow(Element):
-    def __init__(self, bond_graph, transporter=None, **kwds):
-        super().__init__(bond_graph, class_name='Flow', **kwds)
+    def __init__(self, diagram, transporter=None, **kwds):
+        self._transporter = diagram.find_element(transporter, dia.Transporter)
+        super().__init__(diagram, class_name='Flow', **kwds)
         self._fluxes = []
-        self._transporter = bond_graph.diagram.find_element(transporter, dia.Transporter)
 
     @property
     def fluxes(self):
@@ -137,10 +132,10 @@ class Flow(Element):
 #------------------------------------------------------------------------------
 
 class Flux(Element):
-    def __init__(self, bond_graph, _from=None, to=None, count=1, line=None, **kwds):
-        super().__init__(bond_graph, class_name='Flux', **kwds)
-        self._from_potential = bond_graph.diagram.find_element(_from, Potential)
-        self._to_potentials = [bond_graph.diagram.find_element(_from, Potential) for id in to.split()]
+    def __init__(self, diagram, _from=None, to=None, count=1, line=None, **kwds):
+        super().__init__(diagram, class_name='Flux', **kwds)
+        self._from_potential = diagram.find_element(_from, Potential)
+        self._to_potentials = [diagram.find_element(_from, Potential) for id in to.split()]
         self._count = int(count)
         self._line = line
 
@@ -159,9 +154,9 @@ class Flux(Element):
 #------------------------------------------------------------------------------
 
 class Potential(Element):
-    def __init__(self, bond_graph, quantity=None, **kwds):
-        super().__init__(bond_graph, class_name='Potential', **kwds)
-        self._quantity = bond_graph.diagram.find_element(quantity, dia.Quantity)
+    def __init__(self, diagram, quantity=None, **kwds):
+        self._quantity = diagram.find_element(quantity, dia.Quantity)
+        super().__init__(diagram, class_name='Potential', **kwds)
 
     @property
     def quantity_id(self):
