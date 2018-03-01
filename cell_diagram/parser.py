@@ -32,7 +32,6 @@ from . import SyntaxError
 
 from . import bondgraph as bg
 from . import diagram as dia
-#from . import geometry as geo
 
 # -----------------------------------------------------------------------------
 
@@ -41,6 +40,158 @@ NAMESPACE = 'http://www.cellml.org/celldl/1.0#'
 
 def CellDL_namespace(tag):
     return '{{{}}}{}'.format(NAMESPACE, tag)
+
+#------------------------------------------------------------------------------
+
+class StyleTokens(object):
+    def __init__(self, token):
+        self._tokens = iter(token)
+        self._buffer = []
+        self._value = None
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        while True:
+            try:
+                token = (self._buffer.pop()
+                         if self._buffer
+                         else next(self._tokens))
+            except StopIteration:
+                self._value = None
+                raise StopIteration
+            if token.type not in ['comment', 'whitespace']:
+                self._value = token
+                return token
+
+    @property
+    def value(self):
+        return self._value
+
+    def next(self):
+        return(next(self))
+
+    def back(self):
+        self._buffer.append(self._value)
+
+    def peek(self):
+        try:
+            token = next(self)
+        except StopIteration:
+            return None
+        self._buffer.append(token)
+        return token
+
+# -----------------------------------------------------------------------------
+
+'''
+Convention is that `tokens` is at **last** token processed.
+'''
+
+def get_number(tokens):
+    """
+    :param tokens: `StyleTokens` of tokens
+    :return: tuple(value, tokens)
+    """
+    try:
+        token = tokens.next()
+        if token.type != 'number':
+            raise SyntaxError("Number expected.")
+        else:
+            return ((token.int_value if token.is_integer else token.value,
+                     tokens))
+    except StopIteration:
+        return (0, tokens)
+
+# -----------------------------------------------------------------------------
+
+
+def get_percentage(tokens):
+    """
+    :param tokens: `StyleTokens` of tokens
+    :return: tuple(Length, tokens)
+    """
+
+    try:
+        token = tokens.next()
+        if token.type != 'percentage':
+            raise SyntaxError('Percentage expected.')
+        percentage = (token.int_value
+                      if token.is_integer
+                      else token.value)
+        token = tokens.peek()
+        modifier = (token.lower_value
+                    if (token is not None and token.type == 'ident')
+                    else '')
+        if modifier not in ['', 'x', 'y']:
+            raise SyntaxError("Modifier must be 'x' or 'y'.")
+        elif modifier != '':
+            tokens.next()
+        return ((percentage, '%' + modifier), tokens)
+    except StopIteration:
+        return ((0, '%'), tokens)
+
+
+# -----------------------------------------------------------------------------
+
+def get_offset(tokens):
+    """
+    :param tokens: `StyleTokens` of tokens
+    :return: tuple(Length, tokens)
+
+    `100`, `100x`, `100y`
+    """
+    try:
+        token = tokens.next()
+        if token.type not in ['number', 'dimension']:
+            raise SyntaxError('Number or dimensioned number expected.')
+        value = (token.int_value if token.is_integer else token.value)
+        modifier = (token.lower_unit if token.type == 'dimension' else '')
+        if modifier not in ['', 'x', 'y']:
+            raise SyntaxError("Modifier must be 'x' or 'y'.")
+        return ((value, modifier), tokens)
+    except StopIteration:
+        return ((0, ''), tokens)
+
+# -----------------------------------------------------------------------------
+
+
+def get_coordinates(tokens):
+    """
+    Get a coordinate pair.
+
+    :param tokens: `StyleTokens` of tokens
+    :return: tuple(tuple(Length, Length), tokens)
+    """
+    coords = []
+    got_comma = True
+    try:
+        while True:
+            token = tokens.next()
+            if token == ',':
+                if got_comma:
+                    raise SyntaxError("Unexpected comma.")
+                got_comma = True
+            elif got_comma and token.type in ['dimension', 'number', 'percentage']:
+                got_comma = False
+                if token.type == 'percentage':
+                    tokens.back()
+                    length, tokens = get_percentage(tokens)
+                elif token.type in ['number', 'dimension']:
+                    tokens.back()
+                    length, tokens = get_offset(tokens)
+                coords.append(length)
+            else:
+                raise SyntaxError("Invalid syntax.")
+
+    except StopIteration:
+        pass
+
+    if len(coords) != 2:
+        raise SyntaxError("Expected length pair.")
+
+    return (coords, tokens)
 
 # -----------------------------------------------------------------------------
 
@@ -60,33 +211,6 @@ class StyleSheet(cssselect2.Matcher):
             for selector in selectors:
                 self.add_selector(selector, declarations)
 
-    @staticmethod
-    def style_value(declaration):
-        values = []
-        for component in declaration.value:
-            if declaration.lower_name in ['color', 'colour']:
-                return tinycss2.color3.parse_color(component)
-            # special parsing for position, width, height??
-            elif component.type == 'function':
-                return component.name + ' (' + tinycss2.serialize(component.arguments) + ')'
-            elif component.type[3:] == 'block':
-                return component.type[0] + tinycss2.serialize(component.content) + component.type[1]
-            elif component.type == 'ident':
-                values.append(component.lower_value)
-            elif component.type == 'number':
-                # value/is_integer/int_value
-                values.append(str(component.value))
-            #elif component.type == 'percentage':
-            #    pass # value/is_integer/int_value
-            #elif component.type == 'dimension':
-            #    pass # value/is_integer/int_value, unit/lower_unit
-            elif component.type == 'hash':
-                values.append('#')
-                values.append(component.value)
-            else:
-                values.append(component.value)
-        return ''.join(values).strip()
-
     def match(self, element):
         rules = {}
         matches = super().match(element)
@@ -94,7 +218,7 @@ class StyleSheet(cssselect2.Matcher):
             for match in matches:
                 specificity, order, pseudo, declarations = match
                 for declaration in declarations:
-                    rules[declaration.lower_name] = self.style_value(declaration)
+                    rules[declaration.lower_name] = StyleTokens(declaration.value)
         return rules
 
 # -----------------------------------------------------------------------------
@@ -109,10 +233,10 @@ class ElementWrapper(object):
         self._text = element.etree_element.text
         self._attributes = dict(element.etree_element.items())
         # The attribute dictionary is used for keyword arguments and since some
-        # attribute names are reserved words in Python we prefix these with `_`
+        # attribute names are reserved words in Python we suffix these with `_`
         for name in self._reserved_words:
             if name in self._attributes:
-                self._attributes['_' + name] = self._attributes.pop(name)
+                self._attributes[name + '_'] = self._attributes.pop(name)
         # Look in all style sheets in order, updating element style dictionary...
         self._style = {}
         for s in stylesheets:
@@ -175,9 +299,9 @@ class Parser(object):
                 self.parse_compartment(e, container)
             elif e.tag == CellDL_namespace('quantity'):
                 self.parse_quantity(e, container)
-            elif (e.tag == CellDL_namespace('transporters')
+            elif (e.tag == CellDL_namespace('transporter')
               and isinstance(container, dia.Compartment)):
-                self.parse_transporters(e, container)
+                self.parse_transporter(e, container)
             else:
                 raise SyntaxError
 
@@ -192,15 +316,10 @@ class Parser(object):
         self._diagram.add_element(quantity)
         container.add_component(quantity)
 
-    def parse_transporters(self, element, compartment):
-        for e in ElementChildren(element, self._stylesheets):
-            if e.tag == CellDL_namespace('transporter'):
-                transporter = dia.Transporter(compartment, style=e.style, **e.attributes)
-                self._diagram.add_element(transporter)
-                compartment.add_transporter(transporter)
-                # TODO: no pos attribute ==> set position wrt previous transporter
-            else:
-                raise SyntaxError("Expected 'transporter' element")
+    def parse_transporter(self, element, compartment):
+        transporter = dia.Transporter(compartment, style=element.style, **element.attributes)
+        self._diagram.add_element(transporter)
+        compartment.add_transporter(transporter)   ## Do when adding element to diagram??
 
     def parse_bond_graph(self, element):
         for e in ElementChildren(element, self._stylesheets):
@@ -222,10 +341,22 @@ class Parser(object):
     def parse_flow(self, element):
         flow = bg.Flow(self._diagram, style=element.style, **element.attributes)
         self._diagram.add_element(flow)
+        container = transporter.container if flow.transporter is not None else None
         for e in ElementChildren(element, self._stylesheets):
             if e.tag == CellDL_namespace('flux'):
+                if 'from_' not in e.attributes or 'to' not in e.attributes:
+                    raise SyntaxError("Flux requires 'from' and 'to' potentials.")
                 flux = bg.Flux(self._diagram, style=e.style, **e.attributes)
-                self._diagram.add_element(flux)
+                if flow.transporter is None:
+                    if container is None:
+                        container = flux.from_potential.container
+                    elif container != flux.from_potential.container:
+                        raise ValueError("All 'to' potentials must be in the same container.")
+                    for p in flux.to_potentials:
+                        if container != p.container:
+                            raise ValueError("All 'from' and 'to' potentials must be in the same container.")
+                flux.set_container(container)
+                self._diagram.add_element(flux)    ## Add to container...
                 flow.add_flux(flux)
             else:
                 raise SyntaxError

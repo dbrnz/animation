@@ -19,20 +19,30 @@
 # -----------------------------------------------------------------------------
 
 from . import layout
+from . import parser
+from . import SyntaxError
 
 # -----------------------------------------------------------------------------
 
 
 class Element(object):
     def __init__(self, container, class_name='Element',
-                 _class=None, id=None, label=None, style=None):
+                 class_=None, id=None, name=None, label=None, style=None):
         self._container = container
         self._class_name = class_name
-        self._class = _class
-        self._id = id
-        self._label = label if label else id if id else ''
-        self._position = layout.Position(self, style.pop('position', '')
-                                         if style is not None else '')
+        self._class = class_
+        self._id = ('#' + id) if id is not None else None
+        if name is None:
+            name = id if id is not None else ''
+        self._local_name = name
+        self._full_name = ((container.full_name + '/' + name)
+                           if (container and container.full_name and name)
+                           else None)
+        self._label = label if label else name
+        self._position = layout.Position(self)
+        pos_tokens = style.pop('position', None) if style else None
+        if pos_tokens:
+            self.parse_position(self._position, pos_tokens)
         self._style = style
 
     def __str__(self):
@@ -72,6 +82,9 @@ class Element(object):
             s.append(' class="{}"'.format(self._class))
         return ''.join(s)
 
+    def parse_position(self, position, tokens):
+        pass
+
     def svg(self, stroke='none', fill='#cccccc'):
         svg = ['<g{}>'.format(self.id_class())]
         if self.position.has_coords:
@@ -80,8 +93,49 @@ class Element(object):
                         ' stroke="{:s}" fill="{:s}"/>')
                        .format(x, y, stroke, fill))
             svg.append('  <text x="{:g}" y="{:g}">{:s}</text>'
-                       .format(x-9, y+6, self._id))
+                       .format(x-9, y+6, self._label))
         svg.append('</g>')
         return svg
+
+# -----------------------------------------------------------------------------
+
+class PositionedElement(object):
+
+    def parse_position(self, position, tokens):
+        """
+        * Position as coords: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
+        * Position as offset: relation with absolute offset from element(s) -- `300 above #q1 #q2`
+        """
+
+        dependencies = []
+        try:
+            token = tokens.next()
+            if token.type == '() block':
+                lengths, _ = parser.get_coordinates(parser.StyleTokens(token.content))
+                position.set_lengths(lengths)
+            else:
+                tokens.back()
+                offset, tokens = parser.get_offset(tokens)
+                token = tokens.next()
+                if token.type == 'ident' and token.lower_value in layout.OFFSET_RELATIONS:
+                    reln = token.lower_value
+                    token = tokens.peek()
+                    if token is None or token.type != 'hash':
+                        raise SyntaxError("Identifier(s) expected")
+                    while token.type == 'hash':
+                        try:
+                            token = tokens.next()
+                            dependencies.append('#' + token.value)
+                        except StopIteration:
+                            break
+                    print('Depend for', self, dependencies)
+                    position.add_relationship(offset, reln, dependencies)
+        except StopIteration:
+            pass
+
+        if tokens.peek() is not None:
+            raise SyntaxError("Invalid syntax")
+
+        position.add_dependencies(dependencies + [self.container])
 
 # -----------------------------------------------------------------------------

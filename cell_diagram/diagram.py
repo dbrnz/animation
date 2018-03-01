@@ -23,7 +23,8 @@ from collections import OrderedDict
 # -----------------------------------------------------------------------------
 
 from . import layout
-from .element import Element
+from . import parser
+from .element import Element, PositionedElement
 
 # -----------------------------------------------------------------------------
 
@@ -76,57 +77,6 @@ class Container(Element):
 # -----------------------------------------------------------------------------
 
 
-class Diagram(Container):
-    def __init__(self, **kwds):
-        super().__init__(None, class_name='Diagram', **kwds)
-        self._elements = list()
-        self._elements_by_id = OrderedDict()
-        self._layout = None
-        self._width = float(self.style.get('width', 0)
-                            if self.style is not None else 0)
-        self._height = float(self.style.get('height', 0)
-                            if self.style is not None else 0)
-
-    @property
-    def elements(self):
-        return self._elements
-
-    @property
-    def height(self):
-        return self._height
-
-    @property
-    def width(self):
-        return self._width
-
-    def add_element(self, element):
-        self._elements.append(element)
-        if element.id is not None:
-            self._elements_by_id[element.id] = element
-
-    def find_element(self, id, cls=Element):
-        e = self._elements_by_id.get(id)
-        return e if e is not None and isinstance(e, cls) else None
-
-    def position_elements(self):
-        layout.position_diagram(self)
-
-    def svg(self, bond_graph):
-        svg = ['<?xml version="1.0" encoding="UTF-8"?>']
-        svg.append(('<svg xmlns="http://www.w3.org/2000/svg"'
-                    ' xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"'
-                    ' viewBox="0 0 {:g} {:g}">')
-                   .format(self._width, self._height))
-# # Add <def>s for common shapes??
-        svg.extend(super().svg())
-        if bond_graph is not None:
-            svg.extend(bond_graph.svg())
-        svg.append('</svg>')
-        return '\n'.join(svg)
-
-# -----------------------------------------------------------------------------
-
-
 class Compartment(Container):
     def __init__(self, container, **kwds):
         super().__init__(container, class_name='Compartment', **kwds)
@@ -145,6 +95,21 @@ class Compartment(Container):
     def add_transporter(self, transporter):
         self._transporters.append(transporter)
 
+    def parse_position(self, position, tokens):
+        """
+        * Compartment size/position: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
+        """
+        lengths = None
+        for token in tokens:
+            if token.type == '() block' and lengths is None:
+                lengths, _ = parser.get_coordinates(parser.StyleTokens(token.content))
+            elif lengths is not None:
+                raise SyntaxError("Position already defined.")
+        position.set_lengths(lengths)
+        # A compartment's position and size is always in terms of its container
+        position.add_dependency(self.container)
+
+
     def svg(self):
         svg = super().svg()
         for transporter in self._transporters:
@@ -154,9 +119,12 @@ class Compartment(Container):
 # -----------------------------------------------------------------------------
 
 
-class Quantity(Element):
+class Quantity(Element, PositionedElement):
     def __init__(self, container, **kwds):
         super().__init__(container, class_name='Quantity', **kwds)
+
+    def parse_position(self, position, tokens):
+        PositionedElement.parse_position(self, position, tokens)
 
     def svg(self):
         return super().svg(stroke='#ff0000', fill='#FF80ff')
@@ -168,7 +136,103 @@ class Transporter(Element):
     def __init__(self, container, **kwds):
         super().__init__(container, class_name='Transporter', **kwds)
 
+    def parse_position(self, position, tokens):
+        """
+        * Transporter position: side of container along with offset from
+          top-right as % of container -- `left 10%`, `top 20%`
+        * Transporter position: side of container along with offset from
+          another transporter of the compartment which is on the same side
+          and with the same orientation, as % of the container
+          -- `left 10% below #t1`
+        """
+
+        # A transporter's position always depends on its compartment
+        dependencies = [self.container]
+        try:
+            token = tokens.next()
+            if (token.type != 'ident'
+             or token.lower_value not in layout.COMPARTMENT_BOUNDARIES):
+                raise SyntaxError('Invalid compartment boundary.')
+            boundary = token.lower_value
+
+            offset, tokens = parser.get_percentage(tokens)
+
+            token = tokens.peek()
+            if token and token.type == 'hash':
+                while token.type == 'hash':
+                    try:
+                        token = tokens.next()
+                        dependencies.append('#' + token.value)
+                    except StopIteration:
+                        break
+
+        except StopIteration:
+            raise SyntaxError("Invalid `transporter` position")
+
+## We can (and should ??) now set lengths if no element dependencies
+        position.add_relationship(offset, boundary, dependencies)
+        position.add_dependencies(dependencies)
+
     def svg(self):
         return super().svg(stroke='#ffff00', fill='#80FFFF')
+
+# -----------------------------------------------------------------------------
+
+
+class Diagram(Container):
+    def __init__(self, **kwds):
+        super().__init__(None, class_name='Diagram', **kwds)
+        self._elements = list()
+        self._elements_by_id = OrderedDict()
+        self._elements_by_name = OrderedDict()
+        self._layout = None
+        self._width, _ = parser.get_number(self.style.get('width') if self.style else 0)
+        self._height, _ = parser.get_number(self.style.get('height') if self.style else 0)
+
+    @property
+    def elements(self):
+        return self._elements
+
+    @property
+    def height(self):
+        return self._height
+
+    @property
+    def width(self):
+        return self._width
+
+    def add_element(self, element):
+        self._elements.append(element)
+        if element.id is not None:
+            if element.id in self._elements_by_id:
+                raise KeyError("Duplicate 'id': {}".format(element.id))
+            self._elements_by_id[element.id] = element
+
+        self._elements_by_name[element.full_name] = element
+        # Also add to element's container
+
+    def find_element(self, id_or_name, cls=Element):
+        if id_or_name.startswith('#'):
+            e = self._elements_by_id.get(id_or_name)
+        else:
+            e = self._elements_by_name.get(id_or_name)
+        return e if e is not None and isinstance(e, cls) else None
+
+    def position_elements(self):
+        self.position.set_coords((0, 0))
+        layout.position_diagram(self)
+
+    def svg(self, bond_graph):
+        svg = ['<?xml version="1.0" encoding="UTF-8"?>']
+        svg.append(('<svg xmlns="http://www.w3.org/2000/svg"'
+                    ' xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"'
+                    ' viewBox="0 0 {:g} {:g}">')
+                   .format(self._width, self._height))
+# # Add <def>s for common shapes??
+        svg.extend(super().svg())
+        if bond_graph is not None:
+            svg.extend(bond_graph.svg())
+        svg.append('</svg>')
+        return '\n'.join(svg)
 
 # -----------------------------------------------------------------------------

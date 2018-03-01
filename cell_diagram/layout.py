@@ -18,13 +18,13 @@
 #
 #------------------------------------------------------------------------------
 
-import pyparsing as pp
 import networkx as nx
 
 #------------------------------------------------------------------------------
 
 from . import bondgraph as bg
 from . import diagram as dia
+from . import parser
 
 #------------------------------------------------------------------------------
 
@@ -36,138 +36,24 @@ TRANSPORTER_SPACING      = (20, 'l')
 
 #------------------------------------------------------------------------------
 
-class Grammer(object):
-    '''
-    >>> position.parseString("left")
-    ([(['', 'left'], {})], {})
-
-    >>> position.parseString("right #Ca-b, #Ca-t; 10 below #NKE, #K1")
-    ([(['', 'right', 'Ca-b', 'Ca-t'], {}), ([(10.0, 'l'), 'below', 'NKE', 'K1'], {})], {})
-
-    >>> position.parseString("(10,)")
-    ([(10.0, 'l')], {})
-
-    >>> position.parseString("(10gy, 2.5)")
-    ([(10.0, 'gy'), (2.5, 'l')], {})
-
-    >>> position.parseString("(,10)")
-    ([',', (10.0, 'l')], {})
-
-
-    * What about `100 X; 200 Y` == `(100, 200)` ???
-    * This would allow `100 X; 50 above #q3`
-    * But could do this with `100 right #cell; 50 above #q3`
-    '''
-
-    number = pp.Word(pp.nums)
-    plusminus = pp.Literal('+') | pp.Literal('-')
-    integer = pp.Combine(pp.Optional(plusminus) + number)
-    realnumber = pp.Combine(integer + pp.Optional(pp.Literal('.') + pp.Optional(number)))
-
-    # 'l' units depend on element's container
-    # 'g' units depend on diagram
-    local_global = pp.Literal('l') | pp.Literal('g')
-    xy_units = pp.Literal('x') | pp.Literal('y')
-    pixel_units = pp.Literal('px')
-    units = pp.Combine(xy_units | local_global + pp.Optional(xy_units) | pixel_units) + pp.White().suppress()
-    length = pp.Group(realnumber + pp.Optional(units, 'l')).setParseAction( lambda s,l,t: [ (float(t[0][0]), t[0][1]) ] )
-
-    relation = (pp.Keyword('top') | pp.Keyword('bottom')
-              | pp.Keyword('left') | pp.Keyword('right')
-              | pp.Keyword('above') | pp.Keyword('below')
-              | pp.Keyword('centre') | pp.Keyword('center'))
-
-    name = pp.Word(pp.alphas, '_' + '-' + '/' + pp.alphanums)
-    identifier = pp.Suppress(pp.Literal('#')) + name
-    id_list = pp.delimitedList(identifier, '+')
-
-    relative_position = pp.Group(pp.Optional(length, '') + relation + pp.Optional(id_list))
-    relative_position_list = pp.delimitedList(relative_position, ',')
-
-    numeric_coords = (length + pp.Optional(',').suppress() + length)
-    coord_pair = pp.Suppress('(') + numeric_coords + pp.Suppress(')')
-
-    absolute_position = coord_pair
-    position = (relative_position_list | absolute_position) + pp.StringEnd()
-
-    # Size
-    size = coord_pair
-
-    # Line segments
-    angle = realnumber
-    cond = pp.Keyword('until')
-
-    #pp.Keyword('for')
-
-    line_segment = pp.Group(angle + cond + relative_position)
-    line_segment_list = pp.delimitedList(line_segment, ';')
-    #"-120 until left #u16, #v5; 180 until left #NCE;"/>
-
-#------------------------------------------------------------------------------
-
 HORIZONTAL_RELN  = ['left', 'right']
 VERTICAL_RELN    = ['top', 'bottom', 'above', 'below']
-CENTERED_RELN    = ['centre', 'center']
+#CENTERED_RELN    = ['centre', 'center']
+OFFSET_RELATIONS = HORIZONTAL_RELN + VERTICAL_RELN
 
-TRANSPORTER_SIDE = ['top', 'bottom', 'left', 'right']
+COMPARTMENT_BOUNDARIES = ['top', 'bottom', 'left', 'right',
+                          'top-left', 'top-right',
+                          'bottom-left', 'bottom-right']
 
 #------------------------------------------------------------------------------
 
-
 class Position(object):
-    def __init__(self, element, text):
+    def __init__(self, element):
         self._element = element
         self._lengths = None
         self._relationships = list()
         self._coords = [None, None]
         self._dependencies = set()  # of ids and elements
-        if (isinstance(element, dia.Compartment)   # A compartment's position and size is always in terms of its container
-         or isinstance(element, dia.Transporter)): # A transporter's position always depends on its compartment
-            self._dependencies.add(element.container)
-
-        if text:
-            try:
-                tokens = Grammer.position.parseString(text.strip())
-            except pp.ParseException as msg:
-                raise SyntaxError("Syntax error in position: {}".format(text))
-            if isinstance(tokens[0], tuple):
-                self._lengths = tuple(tokens)
-                if isinstance(element, bg.Potential):
-                    self._dependencies.add(element.quantity.container)
-                elif isinstance(element, bg.Flow) and element.transporter:
-                    self._dependencies.add(element.transporter.container)
-                else:
-                    self._dependencies.add(element.container)
-            elif isinstance(tokens[0], pp.ParseResults):
-                if len(tokens) > 2:
-                    raise SyntaxError("Cannot have more than two positioning statements")
-                (have_x, have_y) = (False, False)
-                t_relns = [t[1] for t in tokens if len(t) == 2]
-                for t in tokens:
-                    reln = t[1]
-                    if (have_x and reln in HORIZONTAL_RELN
-                     or have_y and reln in VERTICAL_RELN
-                     or (have_x or have_y) and reln in CENTERED_RELN):
-                        raise SyntaxError("Position has multiple constraints for same direction")
-                    if   reln in HORIZONTAL_RELN: have_x = True
-                    elif reln in VERTICAL_RELN: have_y = True
-                    if isinstance(self._element, dia.Transporter):
-                        if len(t_relns) != 1 or t_relns[0] not in TRANSPORTER_SIDE:
-                            raise SyntaxError("No side given for transporter")
-                        if len(t) == 2 and isinstance(t[0], tuple):
-                            if len(tokens) > 1:
-                                raise SyntaxError("Multiple offsets for transporter postion")
-                    elif reln in ['top', 'bottom']:
-                        raise SyntaxError("Element cannot have side position")
-
-                    dependencies = t[2:]
-                    if not any(dependencies):
-                        if isinstance(element, bg.Potential):
-                            dependencies = [element.quantity.container]
-                        elif isinstance(element, bg.Flow) and element.transporter:
-                            dependencies = [element.transporter]
-                    self._dependencies.update(dependencies)
-                    self._relationships.append((t[0] if t[0] else None, reln, dependencies))
 
     def __bool__(self):
         return bool(self._dependencies) or bool(self._lengths)
@@ -188,6 +74,21 @@ class Position(object):
     def resolved(self):
         return None not in self._coords
 
+    def add_dependencies(self, dependencies):
+        self._dependencies.update(dependencies)
+
+    def add_dependency(self, dependency):
+        self._dependencies.add(dependency)
+
+    def add_relationship(self, offset, relation, dependencies):
+        self._relationships.append((offset, relation, dependencies))
+
+    def set_coords(self, coords):
+        self._coords = coords
+
+    def set_lengths(self, lengths):
+        self._lengths = lengths
+
     _orientation = { 'centre': -1, 'center': -1, 'left': 0, 'right': 0, 'above': 1, 'below': 1 }
 
     def _resolve_point(self, diagram, unit_converter, offset, reln, dependencies):
@@ -200,8 +101,8 @@ class Position(object):
         coords = [0.0, 0.0]
         for dependency in dependencies:
             if isinstance(dependency, str):
-                id = dependency
-                dependency = diagram.find_element(id)
+                id_or_name = dependency
+                dependency = diagram.find_element(id_or_name)
             if dependency is None or not dependency.position.resolved:
                 raise ValueError("No position for '{}' element".format(dependency))
             coords[0] += dependency.position.coords[0]
@@ -273,7 +174,7 @@ class Position(object):
                     if reln in ['bottom', 'right']:
                         dirn = 'below' if reln in ['top', 'bottom'] else 'right'
                         (coords, orientation) = self._resolve_point(diagram, unit_converter,
-                                                                    (1000, 'l'), dirn, [self._element.container])
+                                                                    (100, '%'), dirn, [self._element.container])
                         self._coords[orientation] = coords[orientation]
                     dirn = 'right' if reln in ['top', 'bottom'] else 'below'
                     (coords, orientation) = self._resolve_point(diagram, unit_converter,
@@ -303,14 +204,13 @@ class Position(object):
 
 
 class Size(object):
-    def __init__(self, text):
+    def __init__(self, tokens):
         self._lengths = None
-        if text:
-            try:
-                tokens = Grammer.position.parseString(text.strip())
-            except pp.ParseException as msg:
-                raise SyntaxError("Invalid syntax for 'size': {}".format(text))
-            self._lengths = tuple(tokens)
+        for token in tokens:
+            if token.type == '() block':
+                self._lengths, _ = parser.get_coordinates(parser.StyleTokens(token.content))
+            else:
+                raise SyntaxError("Parenthesised pair of lengths expected.")
 
     @property
     def lengths(self):
@@ -336,18 +236,21 @@ class UnitConverter(object):
     def pixels(self, length, dimension, add_offset=True):
         if length is not None:
             units = length[1]
-            if units[0] == 'g':
-                if   'x' in units or dimension == 1:
+            if units.startswith('%'):
+                if   'x' in units or ('y' not in units and dimension == 1):
+                    offset = length[0]*self._local_size[0]/100.0
+                elif 'y' in units or ('x' not in units and dimension == 2):
+                    offset = length[0]*self._local_size[1]/100.0
+                if dimension == 1:
+                    return (self._local_offset[0] if add_offset else 0) + offset
+                else:
+                    return (self._local_offset[1] if add_offset else 0) + offset
+            else:
+                if   'x' in units or ('y' not in units and dimension == 1):
                     return length[0]*self._global_size[0]/1000.0
-                elif 'y' in units or dimension == 2:
+                elif 'y' in units or ('x' not in units and dimension == 2):
                     return length[0]*self._global_size[1]/1000.0
-            elif units[0] in ['l', 'x', 'y']:
-                if   'x' in units or dimension == 1:
-                    return (self._local_offset[0] if add_offset else 0) + length[0]*self._local_size[0]/1000.0
-                elif 'y' in units or dimension == 2:
-                    return (self._local_offset[1] if add_offset else 0) + length[0]*self._local_size[1]/1000.0
-            elif units == 'px':
-                return length[0]
+        return 0
 
     def pixel_pair(self, coords, add_offset=True):
         return tuple(self.pixels(l, (n+1), add_offset) for n, l in enumerate(coords))
@@ -367,10 +270,10 @@ def position_diagram(diagram):
     for e in list(g):
         for dependency in e.position.dependencies:
             if isinstance(dependency, str):
-                id = dependency
-                dependency = diagram.find_element(id)
+                id_or_name = dependency
+                dependency = diagram.find_element(id_or_name)
                 if dependency is None:
-                    raise KeyError('Unknown element id: {}'.format(id))
+                    raise KeyError('Unknown element: {}'.format(id_or_name))
             g.add_edge(dependency, e)
 
     diagram.set_unit_converter(UnitConverter(diagram.pixel_size, diagram.pixel_size))

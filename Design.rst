@@ -114,20 +114,25 @@ Positioning
 
             * Diagram width/height: pixels
             * Compartment size/position: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
+
             * Quantity position as coords: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
             * Quantity position as offset: relation with absolute offset from element(s) -- `300 above #q1 #q2`
+
             * Transporter position: side of container along with offset from
               top-right as % of container -- `left 10%`, `top 20%`
             * Transporter position: side of container along with offset from
               another transporter on side with same orientation, as % of container -- `left 10% below #t1`
+
             * Potential position: same as for Quantity.
             * Flow position: same as for Quantity.
+
             * NB. `absolute` units are in fact relative to the diagram (== 1/1000 of diagram size).
             * NB. Should we just use `tinycss2` parsing rather than building a string to parse
               with `pyparsing`??
             * Can we drop #id and require/use names. Local name is value of `name` attribute but
               then combine with container name(s) to get global name (e.g. `/cell/mitochrondion/NCE`)
               and relative names (e.g. `./mitochrondion/NCE` and/or `mitochrondion/NCE`)??
+            * One of `id` or `name` must be specified. If no name is given then set `name` to `id`.
 
 * points
 * lines

@@ -23,7 +23,7 @@ from collections import OrderedDict
 #------------------------------------------------------------------------------
 
 from . import diagram as dia
-from .element import Element
+from .element import Element, PositionedElement
 
 #------------------------------------------------------------------------------
 
@@ -112,7 +112,7 @@ class BondGraph(Element):
 
 #------------------------------------------------------------------------------
 
-class Flow(Element):
+class Flow(Element, PositionedElement):
     def __init__(self, diagram, transporter=None, **kwds):
         self._transporter = diagram.find_element(transporter, dia.Transporter)
         super().__init__(diagram, class_name='Flow', **kwds)
@@ -129,13 +129,16 @@ class Flow(Element):
     def add_flux(self, flux):
         self._fluxes.append(flux)
 
+    def parse_position(self, position, tokens):
+        PositionedElement.parse_position(self, position, tokens)
+
 #------------------------------------------------------------------------------
 
 class Flux(Element):
-    def __init__(self, diagram, _from=None, to=None, count=1, line=None, **kwds):
+    def __init__(self, diagram, from_=None, to=None, count=1, line=None, **kwds):
         super().__init__(diagram, class_name='Flux', **kwds)
         self._from_potential = diagram.find_element(_from, Potential)
-        self._to_potentials = [diagram.find_element(_from, Potential) for id in to.split()]
+        self._to_potentials = [diagram.find_element(name, Potential) for name in to.split()]
         self._count = int(count)
         self._line = line
 
@@ -153,7 +156,7 @@ class Flux(Element):
 
 #------------------------------------------------------------------------------
 
-class Potential(Element):
+class Potential(Element, PositionedElement):
     def __init__(self, diagram, quantity=None, **kwds):
         self._quantity = diagram.find_element(quantity, dia.Quantity)
         super().__init__(diagram, class_name='Potential', **kwds)
@@ -165,5 +168,8 @@ class Potential(Element):
     @property
     def quantity(self):
         return self._quantity
+
+    def parse_position(self, position, tokens):
+        PositionedElement.parse_position(self, position, tokens)
 
 #------------------------------------------------------------------------------

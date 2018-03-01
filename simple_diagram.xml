@@ -25,21 +25,20 @@
     <!-- Partial representation of diagram at http://sites.bioeng.auckland.ac.nz/mwu035/mpb/  -->
 
     <diagram>
+        <quantity id="q1_id" name="q1"/>  <!-- /q1 -->
         <compartment id="cell" class="cell">
-            <transporters>
-                <transporter id="LFT"/>
-                <transporter id="TOP"/>
-                <transporter id="RGT"/>
-                <transporter id="BOT"/>
-            </transporters>
+            <transporter name="left"/>
+            <transporter id="TOP"/>
+            <transporter id="RGT"/>
+            <transporter id="BOT"/>
+            <quantity id="q2_id" name="q2"/>   <!-- /cell/q2 -->
 
             <compartment id="inner" class="cell">
-                <transporters>
-                    <transporter id="IL"/>
-                    <transporter id="IT"/>
-                    <transporter id="IR"/>
-                    <transporter id="IB"/>
-                </transporters>
+                <transporter id="IL" name="left"/>
+                <transporter id="IT"/>
+                <transporter id="IR"/>
+                <transporter id="IB"/>
+                <quantity id="q3_id" name="q3"/>  <!-- /cell/inner/q1 -->
             </compartment>
         </compartment>
     </diagram>
@@ -49,20 +48,36 @@
             height: 900;
         }
         #cell, #inner {
-            position: (250, 250);
-            size: (500, 500);
+            position: (25%, 25%);
+            size: (50%, 50%);
         }
-        #LFT, #IL {
-            position: 500 left;
+
+        quantity[name="q1"] { position: (300, 200); }
+        quantity[name="q2"] { position: 100 below #q1_id; }
+/*
+        quantity[name="q2"] { position: 100 below q1; }
+        compartment[id="inner"] > quantity[name="q2"] {
+            position: 200 above #q3_id;
         }
+*/
+        compartment[id="inner"] > quantity[name="q3"] {
+            position: (50%y, 50%);
+/*            position: 200 above cell/q2; */
+        }
+
+        compartment[id="cell"] > transporter[name="left"],
+        compartment[id="inner"] > transporter[name="left"] {
+            position: left 50%;
+        }
+
         #TOP, #IT {
-            position: 500 top;
+            position: top 50%;
         }
         #RGT, #IR {
-            position: 500 right;
+            position: right 50%;
         }
         #BOT, #IB {
-            position: 500 bottom;
+            position: bottom 50%;
         }
     </style>
 </cell-diagram>
