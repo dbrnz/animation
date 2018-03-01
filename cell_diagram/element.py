@@ -40,9 +40,9 @@ class Element(object):
                            else None)
         self._label = label if label else name
         self._position = layout.Position(self)
-        pos_tokens = style.pop('position', None) if style else None
+        pos_tokens = style.get('position', None) if style else None
         if pos_tokens:
-            self.parse_position(self._position, pos_tokens)
+            self.parse_position(self._position, parser.StyleTokens(pos_tokens))
         self._style = style
 
     def __str__(self):

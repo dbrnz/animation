@@ -186,8 +186,8 @@ class Diagram(Container):
         self._elements_by_id = OrderedDict()
         self._elements_by_name = OrderedDict()
         self._layout = None
-        self._width, _ = parser.get_number(self.style.get('width') if self.style else 0)
-        self._height, _ = parser.get_number(self.style.get('height') if self.style else 0)
+        self._width, _ = parser.get_number(parser.StyleTokens(self.style.get('width')) if self.style else 0)
+        self._height, _ = parser.get_number(parser.StyleTokens(self.style.get('height')) if self.style else 0)
 
     @property
     def elements(self):

@@ -18,6 +18,8 @@
 #
 # -----------------------------------------------------------------------------
 
+import io
+import itertools
 import logging
 
 from lxml import etree
@@ -44,8 +46,8 @@ def CellDL_namespace(tag):
 #------------------------------------------------------------------------------
 
 class StyleTokens(object):
-    def __init__(self, token):
-        self._tokens = iter(token)
+    def __init__(self, tokens):
+        self._tokens = iter(tokens)
         self._buffer = []
         self._value = None
 
@@ -218,7 +220,7 @@ class StyleSheet(cssselect2.Matcher):
             for match in matches:
                 specificity, order, pseudo, declarations = match
                 for declaration in declarations:
-                    rules[declaration.lower_name] = StyleTokens(declaration.value)
+                    rules[declaration.lower_name] = declaration.value
         return rules
 
 # -----------------------------------------------------------------------------
@@ -292,9 +294,11 @@ class Parser(object):
         self._diagram = None
         self._bond_graph = None
         self._stylesheets = []
+        self._last_element = None  # For error handling
 
     def parse_container(self, element, container):
         for e in ElementChildren(element, self._stylesheets):
+            self._last_element = e
             if e.tag == CellDL_namespace('compartment'):
                 self.parse_compartment(e, container)
             elif e.tag == CellDL_namespace('quantity'):
@@ -323,12 +327,13 @@ class Parser(object):
 
     def parse_bond_graph(self, element):
         for e in ElementChildren(element, self._stylesheets):
+            self._last_element = e
             if e.tag == CellDL_namespace('potential'):
                 self.parse_potential(e)
             elif e.tag == CellDL_namespace('flow'):
                 self.parse_flow(e)
             else:
-                raise SyntaxError("Invalid 'bond-graph' element")
+                raise SyntaxError("Invalid <bond-graph> element")
 
     def parse_potential(self, element):
         potential = bg.Potential(self._diagram, style=element.style, **element.attributes)
@@ -343,6 +348,7 @@ class Parser(object):
         self._diagram.add_element(flow)
         container = transporter.container if flow.transporter is not None else None
         for e in ElementChildren(element, self._stylesheets):
+            self._last_element = e
             if e.tag == CellDL_namespace('flux'):
                 if 'from_' not in e.attributes or 'to' not in e.attributes:
                     raise SyntaxError("Flux requires 'from' and 'to' potentials.")
@@ -390,47 +396,32 @@ class Parser(object):
             for item in ElementChildren(e):
                 geo.Item(container=box, boundary=boundary, **item.attributes)
     '''
-    def parse(self, file, stylesheet=None):
-        logging.debug('PARSE: %s', file)
-        if stylesheet is not None:
-            self._stylesheets.append(StyleSheet(stylesheet))
 
-        # Parse the XML file and wrap the resulting root element so
-        # we can easily iterate through its children
-        xml_root = etree.parse(file)
-
-        # Load all style information before wrapping the root element
-        for e in xml_root.iterfind(CellDL_namespace('style')):
-            if 'href' in e.attrib:
-                pass          ### TODO: Load external stylesheets...
-            else:
-                self._stylesheets.append(StyleSheet(e.text))
-
-        root_element = ElementWrapper(
-            cssselect2.ElementWrapper.from_xml_root(xml_root),
-            self._stylesheets)
-        if root_element.tag != CellDL_namespace('cell-diagram'):
-            raise SyntaxError()
+    def parse_diagram(self, root):
+        self._last_element = root
+        if root.tag != CellDL_namespace('cell-diagram'):
+            raise SyntaxError("Root tag is not <cell-diagram>")
 
         # Parse top-level children, loading stylesheets and
         # finding any diagram and bond-graph elements
         diagram_element = None
         bond_graph_element = None
-        for e in ElementChildren(root_element, self._stylesheets):
+        for e in ElementChildren(root, self._stylesheets):
+            self._last_element = e
             if   e.tag == CellDL_namespace('bond-graph'):
                 if bond_graph_element is None:
                     bond_graph_element = e
                 else:
-                    raise SyntaxError
+                    raise SyntaxError("Can only declare a single <bond-graph>")
             elif e.tag == CellDL_namespace('diagram'):
                 if diagram_element is None:
                     diagram_element = e
                 else:
-                    raise SyntaxError
+                    raise SyntaxError("Can only declare a single <diagram>")
             elif e.tag == CellDL_namespace('style'):
                 pass
             else:
-                raise SyntaxError
+                raise SyntaxError("Unknown XML element: <{}>".format(e.tag))
 
         # Parse the diagram element
         if diagram_element is not None:
@@ -447,11 +438,60 @@ class Parser(object):
                                             **bond_graph_element.attributes)
             self.parse_bond_graph(bond_graph_element)
         else:
-            bond_graph = bg.BondGraph(self._diagram)
+            self._bond_graph = bg.BondGraph(self._diagram)
+
+
+    def parse(self, file, stylesheet=None):
+        logging.debug('PARSE: %s', file)
+        if stylesheet is not None:
+            self._stylesheets.append(StyleSheet(stylesheet))
+
+        # Parse the XML file and wrap the resulting root element so
+        # we can easily iterate through its children
+        error = None
+        try:
+            xml_root = etree.parse(file)
+        except (etree.ParseError, etree.XMLSyntaxError) as err:
+            lineno, column = err.position
+            with open(file) as f:
+                t = f.read()
+                line = next(itertools.islice(io.StringIO(t), lineno-1, None))
+            error = ("{}\n{}".format(err, line))
+        if error:
+            raise SyntaxError(error)
+
+        # Load all style information before wrapping the root element
+        for e in xml_root.iterfind(CellDL_namespace('style')):
+            if 'href' in e.attrib:
+                pass          ### TODO: Load external stylesheets...
+            else:
+                self._stylesheets.append(StyleSheet(e.text))
+
+        root_element = ElementWrapper(
+            cssselect2.ElementWrapper.from_xml_root(xml_root),
+            self._stylesheets)
+
+        try:
+            self.parse_diagram(root_element)
+        except Exception as err:
+            e = self._last_element.element.etree_element
+            s = self._last_element.style
+            error = "{}\n<{} {}/>\n{}".format(err,
+                    e.tag,
+                    ' '.join(['{}="{}"'.format(a, v) for a, v in e.items()]),
+                    '\n'.join(['{}: {};'.format(a, tinycss2.serialize(n)) for a, n in s.items()])
+                    )
+        if error:
+            raise SyntaxError(error)
+
+        try:
+            self._diagram.position_elements()
+        except Exception as err:
+            error = "{}".format(err)
+        if error:
+            raise SyntaxError(error)
 
         logging.debug('')
-
-        self._diagram.position_elements()
 
         # For all fluxes
         # parse 'line' attribute

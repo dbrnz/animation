@@ -206,7 +206,7 @@ class Position(object):
 class Size(object):
     def __init__(self, tokens):
         self._lengths = None
-        for token in tokens:
+        for token in parser.StyleTokens(tokens):
             if token.type == '() block':
                 self._lengths, _ = parser.get_coordinates(parser.StyleTokens(token.content))
             else:
