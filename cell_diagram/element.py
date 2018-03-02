@@ -41,6 +41,7 @@ class Element(object):
         self._label = label if label else name
         self._position = layout.Position(self)
         pos_tokens = style.get('position', None) if style else None
+        self._position.add_dependency(self._container)
         if pos_tokens:
             self.parse_position(self._position, parser.StyleTokens(pos_tokens))
         self._style = style
@@ -136,6 +137,6 @@ class PositionedElement(object):
         if tokens.peek() is not None:
             raise SyntaxError("Invalid syntax")
 
-        position.add_dependencies(dependencies + [self.container])
+        position.add_dependencies(dependencies)
 
 # -----------------------------------------------------------------------------
