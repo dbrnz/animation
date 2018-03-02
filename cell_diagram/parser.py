@@ -377,34 +377,6 @@ class Parser(object):
                 raise SyntaxError
         self._bond_graph.add_flow(flow)
 
-    '''
-    def parse_geometry(self, element, geometry):
-        # <geometry> doesn't have a boundary, <box> does
-        return self.parse_box(element, geometry, boundary=False)
-
-    def parse_box(self, element, container=None, boundary=True):
-        box = geo.Box(container=container, **element.attributes)
-        for e in ElementChildren(element):
-            if   boundary and e.tag == CellDL_namespace('boundary'):
-                self.parse_boundary(e, box)
-            elif e.tag == CellDL_namespace('box'):
-                self.parse_box(e, box)
-            elif e.tag == CellDL_namespace('item'):
-                geo.Item(container=box, **e.attributes)
-            else:
-                raise SyntaxError
-        return box
-
-    def parse_boundary(self, element, box):
-        for e in ElementChildren(element):
-            if   e.tag == CellDL_namespace('top'):    boundary = 'top'
-            elif e.tag == CellDL_namespace('left'):   boundary = 'left'
-            elif e.tag == CellDL_namespace('bottom'): boundary = 'bottom'
-            elif e.tag == CellDL_namespace('right'):  boundary = 'right'
-            else:                                     raise SyntaxError
-            for item in ElementChildren(e):
-                geo.Item(container=box, boundary=boundary, **item.attributes)
-    '''
 
     def parse_diagram(self, root):
         self._last_element = root
