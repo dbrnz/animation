@@ -148,7 +148,7 @@ class Flux(Element):
 
     @property
     def to_potentials(self):
-        return self._to_potential_ids
+        return self._to_potentials
 
     @property
     def count(self):
