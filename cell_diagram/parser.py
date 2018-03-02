@@ -50,6 +50,7 @@ class StyleTokens(object):
         self._tokens = iter(tokens)
         self._buffer = []
         self._value = None
+        self._skip_space = True
 
     def __iter__(self):
         return self
@@ -63,7 +64,9 @@ class StyleTokens(object):
             except StopIteration:
                 self._value = None
                 raise StopIteration
-            if token.type not in ['comment', 'whitespace']:
+            if (not self._skip_space
+             or token.type not in ['comment', 'whitespace']):
+                self._skip_space = True
                 self._value = token
                 return token
 
@@ -71,14 +74,16 @@ class StyleTokens(object):
     def value(self):
         return self._value
 
-    def next(self):
-        return(next(self))
+    def next(self, skip_space=True):
+        self._skip_space = skip_space
+        return next(self)
 
     def back(self):
         self._buffer.append(self._value)
 
-    def peek(self):
+    def peek(self, skip_space=True):
         try:
+            self._skip_space = skip_space
             token = next(self)
         except StopIteration:
             return None
@@ -109,25 +114,27 @@ def get_number(tokens):
 # -----------------------------------------------------------------------------
 
 
-def get_percentage(tokens):
+def get_percentage(tokens, default=None):
     """
     :param tokens: `StyleTokens` of tokens
     :return: tuple(Length, tokens)
     """
 
     try:
-        token = tokens.next()
-        if token.type != 'percentage':
-            raise SyntaxError('Percentage expected.')
-        percentage = (token.int_value
-                      if token.is_integer
-                      else token.value)
         token = tokens.peek()
+        if token is None or token.type != 'percentage':
+            if default is not None:
+                return (default, tokens)
+            else:
+                raise SyntaxError('Percentage expected.')
+        percentage = (token.int_value if token.is_integer else token.value)
+        tokens.next()
+        token = tokens.peek(False)
         modifier = (token.lower_value
                     if (token is not None and token.type == 'ident')
                     else '')
         if modifier not in ['', 'x', 'y']:
-            raise SyntaxError("Modifier must be 'x' or 'y'.")
+            raise SyntaxError("Modifier ({}) must be 'x' or 'y'.".format(modifier))
         elif modifier != '':
             tokens.next()
         return ((percentage, '%' + modifier), tokens)
@@ -137,7 +144,7 @@ def get_percentage(tokens):
 
 # -----------------------------------------------------------------------------
 
-def get_offset(tokens):
+def get_length(tokens, default=None):
     """
     :param tokens: `StyleTokens` of tokens
     :return: tuple(Length, tokens)
@@ -145,13 +152,19 @@ def get_offset(tokens):
     `100`, `100x`, `100y`
     """
     try:
-        token = tokens.next()
-        if token.type not in ['number', 'dimension']:
-            raise SyntaxError('Number or dimensioned number expected.')
+        token = tokens.peek()
+        if token is not None and token.type == 'percentage':
+            return get_percentage(tokens, default)
+        elif token is None or token.type not in ['number', 'dimension']:
+            if default is not None:
+                return (default, tokens)
+            else:
+                raise SyntaxError('Length expected.')
         value = (token.int_value if token.is_integer else token.value)
         modifier = (token.lower_unit if token.type == 'dimension' else '')
         if modifier not in ['', 'x', 'y']:
             raise SyntaxError("Modifier must be 'x' or 'y'.")
+        tokens.next()
         return ((value, modifier), tokens)
     except StopIteration:
         return ((0, ''), tokens)
@@ -177,12 +190,8 @@ def get_coordinates(tokens):
                 got_comma = True
             elif got_comma and token.type in ['dimension', 'number', 'percentage']:
                 got_comma = False
-                if token.type == 'percentage':
-                    tokens.back()
-                    length, tokens = get_percentage(tokens)
-                elif token.type in ['number', 'dimension']:
-                    tokens.back()
-                    length, tokens = get_offset(tokens)
+                tokens.back()
+                length, tokens = get_length(tokens)
                 coords.append(length)
             else:
                 raise SyntaxError("Invalid syntax.")

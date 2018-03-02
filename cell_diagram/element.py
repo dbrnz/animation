@@ -115,7 +115,7 @@ class PositionedElement(object):
                 position.set_lengths(lengths)
             else:
                 tokens.back()
-                offset, tokens = parser.get_offset(tokens)
+                offset, tokens = parser.get_length(tokens, default=(25, 'x'))  ### FROM STYLESHEET ??
                 token = tokens.next()
                 if token.type == 'ident' and token.lower_value in layout.OFFSET_RELATIONS:
                     reln = token.lower_value
