@@ -316,7 +316,7 @@ class Parser(object):
               and isinstance(container, dia.Compartment)):
                 self.parse_transporter(e, container)
             else:
-                raise SyntaxError
+                raise SyntaxError("Unexpected XML element <{}>".format(e.tag))
 
     def parse_compartment(self, element, container):
         compartment = dia.Compartment(container, style=element.style, **element.attributes)
@@ -452,8 +452,6 @@ class Parser(object):
 
     def parse(self, file, stylesheet=None):
         logging.debug('PARSE: %s', file)
-        if stylesheet is not None:
-            self._stylesheets.append(StyleSheet(stylesheet))
 
         # Parse the XML file and wrap the resulting root element so
         # we can easily iterate through its children
@@ -469,12 +467,19 @@ class Parser(object):
         if error:
             raise SyntaxError(error)
 
-        # Load all style information before wrapping the root element
-        for e in xml_root.iterfind(CellDL_namespace('style')):
-            if 'href' in e.attrib:
-                pass          ### TODO: Load external stylesheets...
-            else:
-                self._stylesheets.append(StyleSheet(e.text))
+        try:
+            # Load all style information before wrapping the root element
+            if stylesheet is not None:
+                self._stylesheets.append(StyleSheet(stylesheet))
+            for e in xml_root.iterfind(CellDL_namespace('style')):
+                if 'href' in e.attrib:
+                    pass          ### TODO: Load external stylesheets...
+                else:
+                    self._stylesheets.append(StyleSheet(e.text))
+        except cssselect2.parser.SelectorError as err:
+            error = "{} when parsing stylesheet.".format(err)
+        if error:
+            raise SyntaxError(error)
 
         root_element = ElementWrapper(
             cssselect2.ElementWrapper.from_xml_root(xml_root),
