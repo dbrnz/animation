@@ -92,18 +92,39 @@ class BondGraph(Element):
     def svg(self):
         svg = [ ]
         for p, q in self.potentials.items():
-            (x, y) = p.position.coords
-            (qx, qy) = q.position.coords
-            svg.append('<path fill="#eeeeee" stroke="#222222" stroke-width="4.0" opacity="0.6"'
+            (x, y) = p.coords
+            (qx, qy) = q.coords
+            svg.append('<path fill="none" stroke="#222222" stroke-width="2.0" opacity="0.6"'
                      + ' d="M{start_x:g},{start_y:g} L{end_x:g},{end_y:g}"/>'
                        .format(start_x=x, start_y=y, end_x=qx, end_y=qy))
             svg.extend(p.svg(fill='#c0ffc0'))
         # Link potentials via flows and fluxes
         for flow in self.flows:
-            if flow.position is not None:
-                svg.extend(flow.svg(fill='#ff8080'))
+            svg.extend(flow.svg(fill='#ff8080'))
+            compartment = (flow.transporter.container.geometry
+                           if flow.transporter is not None
+                           else None)
             for flux in flow.fluxes:
-                pass
+                (from_x, from_y) = flux.from_potential.coords
+                flow_points = []
+                if compartment is not None:
+                    # Are the from and flow elements on the same side
+                    # of the transporter's compartment?
+                    if (compartment.contains(flow.geometry) == compartment.contains(flux.from_potential.geometry)):
+                        flow_points.extend([flow.coords, flow.transporter.coords])
+                    else:
+                        flow_points.append(flow.transporter.coords)
+
+                for to in flux.to_potentials:
+                    if (compartment is None
+                     or compartment.contains(flow.geometry) != compartment.contains(flux.from_potential.geometry)):
+                        flow_points.append(flow.coords)
+                    flow_points.append(to.coords)
+                    svg.append('<path fill="none" stroke="#222222" stroke-width="{:g}" opacity="0.6"'
+                        .format(flux.count*2.5)
+                      + ' d="M{:g},{:g} {:s}"/>'
+                        .format(from_x, from_y,
+                               ' '.join(['L{:g},{:g}'.format(*point) for point in flow_points])))
                 # Path from flux.from_potential to flux.to_potentials
                 # via flow.transporter and flow nodes
                 # repeated flux.count times
@@ -130,11 +151,13 @@ class Flow(Element, PositionedElement):
         self._fluxes.append(flux)
 
     def parse_position(self, position, tokens):
-        PositionedElement.parse_position(self, position, tokens)
+        PositionedElement.parse_position(self, position, tokens,
+                                         default_offset=self.diagram.flow_offset,
+                                         default_dependency=self.transporter)
 
 #------------------------------------------------------------------------------
 
-class Flux(Element):
+class Flux(Element, PositionedElement):
     def __init__(self, diagram, from_=None, to=None, count=1, line=None, **kwds):
         super().__init__(diagram, class_name='Flux', **kwds)
         self._from_potential = diagram.find_element('#' + from_, Potential)
@@ -159,6 +182,7 @@ class Flux(Element):
 class Potential(Element, PositionedElement):
     def __init__(self, diagram, quantity=None, **kwds):
         self._quantity = diagram.find_element('#' + quantity, dia.Quantity)
+        self._quantity.set_potential(self)
         super().__init__(self._quantity.container, class_name='Potential', **kwds)
 
     @property
@@ -170,6 +194,8 @@ class Potential(Element, PositionedElement):
         return self._quantity
 
     def parse_position(self, position, tokens):
-        PositionedElement.parse_position(self, position, tokens)
+        PositionedElement.parse_position(self, position, tokens,
+                                         default_offset=self.diagram.quantity_offset,
+                                         default_dependency=self.quantity)
 
 #------------------------------------------------------------------------------

@@ -18,6 +18,10 @@
 #
 # -----------------------------------------------------------------------------
 
+import shapely.geometry as geo
+
+# -----------------------------------------------------------------------------
+
 from . import layout
 from . import parser
 from . import SyntaxError
@@ -28,29 +32,35 @@ from . import SyntaxError
 class Element(object):
     def __init__(self, container, class_name='Element',
                  class_=None, id=None, name=None, label=None, style=None):
-        self._container = container
-        self._class_name = class_name
-        self._class = class_
         self._id = ('#' + id) if id is not None else None
         if name is None:
             name = id if id is not None else ''
         self._local_name = name
-        self._full_name = ((container.full_name + '/' + name)
-                           if (container and container.full_name and name)
-                           else None)
+        if self == container:
+            self._container = None
+            self._diagram = self
+            self._full_name = '/'
+        else:
+            self._container = container
+            self._diagram = container.diagram
+            self._full_name = ((container.full_name + '/' + name)
+                               if (container and container.full_name and name)
+                               else None)
+        self._class_name = class_name
+        self._class = class_
         self._label = label if label else name
-        self._position = layout.Position(self)
-        pos_tokens = style.get('position', None) if style else None
-        self._position.add_dependency(self._container)
-        if pos_tokens:
-            self.parse_position(self._position, parser.StyleTokens(pos_tokens))
         self._style = style
+        super().__init__()   # Now initialise any PositionedElement mixin
 
     def __str__(self):
         s = [self._class_name]
         if self._id:
             s.append('({})'.format(self._id))
         return ' '.join(s)
+
+    @property
+    def full_name(self):
+        return self._full_name
 
     @property
     def id(self):
@@ -61,12 +71,16 @@ class Element(object):
         return self._label
 
     @property
-    def container(self):
-        return self._container
+    def local_name(self):
+        return self._local_name
 
     @property
-    def position(self):
-        return self._position
+    def diagram(self):
+        return self._diagram
+
+    @property
+    def container(self):
+        return self._container
 
     @property
     def style(self):
@@ -83,60 +97,107 @@ class Element(object):
             s.append(' class="{}"'.format(self._class))
         return ''.join(s)
 
-    def parse_position(self, position, tokens):
-        pass
-
-    def svg(self, stroke='none', fill='#cccccc'):
-        svg = ['<g{}>'.format(self.id_class())]
-        if self.position.has_coords:
-            (x, y) = self.position.coords
-            svg.append(('  <circle r="10.0" cx="{:g}" cy="{:g}"'
-                        ' stroke="{:s}" fill="{:s}"/>')
-                       .format(x, y, stroke, fill))
-            svg.append('  <text x="{:g}" y="{:g}">{:s}</text>'
-                       .format(x-9, y+6, self._label))
-        svg.append('</g>')
-        return svg
-
 # -----------------------------------------------------------------------------
 
-class PositionedElement(object):
 
-    def parse_position(self, position, tokens):
+class PositionedElement(object):
+    def __init__(self):
+        self._position = layout.Position(self)
+        self._position.add_dependency(self._container)
+        pos_tokens = self._style.get('position', None) if self._style else None
+        if pos_tokens:
+            self.parse_position(self._position, parser.StyleTokens(pos_tokens))
+        self._geometry = None
+
+    @property
+    def position(self):
+        return self._position
+
+    @property
+    def coords(self):
+        return self._position.coords
+
+    @property
+    def geometry(self):
+        if self._geometry is None and self.position.has_coords:
+            self._geometry = geo.Point(self.coords)
+        return self._geometry
+
+    def resolve_position(self):
+        self._position.resolve()
+
+    def parse_position(self, position, tokens, default_offset=None, default_dependency=None):
         """
         * Position as coords: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
         * Position as offset: relation with absolute offset from element(s) -- `300 above #q1 #q2`
         """
 
-        dependencies = []
-        try:
-            token = tokens.next()
-            if token.type == '() block':
-                lengths, _ = parser.get_coordinates(parser.StyleTokens(token.content))
-                position.set_lengths(lengths)
-            else:
-                tokens.back()
-                offset, tokens = parser.get_length(tokens, default=(25, 'x'))  ### FROM STYLESHEET ??
+
+        element_dependencies = []
+        token = tokens.peek()
+        if token.type == '() block':
+            tokens.next()
+            lengths, _ = parser.get_coordinates(parser.StyleTokens(token.content))
+            position.set_lengths(lengths)
+        else:
+            seen_horizontal = False
+            seen_vertical = False
+            while True:
+                dependencies = []
+                using_default = token.type not in ['number', 'dimension', 'percentage']
+                offset, tokens = parser.get_length(tokens, default=default_offset)
                 token = tokens.next()
-                if token.type == 'ident' and token.lower_value in layout.OFFSET_RELATIONS:
-                    reln = token.lower_value
-                    token = tokens.peek()
-                    if token is None or token.type != 'hash':
-                        raise SyntaxError("Identifier(s) expected")
+                if (token.type != 'ident'
+                 or token.lower_value not in layout.POSITION_RELATIONS):
+                    raise SyntaxError("Unknown relationship for position.")
+                reln = token.lower_value
+                token = tokens.peek()
+                if ((token is None or token ==',')
+                 and default_dependency is not None):
+                    dependencies.append(default_dependency)
+                elif (token is None
+                  or (token.type != 'hash' and token != ',')):
+                    raise SyntaxError("Identifier(s) expected")
+                else:
+                    tokens.next()   # We peeked above...
                     while token.type == 'hash':
                         try:
-                            token = tokens.next()
                             dependencies.append('#' + token.value)
+                            token = tokens.next()
                         except StopIteration:
                             break
-                    print('Depend for', self, dependencies)
-                    position.add_relationship(offset, reln, dependencies)
-        except StopIteration:
-            pass
+                if token == ',':
+                    if using_default:
+                        # No default offsets if two (or more) constraints
+                        offset = None
+                    if (seen_horizontal and reln in layout.HORIZONTAL_RELN
+                     or seen_vertical and reln in layout.VERTICAL_RELN):
+                        raise SyntaxError("Constraints must have different directions.")
+                position.add_relationship(offset, reln, dependencies)
+                element_dependencies.extend(dependencies)
+                seen_horizontal = reln in layout.HORIZONTAL_RELN
+                seen_vertical = reln in layout.VERTICAL_RELN
+                if token == ',':
+                    continue
+                elif tokens.peek() is None:
+                    break
+                else:
+                    raise SyntaxError("Invalid syntax")
+        position.add_dependencies(element_dependencies)
 
-        if tokens.peek() is not None:
-            raise SyntaxError("Invalid syntax")
+    def svg(self, stroke='none', fill='#cccccc'):
+        svg = ['<g{}>'.format(self.id_class())]
+        if self.position.has_coords:
+            (x, y) = self.coords
+            svg.append(('  <circle r="10.0" cx="{:g}" cy="{:g}"'
+                        ' stroke="{:s}" fill="{:s}"/>')
+                       .format(x, y, stroke, fill))
+            svg.append('  <text x="{:g}" y="{:g}">{:s}</text>'
+                       .format(x-9, y+6, self._local_name))
+        svg.append('</g>')
+        return svg
 
-        position.add_dependencies(dependencies)
+
+
 
 # -----------------------------------------------------------------------------

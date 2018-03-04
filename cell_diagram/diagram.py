@@ -20,6 +20,9 @@
 
 from collections import OrderedDict
 
+import shapely.geometry as geo
+import networkx as nx
+
 # -----------------------------------------------------------------------------
 
 from . import layout
@@ -29,7 +32,7 @@ from .element import Element, PositionedElement
 # -----------------------------------------------------------------------------
 
 
-class Container(Element):
+class Container(Element, PositionedElement):
     def __init__(self, container, class_name='Container', **kwds):
         super().__init__(container, class_name=class_name, **kwds)
         self._components = []
@@ -46,6 +49,14 @@ class Container(Element):
     @property
     def unit_converter(self):
         return self._unit_converter
+
+    @property
+    def geometry(self):
+        if self._geometry is None and self.position.has_coords:
+            self._geometry = geo.box(self.coords[0], self.coords[1],
+                                     self.coords[0] + self._width,
+                                     self.coords[1] + self._height)
+        return self._geometry
 
     def set_pixel_size(self, pixel_size):
         (self._width, self._height) = pixel_size
@@ -121,10 +132,16 @@ class Compartment(Container):
 
 class Quantity(Element, PositionedElement):
     def __init__(self, container, **kwds):
+        self._potential = None
         super().__init__(container, class_name='Quantity', **kwds)
 
+    def set_potential(self, potential):
+        self._potential = potential
+
     def parse_position(self, position, tokens):
-        PositionedElement.parse_position(self, position, tokens)
+        PositionedElement.parse_position(self, position, tokens,
+                                         default_offset=self.diagram.quantity_offset,
+                                         default_dependency=self._potential)
 
     def svg(self):
         return super().svg(stroke='#ff0000', fill='#FF80ff')
@@ -132,7 +149,7 @@ class Quantity(Element, PositionedElement):
 # -----------------------------------------------------------------------------
 
 
-class Transporter(Element):
+class Transporter(Element, PositionedElement):
     def __init__(self, container, **kwds):
         super().__init__(container, class_name='Transporter', **kwds)
 
@@ -181,13 +198,27 @@ class Transporter(Element):
 
 class Diagram(Container):
     def __init__(self, **kwds):
-        super().__init__(None, class_name='Diagram', **kwds)
+        super().__init__(self, class_name='Diagram', **kwds)
         self._elements = list()
         self._elements_by_id = OrderedDict()
         self._elements_by_name = OrderedDict()
         self._layout = None
-        self._width, _ = parser.get_number(parser.StyleTokens(self.style.get('width')) if self.style else 0)
-        self._height, _ = parser.get_number(parser.StyleTokens(self.style.get('height')) if self.style else 0)
+        self._width = self._number_from_style('width', 0)
+        self._height = self._number_from_style('height', 0)
+        self._flow_offset = self._length_from_style('flow-offset', layout.FLOW_OFFSET)
+        self._quantity_offset = self._length_from_style('quantity-offset', layout.QUANTITY_OFFSET)
+
+    def _length_from_style(self, name, default):
+        if self.style and name in self.style:
+            value, _ = parser.get_length(parser.StyleTokens(self.style.get(name)))
+            return value
+        return default
+
+    def _number_from_style(self, name, default):
+        if self.style and name in self.style:
+            value, _ = parser.get_number(parser.StyleTokens(self.style.get(name)))
+            return value
+        return default
 
     @property
     def elements(self):
@@ -200,6 +231,14 @@ class Diagram(Container):
     @property
     def width(self):
         return self._width
+
+    @property
+    def flow_offset(self):
+        return self._flow_offset
+
+    @property
+    def quantity_offset(self):
+        return self._quantity_offset
 
     def add_element(self, element):
         self._elements.append(element)
@@ -220,7 +259,32 @@ class Diagram(Container):
 
     def position_elements(self):
         self.position.set_coords((0, 0))
-        layout.position_diagram(self)
+
+        # Build the dependency graph
+        g = nx.DiGraph()
+        # We want all elements that have a position; some may not have an id
+        for e in self._elements:
+            ### This is where we could parse the position tokens...
+            if e.position:
+                g.add_node(e)
+        # Add edges
+        for e in list(g):
+            for dependency in e.position.dependencies:
+                if isinstance(dependency, str):
+                    id_or_name = dependency
+                    dependency = self.find_element(id_or_name)
+                    if dependency is None:
+                        raise KeyError('Unknown element: {}'.format(id_or_name))
+                g.add_edge(dependency, e)
+        # Now resolve element positions in dependency order
+        self.set_unit_converter(layout.UnitConverter(self.pixel_size, self.pixel_size))
+        for e in nx.topological_sort(g):
+            if e != self:
+                e.resolve_position()
+                if isinstance(e, Compartment):
+                    e.set_pixel_size(e.container.unit_converter.pixel_pair(e.size.lengths, False))
+                    e.set_unit_converter(layout.UnitConverter(self.pixel_size, e.pixel_size, e.position.coords))
+
 
     def svg(self, bond_graph):
         svg = ['<?xml version="1.0" encoding="UTF-8"?>']

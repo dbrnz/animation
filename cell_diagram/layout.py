@@ -18,28 +18,20 @@
 #
 #------------------------------------------------------------------------------
 
-import networkx as nx
-
-#------------------------------------------------------------------------------
-
 from . import bondgraph as bg
 from . import diagram as dia
 from . import parser
 
 #------------------------------------------------------------------------------
 
-DEFAULT_OFFSET           = (50, 'gx')
-POSITION_QUANTITY_OFFSET = (20, 'gx')
-FLOW_TRANSPORTER_OFFSET  = (20, 'gx')
-
-TRANSPORTER_SPACING      = (20, 'l')
+QUANTITY_OFFSET = (40, 'x')
+FLOW_OFFSET = (40, 'x')
 
 #------------------------------------------------------------------------------
 
 HORIZONTAL_RELN  = ['left', 'right']
 VERTICAL_RELN    = ['top', 'bottom', 'above', 'below']
-#CENTERED_RELN    = ['centre', 'center']
-OFFSET_RELATIONS = HORIZONTAL_RELN + VERTICAL_RELN
+POSITION_RELATIONS = HORIZONTAL_RELN + VERTICAL_RELN
 
 COMPARTMENT_BOUNDARIES = ['top', 'bottom', 'left', 'right',
                           'top-left', 'top-right',
@@ -91,7 +83,7 @@ class Position(object):
 
     _orientation = { 'centre': -1, 'center': -1, 'left': 0, 'right': 0, 'above': 1, 'below': 1 }
 
-    def _resolve_point(self, diagram, unit_converter, offset, reln, dependencies):
+    def _resolve_point(self, unit_converter, offset, reln, dependencies):
         '''
         :return: tuple(tuple(x, y), orientation) where orientation == 0 means
                  horizontal and 1 means vertical.
@@ -102,31 +94,13 @@ class Position(object):
         for dependency in dependencies:
             if isinstance(dependency, str):
                 id_or_name = dependency
-                dependency = diagram.find_element(id_or_name)
+                dependency = self._element.diagram.find_element(id_or_name)
             if dependency is None or not dependency.position.resolved:
                 raise ValueError("No position for '{}' element".format(dependency))
             coords[0] += dependency.position.coords[0]
             coords[1] += dependency.position.coords[1]
         coords[0] /= len(dependencies)
         coords[1] /= len(dependencies)
-
-        if not offset:
-            if dependency is not None:
-                if (isinstance(self._element, bg.Potential) # and isinstance(dependency, dia.Quantity)
-                 or isinstance(self._element, dia.Quantity)): # and isinstance(dependency, bg.Potential)):
-                    offset = POSITION_QUANTITY_OFFSET
-                elif (isinstance(self._element, bg.Flow) and isinstance(dependency, dia.Transporter)
-                   or isinstance(self._element, dia.Transporter) and isinstance(dependency, bg.Flow)):
-                    offset = FLOW_TRANSPORTER_OFFSET
-                elif isinstance(self._element, dia.Transporter):
-                    offset = TRANSPORTER_SPACING
-                else:
-                    offset = DEFAULT_OFFSET
-            elif isinstance(self._element, dia.Transporter):
-                offset = TRANSPORTER_SPACING
-            else:
-                offset = DEFAULT_OFFSET
-
         orientation = Position._orientation[reln]
         if orientation >= 0:
             adjust = unit_converter.pixels(offset, orientation+1, False)
@@ -134,10 +108,9 @@ class Position(object):
         elif reln == 'right': coords[0] += adjust
         elif reln == 'above': coords[1] -= adjust
         elif reln == 'below': coords[1] += adjust
-
         return (tuple(coords), orientation)
 
-    def resolve(self, diagram):
+    def resolve(self):
         '''
         # Transporters are always on a compartment boundary
         pos="100 top"    ## x = x(compartment) + 100; y = y(compartment)
@@ -163,29 +136,31 @@ class Position(object):
         unit_converter = self._element.container.unit_converter
 
         if self._lengths:
+            print(self._element.container, self._element, self._lengths, self._coords)
             self._coords = unit_converter.pixel_pair(self._lengths)
 
         elif None in self._coords and self._relationships:
             if len(self._relationships) == 1:
+                # Have just a single constraint
                 offset = self._relationships[0][0]
                 reln = self._relationships[0][1]
                 dependencies = self._relationships[0][2]
                 if isinstance(self._element, dia.Transporter):
                     if reln in ['bottom', 'right']:
                         dirn = 'below' if reln in ['top', 'bottom'] else 'right'
-                        (coords, orientation) = self._resolve_point(diagram, unit_converter,
+                        (coords, orientation) = self._resolve_point(unit_converter,
                                                                     (100, '%'), dirn, [self._element.container])
                         self._coords[orientation] = coords[orientation]
                     dirn = 'right' if reln in ['top', 'bottom'] else 'below'
-                    (coords, orientation) = self._resolve_point(diagram, unit_converter,
+                    (coords, orientation) = self._resolve_point(unit_converter,
                                                                 offset, dirn, [self._element.container])
                     if reln in ['bottom', 'right']: self._coords[orientation] = coords[orientation]
                     else:                           self._coords = coords
                 else:
-                    (coords, orientation) = self._resolve_point(diagram, unit_converter,
-                                                                offset, reln, dependencies)
-                    self._coords = coords
+                    self._coords, _ = self._resolve_point(unit_converter,
+                                                          offset, reln, dependencies)
             else:
+                # Have both horizontal and vertical constraints
                 for relationship in self._relationships:
                     offset = relationship[0]
                     reln = relationship[1]
@@ -196,8 +171,9 @@ class Position(object):
 ##        pos="right; 10 below #t2"  ## same as pos="1000 right #compartment; 10 below #t2"
                         pass
                     else:
-                        (coords, orientation) = self._resolve_point(diagram, unit_converter,
+                        (coords, orientation) = self._resolve_point(unit_converter,
                                                                     offset, reln, dependencies)
+                        orientation = orientation - 1  # Swap meaning
                         self._coords[orientation] = coords[orientation]
 
 #------------------------------------------------------------------------------
@@ -254,44 +230,6 @@ class UnitConverter(object):
 
     def pixel_pair(self, coords, add_offset=True):
         return tuple(self.pixels(l, (n+1), add_offset) for n, l in enumerate(coords))
-
-#------------------------------------------------------------------------------
-
-
-def position_diagram(diagram):
-    # Build a dependency graph
-    g = nx.DiGraph()
-
-    # We want all elements that have a position; some may not have an id
-    for e in diagram.elements:
-        if e.position: g.add_node(e)
-
-    # Add dependency edges
-    for e in list(g):
-        for dependency in e.position.dependencies:
-            if isinstance(dependency, str):
-                id_or_name = dependency
-                dependency = diagram.find_element(id_or_name)
-                if dependency is None:
-                    raise KeyError('Unknown element: {}'.format(id_or_name))
-            g.add_edge(dependency, e)
-
-    diagram.set_unit_converter(UnitConverter(diagram.pixel_size, diagram.pixel_size))
-    for e in nx.topological_sort(g):
-        if e != diagram:
-            e.position.resolve(diagram)
-            if isinstance(e, dia.Compartment):
-                e.set_pixel_size(e.container.unit_converter.pixel_pair(e.size.lengths, False))
-                e.set_unit_converter(UnitConverter(diagram.pixel_size, e.pixel_size, e.position.coords))
-
-#   write_dot(g, 'cell.dot')
-    from matplotlib import pyplot as plt
-    from networkx.drawing.nx_agraph import graphviz_layout, write_dot
-    pos = graphviz_layout(g, prog='neato')
-    nx.draw(g, pos, labels={e: e.id for e in diagram.elements if e in g})
-    plt.show()
-
-    return g
 
 #------------------------------------------------------------------------------
 

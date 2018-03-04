@@ -355,7 +355,7 @@ class Parser(object):
     def parse_flow(self, element):
         flow = bg.Flow(self._diagram, style=element.style, **element.attributes)
         self._diagram.add_element(flow)
-        container = transporter.container if flow.transporter is not None else None
+        container = flow.transporter.container if flow.transporter is not None else None
         for e in ElementChildren(element, self._stylesheets):
             self._last_element = e
             if e.tag == CellDL_namespace('flux'):
@@ -486,4 +486,3 @@ class Parser(object):
         return (self._diagram, self._bond_graph)
 
 # -----------------------------------------------------------------------------
-

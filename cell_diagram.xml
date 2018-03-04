@@ -52,30 +52,28 @@ stylesheet might specify scale, position, size??
         <quantity id="q16" class="calcium"   label="$\text{q}_16^{[\text{Ca}^{2+}]_\text{o}}$"/>
 
         <compartment id="cell" class="cell">
-            <transporters>
-                <transporter id="Na"   class="sodium channel" label="$\text{I}_\text{Na}"/>
-                <transporter id="Na-b" class="sodium channel" label="$\text{I}_\text{Na,b}"/>
-                <transporter id="pNa"  class="sodium channel" label="$\text{I}_\text{pNa}"/>
+            <transporter id="Na"   class="sodium channel" label="$\text{I}_\text{Na}"/>
+            <transporter id="Na_b" class="sodium channel" label="$\text{I}_\text{Na,b}"/>
+            <transporter id="pNa"  class="sodium channel" label="$\text{I}_\text{pNa}"/>
 
-                <transporter id="NKE"  class="metabolic sodium potassium exchanger"/>
+            <transporter id="NKE"  class="metabolic sodium potassium exchanger"/>
 
-                <transporter id="K1"   class="potassium channel" label="$\text{I}_\text{K1}"/>
-                <transporter id="Kr"   class="potassium channel" label="$\text{I}_\text{Kr}"/>
-                <transporter id="Ks"   class="potassium channel" label="$\text{I}_\text{Ks}"/>
-                <transporter id="Katp" class="potassium channel" label="$\text{I}_{\text{K}_\text{ATP}}"/>
+            <transporter id="K1"   class="potassium channel" label="$\text{I}_\text{K1}"/>
+            <transporter id="Kr"   class="potassium channel" label="$\text{I}_\text{Kr}"/>
+            <transporter id="Ks"   class="potassium channel" label="$\text{I}_\text{Ks}"/>
+            <transporter id="Katp" class="potassium channel" label="$\text{I}_{\text{K}_\text{ATP}}"/>
 
-                <transporter id="NBC"  class="sodium bicarbonate exchanger"/>
-                <transporter id="CHE"  class="chloride hydrogen exchanger"/>
-                <transporter id="AE"   class="anion exchanger"/>
-                <transporter id="Cl"   class="chloride channel" label="$\text{I}_\text{Cl}"/>
-                <transporter id="NHE"  class="sodium hydrogen exchanger"/>
+            <transporter id="NBC"  class="sodium bicarbonate exchanger"/>
+            <transporter id="CHE"  class="chloride hydrogen exchanger"/>
+            <transporter id="AE"   class="anion exchanger"/>
+            <transporter id="Cl"   class="chloride channel" label="$\text{I}_\text{Cl}"/>
+            <transporter id="NHE"  class="sodium hydrogen exchanger"/>
 
-                <transporter id="NCE"  class="sodium calcium exchanger"/>
-                <transporter id="pCa"  class="metabolic calcium exchanger"/>
-                <transporter id="Ca-b" class="calcium channel" label="$\text{I}_\text{Ca,b}"/>
-                <transporter id="Ca-t" class="calcium channel" label="$\text{I}_\text{Ca,t}"/>
-                <transporter id="CaL"  class="calcium channel" label="$\text{I}_\text{CaL}"/>
-            </transporters>
+            <transporter id="NCE"  class="sodium calcium exchanger"/>
+            <transporter id="pCa"  class="metabolic calcium exchanger"/>
+            <transporter id="Ca_b" class="calcium channel" label="$\text{I}_\text{Ca,b}"/>
+            <transporter id="Ca_t" class="calcium channel" label="$\text{I}_\text{Ca,t}"/>
+            <transporter id="CaL"  class="calcium channel" label="$\text{I}_\text{CaL}"/>
 
             <quantity id="q2"  class="sodium"    label="$\text{q}_2^{[\text{Na}^+]_\text{i}}$"/>
             <quantity id="q5"  class="potassium" label="$\text{q}_5^{[\text{K}^+]_\text{i}}$"/>
@@ -98,24 +96,24 @@ stylesheet might specify scale, position, size??
             </compartment>
 
             <compartment id="SR" class="organelle reticulum">
-                <transporters>
-                    <transporter id="SERCA" class="metabolic calcium exchanger"/>
-                    <transporter id="RyR"   class="calcium channel"/>
-                </transporters>
+                <transporter id="SERCA" class="metabolic calcium exchanger"/>
+                <transporter id="RyR"   class="calcium channel"/>
+
                 <quantity id="q21" class="calcium" label="$\text{q}_21^{[\text{Ca}^{2+}]_\text{i}}$"/>
                 <quantity id="q22" class="calcium" label="$\text{q}_22^{[\text{Ca}^{2+}\text{-CSNQ}]_\text{i}}$"/>
             </compartment>
 
             <compartment id="mitochrondion" class="organelle mitochondrion">
-                <transporters>
-                    <transporter id="m-NCE"  label="NCE"  class="sodium calcium exchanger"/>
-                    <transporter id="m-NHE"  label="NHE"  class="sodium hydrogen exchanger"/>
-                    <transporter id="m-KHE"  label="KHE"  class="potassium hydrogen exchanger"/>
-                    <transporter id="m-CI"   label="CI"   class="hydrogen exchanger"/>
-                    <transporter id="m-CIII" label="CIII" class="hydrogen exchanger"/>
-                    <transporter id="m-CIV"  label="CIV"  class="hydrogen exchanger"/>
-                    <transporter id="m-CII"  label="CII"  class="hydrogen exchanger"/>
-                </transporters>
+                <transporter id="m_NCE"  label="NCE"  class="sodium calcium exchanger"/>
+                <transporter id="m_NHE"  label="NHE"  class="sodium hydrogen exchanger"/>
+                <transporter id="m_KHE"  label="KHE"  class="potassium hydrogen exchanger"/>
+                <transporter id="m_CI"   label="CI"   class="hydrogen exchanger"/>
+                <transporter id="m_CIII" label="CIII" class="hydrogen exchanger"/>
+                <transporter id="m_CIV"  label="CIV"  class="hydrogen exchanger"/>
+                <transporter id="m_CII"  label="CII"  class="hydrogen exchanger"/>
+                <transporter id="m_K"    label="K"    class="potassium"/>
+                <transporter id="m_Ca"   label="Ca"   class="calcium"/>
+
                 <quantity id="q23" class="calcium"   label="$\text{q}_23^{[\text{Ca}^{2+}]_\text{i}}$"/>
                 <quantity id="q3"  class="sodium"    label="$\text{q}_3^{[\text{Na}^+]_\text{i}}$"/>
                 <quantity id="q6"  class="potassium" label="$\text{q}_6^{[\text{K}^+]_\text{i}}$"/>
@@ -155,7 +153,7 @@ stylesheet might specify scale, position, size??
         <flow id="v1" transporter="Na">
             <flux from="u1" to="u2"/>
         </flow>
-        <flow id="v2" transporter="Na-b">
+        <flow id="v2" transporter="Na_b">
             <flux from="u1" to="u2"/>
         </flow>
         <flow id="v3" transporter="pNa">
@@ -177,11 +175,11 @@ stylesheet might specify scale, position, size??
             <flux from="u14" to="u13"/>
             <flux from="u1" to="u2"/>
         </flow>
-        <flow id="v8" transporter="m-NCE">
+        <flow id="v8" transporter="m_NCE">
             <flux from="u2" to="u3" count="3"/>
             <flux from="u23" to="u17"/>
         </flow>
-        <flow id="v9" transporter="m-NHE">
+        <flow id="v9" transporter="m_NHE">
             <flux from="u3" to="u2"/>
             <flux from="u14" to="u15"/>
         </flow>
@@ -198,11 +196,11 @@ stylesheet might specify scale, position, size??
         <flow id="v13" transporter="Katp">
             <flux from="u4" to="u5"/>
         </flow>
-        <flow id="v14" transporter="m-KHE">
+        <flow id="v14" transporter="m_KHE">
             <flux from="u6" to="u5"/>
             <flux from="u14" to="u15"/>
         </flow>
-        <flow id="v15">
+        <flow id="v15" transporter="m_K">
             <flux from="u5" to="u6"/>
         </flow>
         <flow id="v16" transporter="Cl">
@@ -219,10 +217,10 @@ stylesheet might specify scale, position, size??
         <flow id="v19" transporter="pCa">
             <flux from="u17" to="u16"/>
         </flow>
-        <flow id="v20" transporter="Ca-b">
+        <flow id="v20" transporter="Ca_b">
             <flux from="u16" to="u17"/>
         </flow>
-        <flow id="v21" transporter="Ca-t">
+        <flow id="v21" transporter="Ca_t">
             <flux from="u16" to="u17"/>
         </flow>
         <flow id="v22" transporter="CaL">
@@ -247,22 +245,22 @@ stylesheet might specify scale, position, size??
         <flow id="v28">  <!-- implicit default ?? -->
             <flux from="u21" to="u22"/>
         </flow>
-        <flow id="v29">
+        <flow id="v29" transporter="m_Ca">
             <flux from="u23" to="u17"/>
         </flow>
 
         <!-- flow v30 ?? -->
 
-        <flow id="v31" transporter="m-CI">
+        <flow id="v31" transporter="m_CI">
             <flux from="u14" to="u15"/>
         </flow>
-        <flow id="v32" transporter="m-CIII">
+        <flow id="v32" transporter="m_CIII">
             <flux from="u14" to="u15"/>
         </flow>
-        <flow id="v33" transporter="m-CIV">
+        <flow id="v33" transporter="m_CIV">
             <flux from="u14" to="u15"/>
         </flow>
-        <flow id="v34" transporter="m-CII">
+        <flow id="v34" transporter="m_CII">
             <flux from="u14" to="u15"/>
         </flow>
         <flow id="v35">
@@ -272,7 +270,10 @@ stylesheet might specify scale, position, size??
 
     <style>
         diagram {
-            width: 1600; height: 900;
+            width: 1600;
+            height: 900;
+            flow-offset: 20x;      /* From transporter */
+            quantity-offset: 25x;  /* From potential   */
         }
 
         #q1 { position: above #u1; }
@@ -283,18 +284,16 @@ stylesheet might specify scale, position, size??
         #q13 { position: right #u13; }
         #q16 { position: above #u16; }
 
-        #u1 { position: 100 above #Na-b; }
-        #u2 { position: 100 below #Na-b; }
-        #u3 { position: 100 below #m-NCE + #m-NHE; }
-        #u4 { position: 100 above #Kr + #Ks; }
-        #u5 { position: 100 below #Kr + #Ks; }
-        #u6 { position: 100 below #m-KHE; }
+        #u1 { position: 100 above #Na_b; }
+        #u2 { position:  60 below #Na_b; }
+        #u4 { position: 100 above #Kr #Ks; }
+        #u5 { position:  60 below #Kr #Ks; }
         #u7 { position: 100 above #CHE; }
-        #u8 { position: 100 below #CHE; }
+        #u8 { position:  60 below #CHE; }
         #u9 { position: 100 above #AE; }
-        #u10 { position: 100 below #AE; }
+        #u10 { position: 60 below #AE; }
         #u11 { position: 100 above #Cl; }
-        #u12 { position: 100 below #Cl; }
+        #u12 { position:  60 below #Cl; }
         #u13 { position: 100 above #NHE; }
 
         #q2 { position: below #u2; }
@@ -305,27 +304,27 @@ stylesheet might specify scale, position, size??
         #q12 { position: below #u12; }
 
         #cell {
-            size: (800, 700);
-            position: (110, 250);
+            size: (80%, 70%);
+            position: (11%, 25%);
         }
-        #Na { position: 90 top; }
-        #Na-b { position: 130 top; }
-        #pNa { position: 170 top; }
-        #NKE { position: 240 top; }
-        #K1 { position: 290 top; }
-        #Kr { position: 330 top; }
-        #Ks { position: 370 top; }
-        #Katp { position: 410 top; }
-        #NBC { position: 460 top; }
-        #CHE { position: 510 top; }
-        #AE { position: 560 top; }
-        #Cl { position: 610 top; }
-        #NHE { position: 690 top; }
-        #NCE { position: 140 left; }
-        #pCa { position: 310 left; }
-        #Ca-b { position: 370 left; }
-        #Ca-t { position: 430 left; }
-        #CaL { position: 750 left; }
+        #Na { position:   top  9%; }
+        #Na_b { position: top 13%; }
+        #pNa { position:  top 17%; }
+        #NKE { position:  top 24%; }
+        #K1 { position:   top 29%; }
+        #Kr { position:   top 33%; }
+        #Ks { position:   top 37%; }
+        #Katp { position: top 41%; }
+        #NBC { position:  top 46%; }
+        #CHE { position:  top 51%; }
+        #AE { position:   top 56%; }
+        #Cl { position:   top 61%; }
+        #NHE { position:  top 69%; }
+        #NCE { position:  left 14%; }
+        #pCa { position:  left 31%; }
+        #Ca_b { position: left 37%; }
+        #Ca_t { position: left 43%; }
+        #CaL { position:  left 75%; }
 
         #q14 { position: right #u14; }
 
@@ -335,54 +334,58 @@ stylesheet might specify scale, position, size??
         #q20 { position: right #u20; }
 
         #atp {
-              size: (150, 300);
-              position: (800, 50);
+              size: (15%, 30%);
+              position: (80%, 5%);
         }
         #q24 { position: above #u24; }
-        #u24 { position: (150, 500); }
-        #q25 { position: (850, 150); }
+        #u24 { position: (15%, 50%); }
+        #q25 { position: (85%, 15%); }
         #u25 { position: below #q25; }
-        #q26 { position: (850, 850); }
+        #q26 { position: (85%, 85%); }
         #u26 { position: above #q26; }
 
         #SR {
-             size: (250, 250);
-             position: (100, 700);
+             size: (25%, 25%);
+             position: (10%, 70%);
         }
-        #SERCA { position: 200 top; }
-        #RyR { position: 400 left; }
+        #SERCA { position: top 25%; }
+        #RyR { position: left 40%; }
         #q21 { position: below #u21; }
-        #u21 { position: 100 right #RyR, below #SERCA; }
+        #u21 { position: right #RyR, below #SERCA; }
         #q22 { position: below #u22; }
-        #u22 { position: 100 right #u21; }
-
+        #u22 { position: 40% right #u21; }
 
         #mitochrondion {
-             size: (300, 300);
-             position: (500, 550);
+             size: (30%, 30%);
+             position: (50%, 55%);
         }
-        #m-NCE { position: 150 top; }
-        #m-NHE { position: 250 top; }
-        #m-KHE { position: 350 top; }
-        #m-CI { position: 450 top; }
-        #m-CIII { position: 550 top; }
-        #m-CIV { position: 650 top; }
-        #m-CII { position: 750 top; }
+        #m_Ca { position:   top 8%; }
+        #m_NCE { position:  top 12%; }
+        #m_NHE { position:  top 26%; }
+        #m_K { position:    top 34%; }
+        #m_KHE { position:  top 40%; }
+        #m_CI { position:   top 52%; }
+        #m_CIII { position: top 64%; }
+        #m_CIV { position:  top 76%; }
+        #m_CII { position:  top 88%; }
 
         #q23 { position: below #u23; }
         #q3 { position: below #u3; }
         #q6 { position: below #u6; }
         #q15 { position: right #u15; }
 
+        #u23 { position: 60 below #m_Ca #m_NCE; }
+        #u3 { position:  60 below #m_NCE #m_NHE; }
+        #u6 { position:  60 below #m_K #m_KHE; }
 
-        #u14 { position: 100 above #m-CIII + #m-CIV; }
-        #u15 { position: 100 below #m-CIII + #m-CIV; }
-        #u16 { position: 50 left #Ca-b; }
-        #u17 { position: 100 right #Ca-b; }
-        #u18 { position: 100 right #CaL; }
-        #u19 { position: 100 right #Ca-b + #Ca-t, below #NKE + #K1; }
-        #u20 { position: 100 below #u19; }
-        #u23 { position: 100 below #m-NCE; }
+        #u14 { position: 250 below #NHE; }
+        #u15 { position: right #u6, below #u14; }
+
+        #u16 { position:  60 left #Ca_b; }
+        #u17 { position:  40 right #Ca_b; }
+        #u18 { position:  40 right #CaL; }
+        #u19 { position:  30% right #Ca_b #Ca_t; }
+        #u20 { position:  40 below #u19; }
 
         #v1 { position: above; }
         #v2 { position: above; }
@@ -406,7 +409,7 @@ stylesheet might specify scale, position, size??
         #v12 { position: above; }
         #v13 { position: above; }
         #v14 { position: above; }
-        #v15 { position: centre #v9 + #v14; }
+        #v15 { position: above; }
         #v16 { position: above; }
         #v17 { position: above; }
         #v18 { position: above; }
@@ -419,12 +422,13 @@ stylesheet might specify scale, position, size??
         #v25 { position: left #u19; }
         #v26 { position: left #u20; }
         #v27 { position: above; }
-        #v28 { position: centre #u21 + #u22; }
+        #v28 { position: 0 above #u21 #u22; }
         #v29 { position: left #v8; }
         #v31 { position: above; }
         #v32 { position: above; }
         #v33 { position: above; }
         #v34 { position: above; }
+        #v35 { position: left #u25 #u26, above #u24 #u25 }
     </style>
 
 </cell-diagram>
