@@ -145,7 +145,6 @@ class PositionedElement(object):
             seen_horizontal = False
             seen_vertical = False
             while True:
-                dependencies = []
                 using_default = token.type not in ['number', 'dimension', 'percentage']
                 offset, tokens = parser.get_length(tokens, default=default_offset)
                 token = tokens.next()
@@ -153,6 +152,7 @@ class PositionedElement(object):
                  or token.lower_value not in layout.POSITION_RELATIONS):
                     raise SyntaxError("Unknown relationship for position.")
                 reln = token.lower_value
+                dependencies = []
                 token = tokens.peek()
                 if ((token is None or token ==',')
                  and default_dependency is not None):

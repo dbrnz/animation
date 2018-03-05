@@ -29,19 +29,6 @@
 
     <!-- Representation of diagram at http://sites.bioeng.auckland.ac.nz/mwu035/mpb/  -->
 
-
-
-<!--
-
-    All coordinates are wrt the object containing the element.
-
-    Origin is at top left corner of containing object's bounding box.
-
-    Bounding box has size (bounds-X bounds-Y).
-
-stylesheet might specify scale, position, size??
--->
-
     <diagram>
         <quantity id="q1"  class="sodium"    label="$\text{q}_1^{[\text{Na}^+]_\text{o}}$"/>
         <quantity id="q4"  class="potassium" label="$\text{q}_4^{[\text{K}^+]_\text{o}}$"/>
@@ -269,14 +256,16 @@ stylesheet might specify scale, position, size??
     </bond-graph>
 
     <style>
+        /* Stylesheet might specify scale, position, size??  */
+
         diagram {
-            width: 1600;
-            height: 900;
-            flow-offset: 20x;      /* From transporter */
-            quantity-offset: 25x;  /* From potential   */
+            width: 1600;           /* SVG `pixel` units */
+            height: 900;           /* SVG `pixel` units */
+            flow-offset: 20x;      /* From its transporter */
+            quantity-offset: 25x;  /* From its potential   */
         }
 
-        #q1 { position: above }
+        #q1 { position: above; }
         #q4 { position: above; }
         #q7 { position: above; }
         #q9 { position: above; }

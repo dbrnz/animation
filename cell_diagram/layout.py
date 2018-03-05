@@ -30,7 +30,7 @@ FLOW_OFFSET = (40, 'x')
 #------------------------------------------------------------------------------
 
 HORIZONTAL_RELN  = ['left', 'right']
-VERTICAL_RELN    = ['top', 'bottom', 'above', 'below']
+VERTICAL_RELN    = ['above', 'below']
 POSITION_RELATIONS = HORIZONTAL_RELN + VERTICAL_RELN
 
 COMPARTMENT_BOUNDARIES = ['top', 'bottom', 'left', 'right',
