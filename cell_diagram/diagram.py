@@ -106,19 +106,19 @@ class Compartment(Container):
     def add_transporter(self, transporter):
         self._transporters.append(transporter)
 
-    def parse_position(self, position, tokens):
+    def parse_position(self):
         """
         * Compartment size/position: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
         """
         lengths = None
-        for token in tokens:
+        for token in self._position_tokens:
             if token.type == '() block' and lengths is None:
                 lengths, _ = parser.get_coordinates(parser.StyleTokens(token.content))
             elif lengths is not None:
                 raise SyntaxError("Position already defined.")
-        position.set_lengths(lengths)
+        self._position.set_lengths(lengths)
         # A compartment's position and size is always in terms of its container
-        position.add_dependency(self.container)
+        self._position.add_dependency(self.container)
 
 
     def svg(self):
@@ -138,10 +138,9 @@ class Quantity(Element, PositionedElement):
     def set_potential(self, potential):
         self._potential = potential
 
-    def parse_position(self, position, tokens):
-        PositionedElement.parse_position(self, position, tokens,
-                                         default_offset=self.diagram.quantity_offset,
-                                         default_dependency=self._potential)
+    def parse_position(self):
+        PositionedElement.parse_position(self, default_offset=self.diagram.quantity_offset,
+                                               default_dependency=self._potential)
 
     def svg(self):
         return super().svg(stroke='#ff0000', fill='#FF80ff')
@@ -153,7 +152,7 @@ class Transporter(Element, PositionedElement):
     def __init__(self, container, **kwds):
         super().__init__(container, class_name='Transporter', **kwds)
 
-    def parse_position(self, position, tokens):
+    def parse_position(self):
         """
         * Transporter position: side of container along with offset from
           top-right as % of container -- `left 10%`, `top 20%`
@@ -162,18 +161,16 @@ class Transporter(Element, PositionedElement):
           and with the same orientation, as % of the container
           -- `left 10% below #t1`
         """
-
         # A transporter's position always depends on its compartment
         dependencies = [self.container]
+        tokens = self._position_tokens
         try:
             token = tokens.next()
             if (token.type != 'ident'
              or token.lower_value not in layout.COMPARTMENT_BOUNDARIES):
                 raise SyntaxError('Invalid compartment boundary.')
             boundary = token.lower_value
-
             offset, tokens = parser.get_percentage(tokens)
-
             token = tokens.peek()
             if token and token.type == 'hash':
                 while token.type == 'hash':
@@ -185,10 +182,9 @@ class Transporter(Element, PositionedElement):
 
         except StopIteration:
             raise SyntaxError("Invalid `transporter` position")
-
 ## We can (and should ??) now set lengths if no element dependencies
-        position.add_relationship(offset, boundary, dependencies)
-        position.add_dependencies(dependencies)
+        self._position.add_relationship(offset, boundary, dependencies)
+        self._position.add_dependencies(dependencies)
 
     def svg(self):
         return super().svg(stroke='#ffff00', fill='#80FFFF')
@@ -264,7 +260,8 @@ class Diagram(Container):
         g = nx.DiGraph()
         # We want all elements that have a position; some may not have an id
         for e in self._elements:
-            ### This is where we could parse the position tokens...
+            # We now have the diagram's structure so can parse positions
+            e.parse_position()
             if e.position:
                 g.add_node(e)
         # Add edges

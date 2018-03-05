@@ -276,13 +276,13 @@ stylesheet might specify scale, position, size??
             quantity-offset: 25x;  /* From potential   */
         }
 
-        #q1 { position: above #u1; }
-        #q4 { position: above #u4; }
-        #q7 { position: above #u7; }
-        #q9 { position: above #u9; }
-        #q11 { position: above #u11; }
-        #q13 { position: right #u13; }
-        #q16 { position: above #u16; }
+        #q1 { position: above }
+        #q4 { position: above; }
+        #q7 { position: above; }
+        #q9 { position: above; }
+        #q11 { position: above; }
+        #q13 { position: right; }
+        #q16 { position: above; }
 
         #u1 { position: 100 above #Na_b; }
         #u2 { position:  60 below #Na_b; }
@@ -296,12 +296,12 @@ stylesheet might specify scale, position, size??
         #u12 { position:  60 below #Cl; }
         #u13 { position: 100 above #NHE; }
 
-        #q2 { position: below #u2; }
-        #q5 { position: below #u5; }
+        #q2 { position: below; }
+        #q5 { position: below; }
 
-        #q8 { position: below #u8; }
-        #q10 { position: below #u10; }
-        #q12 { position: below #u12; }
+        #q8 { position: below; }
+        #q10 { position: below; }
+        #q12 { position: below; }
 
         #cell {
             size: (80%, 70%);
@@ -326,23 +326,23 @@ stylesheet might specify scale, position, size??
         #Ca_t { position: left 43%; }
         #CaL { position:  left 75%; }
 
-        #q14 { position: right #u14; }
+        #q14 { position: right; }
 
-        #q17 { position: above #u17; }
-        #q18 { position: below #u18; }
-        #q19 { position: right #u19; }
-        #q20 { position: right #u20; }
+        #q17 { position: above; }
+        #q18 { position: below; }
+        #q19 { position: right; }
+        #q20 { position: right; }
 
         #atp {
               size: (15%, 30%);
               position: (80%, 5%);
         }
-        #q24 { position: above #u24; }
+        #q24 { position: above; }
         #u24 { position: (15%, 50%); }
         #q25 { position: (85%, 15%); }
-        #u25 { position: below #q25; }
+        #u25 { position: below; }
         #q26 { position: (85%, 85%); }
-        #u26 { position: above #q26; }
+        #u26 { position: above; }
 
         #SR {
              size: (25%, 25%);
@@ -350,9 +350,9 @@ stylesheet might specify scale, position, size??
         }
         #SERCA { position: top 25%; }
         #RyR { position: left 40%; }
-        #q21 { position: below #u21; }
+        #q21 { position: below; }
         #u21 { position: right #RyR, below #SERCA; }
-        #q22 { position: below #u22; }
+        #q22 { position: below; }
         #u22 { position: 40% right #u21; }
 
         #mitochrondion {
@@ -369,10 +369,10 @@ stylesheet might specify scale, position, size??
         #m_CIV { position:  top 76%; }
         #m_CII { position:  top 88%; }
 
-        #q23 { position: below #u23; }
-        #q3 { position: below #u3; }
-        #q6 { position: below #u6; }
-        #q15 { position: right #u15; }
+        #q23 { position: below; }
+        #q3 { position: below; }
+        #q6 { position: below; }
+        #q15 { position: right; }
 
         #u23 { position: 60 below #m_Ca #m_NCE; }
         #u3 { position:  60 below #m_NCE #m_NHE; }

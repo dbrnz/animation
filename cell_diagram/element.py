@@ -104,9 +104,10 @@ class PositionedElement(object):
     def __init__(self):
         self._position = layout.Position(self)
         self._position.add_dependency(self._container)
+        # We delay parsing until all the XML has been parsed and
+        # do so when we start resolving positions.
         pos_tokens = self._style.get('position', None) if self._style else None
-        if pos_tokens:
-            self.parse_position(self._position, parser.StyleTokens(pos_tokens))
+        self._position_tokens = parser.StyleTokens(pos_tokens) if pos_tokens else None
         self._geometry = None
 
     @property
@@ -126,19 +127,20 @@ class PositionedElement(object):
     def resolve_position(self):
         self._position.resolve()
 
-    def parse_position(self, position, tokens, default_offset=None, default_dependency=None):
+    def parse_position(self, default_offset=None, default_dependency=None):
         """
         * Position as coords: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
         * Position as offset: relation with absolute offset from element(s) -- `300 above #q1 #q2`
         """
-
-
+        if self._position_tokens is None:
+            return
+        tokens = self._position_tokens
         element_dependencies = []
         token = tokens.peek()
         if token.type == '() block':
             tokens.next()
             lengths, _ = parser.get_coordinates(parser.StyleTokens(token.content))
-            position.set_lengths(lengths)
+            self._position.set_lengths(lengths)
         else:
             seen_horizontal = False
             seen_vertical = False
@@ -173,7 +175,7 @@ class PositionedElement(object):
                     if (seen_horizontal and reln in layout.HORIZONTAL_RELN
                      or seen_vertical and reln in layout.VERTICAL_RELN):
                         raise SyntaxError("Constraints must have different directions.")
-                position.add_relationship(offset, reln, dependencies)
+                self._position.add_relationship(offset, reln, dependencies)
                 element_dependencies.extend(dependencies)
                 seen_horizontal = reln in layout.HORIZONTAL_RELN
                 seen_vertical = reln in layout.VERTICAL_RELN
@@ -183,7 +185,7 @@ class PositionedElement(object):
                     break
                 else:
                     raise SyntaxError("Invalid syntax")
-        position.add_dependencies(element_dependencies)
+        self._position.add_dependencies(element_dependencies)
 
     def svg(self, stroke='none', fill='#cccccc'):
         svg = ['<g{}>'.format(self.id_class())]
