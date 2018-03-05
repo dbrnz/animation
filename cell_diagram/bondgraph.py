@@ -23,6 +23,7 @@ from collections import OrderedDict
 #------------------------------------------------------------------------------
 
 from . import diagram as dia
+from . import parser
 from .element import Element, PositionedElement
 
 #------------------------------------------------------------------------------
@@ -101,34 +102,8 @@ class BondGraph(Element):
         # Link potentials via flows and fluxes
         for flow in self.flows:
             svg.extend(flow.svg(fill='#ff8080'))
-            compartment = (flow.transporter.container.geometry
-                           if flow.transporter is not None
-                           else None)
             for flux in flow.fluxes:
-                (from_x, from_y) = flux.from_potential.coords
-                flow_points = []
-                if compartment is not None:
-                    # Are the from and flow elements on the same side
-                    # of the transporter's compartment?
-                    if (compartment.contains(flow.geometry) == compartment.contains(flux.from_potential.geometry)):
-                        flow_points.extend([flow.coords, flow.transporter.coords])
-                    else:
-                        flow_points.append(flow.transporter.coords)
-
-                for to in flux.to_potentials:
-                    if (compartment is None
-                     or compartment.contains(flow.geometry) != compartment.contains(flux.from_potential.geometry)):
-                        flow_points.append(flow.coords)
-                    flow_points.append(to.coords)
-                    svg.append('<path fill="none" stroke="#222222" stroke-width="{:g}" opacity="0.6"'
-                        .format(flux.count*2.5)
-                      + ' d="M{:g},{:g} {:s}"/>'
-                        .format(from_x, from_y,
-                               ' '.join(['L{:g},{:g}'.format(*point) for point in flow_points])))
-                # Path from flux.from_potential to flux.to_potentials
-                # via flow.transporter and flow nodes
-                # repeated flux.count times
-                #for p in to_potentials: g.add_edge(flow.id, p, weight=weighting)
+                svg.extend(flux.svg(flow))
         return svg
 
 #------------------------------------------------------------------------------
@@ -162,7 +137,9 @@ class Flux(Element, PositionedElement):
         self._from_potential = diagram.find_element('#' + from_, Potential)
         self._to_potentials = [diagram.find_element('#' + name, Potential) for name in to.split()]
         self._count = int(count)
-        self._line = line
+        curve_tokens = self._style.get('curve', None) if self._style else None
+        self._curve_tokens = parser.StyleTokens(curve_tokens) if curve_tokens else None
+        self._curve_segments = []
 
     @property
     def from_potential(self):
@@ -175,6 +152,64 @@ class Flux(Element, PositionedElement):
     @property
     def count(self):
         return self._count
+
+    def parse_position(self):
+        if self._curve_tokens is None:
+            return
+        tokens = self._curve_tokens
+        # "210 above #u16 #v5, -90 left #NCE"
+        while True:
+            angle, tokens = parser.get_number(tokens)
+            token = tokens.next()
+            if (token.type != 'ident'
+             or token.lower_value not in ['x-pos', 'y-pos']):
+                raise SyntaxError("Unknown constraint for curve segment.")
+            direction = 0 if token.lower_value == 'xpos' else 1
+            dependencies = []
+            token = tokens.next()
+            while token.type == 'hash':
+                try:
+                    dependencies.append('#' + token.value)
+                    token = tokens.next()
+                except StopIteration:
+                    break
+            if not dependencies:
+                raise SyntaxError("Identifier(s) expected")
+            self._curve_segments.append((angle, direction, dependencies))
+            if token == ',':
+                continue
+            elif tokens.peek() is None:
+                break
+            else:
+                raise SyntaxError("Invalid syntax")
+
+        def svg(self, flow):
+            compartment = (flow.transporter.container.geometry
+                           if flow.transporter is not None
+                           else None)
+            (from_x, from_y) = flux.from_potential.coords
+            flow_points = []
+            if compartment is not None:
+                # Are the from and flow elements on the same side
+                # of the transporter's compartment?
+                if (compartment.contains(flow.geometry) == compartment.contains(flux.from_potential.geometry)):
+                    flow_points.extend([flow.coords, flow.transporter.coords])
+                else:
+                    flow_points.append(flow.transporter.coords)
+
+            for to in flux.to_potentials:
+                if (compartment is None
+                 or compartment.contains(flow.geometry) != compartment.contains(flux.from_potential.geometry)):
+                    flow_points.append(flow.coords)
+                flow_points.append(to.coords)
+                svg.append('<path fill="none" stroke="#222222" stroke-width="{:g}" opacity="0.6"'
+                    .format(flux.count*2.5)
+                  + ' d="M{:g},{:g} {:s}"/>'
+                    .format(from_x, from_y,
+                           ' '.join(['L{:g},{:g}'.format(*point) for point in flow_points])))
+            # Path from flux.from_potential to flux.to_potentials
+            # via flow.transporter and flow nodes
+            # repeated flux.count times
 
 #------------------------------------------------------------------------------
 

@@ -396,7 +396,7 @@ stylesheet might specify scale, position, size??
             position: left;
             }
         flow[transporter="NCE"] > flux[from="u1"][to="u2"] {
-            curve: -120 until above #u16 + #v5, 180 until left #NCE;
+            curve: 210 y-pos #u16 #v5, -90 x-pos #NCE;
             }
 
         #v6 { position: above; }
