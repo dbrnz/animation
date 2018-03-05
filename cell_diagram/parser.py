@@ -101,15 +101,12 @@ def get_number(tokens):
     :param tokens: `StyleTokens` of tokens
     :return: tuple(value, tokens)
     """
-    try:
-        token = tokens.next()
-        if token.type != 'number':
-            raise SyntaxError("Number expected.")
-        else:
-            return ((token.int_value if token.is_integer else token.value,
-                     tokens))
-    except StopIteration:
-        return (0, tokens)
+    token = tokens.next()
+    if token.type != 'number':
+        raise SyntaxError("Number expected.")
+    else:
+        return ((token.int_value if token.is_integer else token.value,
+                 tokens))
 
 # -----------------------------------------------------------------------------
 
@@ -119,27 +116,23 @@ def get_percentage(tokens, default=None):
     :param tokens: `StyleTokens` of tokens
     :return: tuple(Length, tokens)
     """
-
-    try:
-        token = tokens.peek()
-        if token is None or token.type != 'percentage':
-            if default is not None:
-                return (default, tokens)
-            else:
-                raise SyntaxError('Percentage expected.')
-        percentage = (token.int_value if token.is_integer else token.value)
+    token = tokens.peek()
+    if token is None or token.type != 'percentage':
+        if default is not None:
+            return (default, tokens)
+        else:
+            raise SyntaxError('Percentage expected.')
+    percentage = (token.int_value if token.is_integer else token.value)
+    tokens.next()
+    token = tokens.peek(False)
+    modifier = (token.lower_value
+                if (token is not None and token.type == 'ident')
+                else '')
+    if modifier not in ['', 'x', 'y']:
+        raise SyntaxError("Modifier ({}) must be 'x' or 'y'.".format(modifier))
+    elif modifier != '':
         tokens.next()
-        token = tokens.peek(False)
-        modifier = (token.lower_value
-                    if (token is not None and token.type == 'ident')
-                    else '')
-        if modifier not in ['', 'x', 'y']:
-            raise SyntaxError("Modifier ({}) must be 'x' or 'y'.".format(modifier))
-        elif modifier != '':
-            tokens.next()
-        return ((percentage, '%' + modifier), tokens)
-    except StopIteration:
-        return ((0, '%'), tokens)
+    return ((percentage, '%' + modifier), tokens)
 
 
 # -----------------------------------------------------------------------------
@@ -151,23 +144,20 @@ def get_length(tokens, default=None):
 
     `100`, `100x`, `100y`
     """
-    try:
-        token = tokens.peek()
-        if token is not None and token.type == 'percentage':
-            return get_percentage(tokens, default)
-        elif token is None or token.type not in ['number', 'dimension']:
-            if default is not None:
-                return (default, tokens)
-            else:
-                raise SyntaxError('Length expected.')
-        value = (token.int_value if token.is_integer else token.value)
-        modifier = (token.lower_unit if token.type == 'dimension' else '')
-        if modifier not in ['', 'x', 'y']:
-            raise SyntaxError("Modifier must be 'x' or 'y'.")
-        tokens.next()
-        return ((value, modifier), tokens)
-    except StopIteration:
-        return ((0, ''), tokens)
+    token = tokens.peek()
+    if token is not None and token.type == 'percentage':
+        return get_percentage(tokens, default)
+    elif token is None or token.type not in ['number', 'dimension']:
+        if default is not None:
+            return (default, tokens)
+        else:
+            raise SyntaxError('Length expected.')
+    value = (token.int_value if token.is_integer else token.value)
+    modifier = (token.lower_unit if token.type == 'dimension' else '')
+    if modifier not in ['', 'x', 'y']:
+        raise SyntaxError("Modifier must be 'x' or 'y'.")
+    tokens.next()
+    return ((value, modifier), tokens)
 
 # -----------------------------------------------------------------------------
 
