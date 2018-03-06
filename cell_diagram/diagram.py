@@ -106,7 +106,7 @@ class Compartment(Container):
     def add_transporter(self, transporter):
         self._transporters.append(transporter)
 
-    def parse_position(self):
+    def parse_geometry(self):
         """
         * Compartment size/position: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
         """
@@ -138,8 +138,8 @@ class Quantity(Element, PositionedElement):
     def set_potential(self, potential):
         self._potential = potential
 
-    def parse_position(self):
-        PositionedElement.parse_position(self, default_offset=self.diagram.quantity_offset,
+    def parse_geometry(self):
+        PositionedElement.parse_geometry(self, default_offset=self.diagram.quantity_offset,
                                                default_dependency=self._potential)
 
     def svg(self):
@@ -152,7 +152,7 @@ class Transporter(Element, PositionedElement):
     def __init__(self, container, **kwds):
         super().__init__(container, class_name='Transporter', **kwds)
 
-    def parse_position(self):
+    def parse_geometry(self):
         """
         * Transporter position: side of container along with offset from
           top-right as % of container -- `left 10%`, `top 20%`
@@ -261,7 +261,7 @@ class Diagram(Container):
         # We want all elements that have a position; some may not have an id
         for e in self._elements:
             # We now have the diagram's structure so can parse positions
-            e.parse_position()
+            e.parse_geometry()
             if e.position:
                 g.add_node(e)
         # Add edges

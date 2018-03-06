@@ -125,8 +125,8 @@ class Flow(Element, PositionedElement):
     def add_flux(self, flux):
         self._fluxes.append(flux)
 
-    def parse_position(self):
-        PositionedElement.parse_position(self, default_offset=self.diagram.flow_offset,
+    def parse_geometry(self):
+        PositionedElement.parse_geometry(self, default_offset=self.diagram.flow_offset,
                                                default_dependency=self.transporter)
 
 #------------------------------------------------------------------------------
@@ -153,7 +153,7 @@ class Flux(Element, PositionedElement):
     def count(self):
         return self._count
 
-    def parse_position(self):
+    def parse_geometry(self):
         if self._curve_tokens is None:
             return
         tokens = self._curve_tokens
@@ -227,8 +227,8 @@ class Potential(Element, PositionedElement):
     def quantity(self):
         return self._quantity
 
-    def parse_position(self):
-        PositionedElement.parse_position(self, default_offset=self.diagram.quantity_offset,
+    def parse_geometry(self):
+        PositionedElement.parse_geometry(self, default_offset=self.diagram.quantity_offset,
                                                default_dependency=self.quantity)
 
 #------------------------------------------------------------------------------

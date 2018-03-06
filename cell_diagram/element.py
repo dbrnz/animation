@@ -127,7 +127,7 @@ class PositionedElement(object):
     def resolve_position(self):
         self._position.resolve()
 
-    def parse_position(self, default_offset=None, default_dependency=None):
+    def parse_geometry(self, default_offset=None, default_dependency=None):
         """
         * Position as coords: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
         * Position as offset: relation with absolute offset from element(s) -- `300 above #q1 #q2`
