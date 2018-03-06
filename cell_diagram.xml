@@ -309,6 +309,7 @@
         #AE { position:   top 56%; }
         #Cl { position:   top 61%; }
         #NHE { position:  top 69%; }
+
         #NCE { position:  left 14%; }
         #pCa { position:  left 31%; }
         #Ca_b { position: left 37%; }
@@ -349,8 +350,29 @@
              position: (50%, 55%);
         }
         #m_Ca { position:   top 8%; }
-        #m_NCE { position:  top 12%; }
-        #m_NHE { position:  top 26%; }
+
+        transporter[id="m_NCE"] {
+            position:  top 12%;
+        }
+        flow[transporter="m_NCE"] {
+            position: above;
+        }
+
+        flow[transporter="m_NCE"] > flux[from="u2"][to="u3"] {
+            curve-start: -52 y-pos #q17, 0 x-pos #m_NCE;
+        }
+
+        transporter[id="m_NHE"] {
+            position:  top 26%;
+        }
+        flow[transporter="m_NHE"] {
+            position: above;
+        }
+/*
+        flow[transporter="m_NHE"] > flux[from="u3"][to="u2"] {
+            curve-end: -55 x-pos 50 left #u2, 0 x-pos #m_NHE;
+            }
+*/
         #m_K { position:    top 34%; }
         #m_KHE { position:  top 40%; }
         #m_CI { position:   top 52%; }
@@ -385,13 +407,11 @@
             position: left;
             }
         flow[transporter="NCE"] > flux[from="u1"][to="u2"] {
-            curve: 210 y-pos #u16 #v5, -90 x-pos #NCE;
+            curve-start: 195 x-pos #u16 #v5, -90 y-pos #NCE;
             }
 
         #v6 { position: above; }
         #v7 { position: above; }
-        #v8 { position: above; }
-        #v9 { position: above; }
 
         #v10 { position: above; }
         #v11 { position: above; }

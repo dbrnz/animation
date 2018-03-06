@@ -52,6 +52,11 @@ class StyleTokens(object):
         self._value = None
         self._skip_space = True
 
+    @classmethod
+    def create(cls, style, name):
+        tokens = style.get(name, None) if style is not None else None
+        return cls(tokens) if tokens else None
+
     def __iter__(self):
         return self
 

@@ -18,11 +18,13 @@
 #
 #------------------------------------------------------------------------------
 
+import math
 from collections import OrderedDict
 
 #------------------------------------------------------------------------------
 
 from . import diagram as dia
+from . import layout
 from . import parser
 from .element import Element, PositionedElement
 
@@ -137,9 +139,9 @@ class Flux(Element, PositionedElement):
         self._from_potential = diagram.find_element('#' + from_, Potential)
         self._to_potentials = [diagram.find_element('#' + name, Potential) for name in to.split()]
         self._count = int(count)
-        curve_tokens = self._style.get('curve', None) if self._style else None
-        self._curve_tokens = parser.StyleTokens(curve_tokens) if curve_tokens else None
-        self._curve_segments = []
+        self._curve_tokens = dict(start=parser.StyleTokens.create(self._style, 'curve-start'),
+                                  end=parser.StyleTokens.create(self._style, 'curve-end'))
+        self._curve_segments = dict(start=None, end=None)
 
     @property
     def from_potential(self):
@@ -154,62 +156,93 @@ class Flux(Element, PositionedElement):
         return self._count
 
     def parse_geometry(self):
-        if self._curve_tokens is None:
-            return
-        tokens = self._curve_tokens
-        # "210 above #u16 #v5, -90 left #NCE"
+        for pos, tokens in self._curve_tokens.items():
+            self._curve_segments[pos] = self._parse_curve_segments(tokens)
+
+    def _parse_curve_segments(self, tokens):
+        # "210 x-pos #u16 #v5, -90 y-pos #NCE"
+        if tokens is None:
+            return None
+        segments = []
         while True:
             angle, tokens = parser.get_number(tokens)
             token = tokens.next()
             if (token.type != 'ident'
              or token.lower_value not in ['x-pos', 'y-pos']):
                 raise SyntaxError("Unknown constraint for curve segment.")
-            direction = 0 if token.lower_value == 'xpos' else 1
+            direction = 0 if token.lower_value == 'x-pos' else 1
             dependencies = []
             token = tokens.next()
             while token.type == 'hash':
                 try:
-                    dependencies.append('#' + token.value)
+                    dependency = self.diagram.find_element('#' + token.value)
+                    if dependency is None:
+                        raise KeyError("Unknown element '#{}".format(token.value))
+                    dependencies.append(dependency)
                     token = tokens.next()
                 except StopIteration:
                     break
             if not dependencies:
                 raise SyntaxError("Identifier(s) expected")
-            self._curve_segments.append((angle, direction, dependencies))
+            segments.append((angle, direction, dependencies))
             if token == ',':
                 continue
             elif tokens.peek() is None:
                 break
             else:
                 raise SyntaxError("Invalid syntax")
+        return segments
 
-        def svg(self, flow):
-            compartment = (flow.transporter.container.geometry
-                           if flow.transporter is not None
-                           else None)
-            (from_x, from_y) = flux.from_potential.coords
-            flow_points = []
-            if compartment is not None:
-                # Are the from and flow elements on the same side
-                # of the transporter's compartment?
-                if (compartment.contains(flow.geometry) == compartment.contains(flux.from_potential.geometry)):
-                    flow_points.extend([flow.coords, flow.transporter.coords])
-                else:
-                    flow_points.append(flow.transporter.coords)
+    @staticmethod
+    def curve_segments(start_pos, segments):
+        pos = start_pos
+        points = [start_pos]
+        for segment in segments:
+            angle = segment[0]
+            end_pos = layout.Position.centroid(segment[2])  # Centre of dependencies
+            if segment[1] == 0:   #  x-pos
+                dx = end_pos[0] - pos[0]
+                dy = dx*math.tan(angle*math.pi/180)
+                end_pos[1] = pos[1] - dy
+            else: ##  segment[1] == y:   #  y-pos
+                dy = pos[1] - end_pos[1]
+                dx = dy*math.tan((90-angle)*math.pi/180)
+                end_pos[0] = pos[0] + dx
+            points.append(end_pos)
+            pos = end_pos
+        return points
 
-            for to in flux.to_potentials:
-                if (compartment is None
-                 or compartment.contains(flow.geometry) != compartment.contains(flux.from_potential.geometry)):
-                    flow_points.append(flow.coords)
-                flow_points.append(to.coords)
-                svg.append('<path fill="none" stroke="#222222" stroke-width="{:g}" opacity="0.6"'
-                    .format(flux.count*2.5)
-                  + ' d="M{:g},{:g} {:s}"/>'
-                    .format(from_x, from_y,
-                           ' '.join(['L{:g},{:g}'.format(*point) for point in flow_points])))
-            # Path from flux.from_potential to flux.to_potentials
-            # via flow.transporter and flow nodes
-            # repeated flux.count times
+    def svg(self, flow):
+        svg = []
+        compartment = (flow.transporter.container.geometry
+                       if flow.transporter is not None
+                       else None)
+
+        (from_x, from_y) = self.from_potential.coords
+        if self._curve_segments['start'] is not None:
+            flow_points = self.curve_segments((from_x, from_y), self._curve_segments['start'])
+        else:
+            flow_points = [(from_x, from_y)]
+
+        if compartment is not None:
+            # Are the from and flow elements on the same side
+            # of the transporter's compartment?
+            if (compartment.contains(flow.geometry) == compartment.contains(self.from_potential.geometry)):
+                flow_points.extend([flow.coords, flow.transporter.coords])
+            else:
+                flow_points.append(flow.transporter.coords)
+        for to in self.to_potentials:
+            if (compartment is None
+             or compartment.contains(flow.geometry) != compartment.contains(self.from_potential.geometry)):
+                flow_points.append(flow.coords)
+            flow_points.append(to.coords)
+            svg.append('<path fill="none" stroke="#222222" stroke-width="{:g}" opacity="0.6"'
+                .format(self.count*2.5)
+              + ' d="M{:g},{:g} {:s}"/>'
+                .format(from_x, from_y,
+                       ' '.join(['L{:g},{:g}'.format(*point) for point in flow_points[1:]])))
+        # repeated flux.count times
+        return svg
 
 #------------------------------------------------------------------------------
 

@@ -106,8 +106,7 @@ class PositionedElement(object):
         self._position.add_dependency(self._container)
         # We delay parsing until all the XML has been parsed and
         # do so when we start resolving positions.
-        pos_tokens = self._style.get('position', None) if self._style else None
-        self._position_tokens = parser.StyleTokens(pos_tokens) if pos_tokens else None
+        self._position_tokens = parser.StyleTokens.create(self._style, 'position')
         self._geometry = None
 
     @property
@@ -164,7 +163,10 @@ class PositionedElement(object):
                     tokens.next()   # We peeked above...
                     while token.type == 'hash':
                         try:
-                            dependencies.append('#' + token.value)
+                            dependency = self.diagram.find_element('#' + token.value)
+                            if dependency is None:
+                                raise KeyError("Unknown element '#{}".format(token.value))
+                            dependencies.append(dependency)
                             token = tokens.next()
                         except StopIteration:
                             break

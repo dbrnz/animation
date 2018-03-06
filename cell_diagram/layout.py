@@ -83,24 +83,25 @@ class Position(object):
 
     _orientation = { 'centre': -1, 'center': -1, 'left': 0, 'right': 0, 'above': 1, 'below': 1 }
 
-    def _resolve_point(self, unit_converter, offset, reln, dependencies):
-        '''
-        :return: tuple(tuple(x, y), orientation) where orientation == 0 means
-                 horizontal and 1 means vertical.
-        '''
+    @staticmethod
+    def centroid(dependencies):
         # find average position of dependencies
-        dependency = None
         coords = [0.0, 0.0]
         for dependency in dependencies:
-            if isinstance(dependency, str):
-                id_or_name = dependency
-                dependency = self._element.diagram.find_element(id_or_name)
-            if dependency is None or not dependency.position.resolved:
+            if not dependency.position.resolved:
                 raise ValueError("No position for '{}' element".format(dependency))
             coords[0] += dependency.position.coords[0]
             coords[1] += dependency.position.coords[1]
         coords[0] /= len(dependencies)
         coords[1] /= len(dependencies)
+        return coords
+
+    def _resolve_point(self, unit_converter, offset, reln, dependencies):
+        '''
+        :return: tuple(tuple(x, y), orientation) where orientation == 0 means
+                 horizontal and 1 means vertical.
+        '''
+        coords = self.centroid(dependencies)
         orientation = Position._orientation[reln]
         if orientation >= 0:
             adjust = unit_converter.pixels(offset, orientation+1, False)
