@@ -19,6 +19,7 @@
 #------------------------------------------------------------------------------
 
 import math
+import operator
 from collections import OrderedDict
 
 #------------------------------------------------------------------------------
@@ -32,12 +33,6 @@ from .element import Element, PositionedElement
 
 FLOW_OFFSET      = 30  # pixels   ### From stylesheet??
 POTENTIAL_OFFSET = 30  # pixels
-
-def relative_position(position, direction, offset):
-    if   direction == 'left': return  (position[0] - offset, position[1])
-    elif direction == 'right': return (position[0] + offset, position[1])
-    elif direction == 'above': return (position[0], position[1] - offset)
-    elif direction == 'below': return (position[0], position[1] + offset)
 
 #------------------------------------------------------------------------------
 
@@ -61,36 +56,9 @@ class BondGraph(Element):
     def add_potential(self, potential):
         self._potentials[potential] = potential.quantity
 
-    def position_elements(self):
-        ###self.style.get('flow-offset')
-        ###self.style.get('potential-offset')
-
-        # Position potentials wrt corresponding quantities
-        for p, q in self.potentials.items():
-            p.set_position(relative_position(q.position, p.style.get('pos', 'left'), POTENTIAL_OFFSET))
-
-        # Position flows wrt their transporters
+    def set_offsets(self):
         for flow in self.flows:
-            pos = flow.style.get('pos', 'above')
-            if flow.transporter:
-                flow.set_position(relative_position(flow.transporter.position, pos, FLOW_OFFSET))
-            else:
-                # Position flow at centroid of to/from potentials
-                from_position = [0.0, 0.0]
-                from_count = 0
-                to_position = [0.0, 0.0]
-                to_count = 0
-                for flux in flow.fluxes:
-                    from_position[0] += flux.from_potential.position[0]
-                    from_position[1] += flux.from_potential.position[1]
-                    from_count += 1
-                    for p in flux.to_potentials:
-                        to_position[0] += p.position[0]
-                        to_position[1] += p.position[1]
-                        to_count += 1
-                if from_count and to_count:
-                    flow.set_position(((from_position[0]/float(from_count) + to_position[0]/float(to_count))/2.0,
-                                       (from_position[1]/float(from_count) + to_position[1]/float(to_count))/2.0))
+            flow.set_transporter_offsets()
 
     def svg(self):
         svg = [ ]
@@ -105,7 +73,7 @@ class BondGraph(Element):
         for flow in self.flows:
             svg.extend(flow.svg(fill='#ff8080'))
             for flux in flow.fluxes:
-                svg.extend(flux.svg(flow))
+                svg.extend(flux.svg())
         return svg
 
 #------------------------------------------------------------------------------
@@ -115,6 +83,7 @@ class Flow(Element, PositionedElement):
         self._transporter = diagram.find_element('#' + transporter, dia.Transporter) if transporter else None
         super().__init__(diagram, class_name='Flow', **kwds)
         self._fluxes = []
+        self._flux_offsets = {}
 
     @property
     def fluxes(self):
@@ -126,22 +95,74 @@ class Flow(Element, PositionedElement):
 
     def add_flux(self, flux):
         self._fluxes.append(flux)
+        self._flux_offsets[flux] = layout.Point()
+
+    def flux_offset(self, flux):
+        return self._flux_offsets.get(flux, layout.Point())
 
     def parse_geometry(self):
         PositionedElement.parse_geometry(self, default_offset=self.diagram.flow_offset,
                                                default_dependency=self.transporter)
 
+    def set_transporter_offsets(self):
+        if self.transporter is not None and len(self.fluxes) > 1:
+            # Get index of coordinate we want to compare against.
+            index = (1 if self.transporter.compartment_side in layout.VERTICAL_BOUNDARIES
+                     else 0)
+            origin = self.transporter.coords[index]
+            flux_offset = {}
+            num_fluxes = len(self.fluxes)
+            for flux in self.fluxes:
+                offset = flux.from_potential.coords[index] - origin
+                for to in flux.to_potentials:
+                    offset += (to.coords[index] - origin)
+                flux_offset[flux] = offset/float(1 + len(flux.to_potentials))
+            for n, p in enumerate(sorted(flux_offset.items(), key=operator.itemgetter(1))):
+                self._flux_offsets[p[0]][index] = (self.diagram.unit_converter.pixels(
+                                                      self.transporter.width,
+                                                      add_offset=False)
+                                                 *(-0.5 + n/float(num_fluxes - 1)))
+
+    def get_flow_line(self, flux):
+        TRANSPORTER_EXTRA = (10, 'x')  ## Get from CSS ???
+        points = []
+        if self.transporter is not None:
+            compartment = self.transporter.container.geometry
+            side = self.transporter.compartment_side
+            index = 0 if side in layout.VERTICAL_BOUNDARIES else 1
+            if compartment.contains(self.geometry):
+                sign = -1 if side in ['top', 'left'] else 1
+            else:
+                sign = 1 if side in ['top', 'left'] else -1
+            transporter_end = self.transporter.coords.copy()
+            transporter_end[index] += sign*(self.diagram
+                                                .unit_converter.pixels(
+                                                      TRANSPORTER_EXTRA,
+                                                      add_offset=False))
+            offset = self._flux_offsets[flux]
+            # Are the from and flow elements on the same side
+            # of the transporter's compartment?
+            if (compartment.contains(self.geometry)
+             == compartment.contains(flux.from_potential.geometry)):
+                points.extend([offset+self.coords, offset+transporter_end])
+            else:
+                points.extend([offset+transporter_end, offset+self.coords])
+        else:
+            points.append(self.coords)
+        return points
+
 #------------------------------------------------------------------------------
 
 class Flux(Element, PositionedElement):
-    def __init__(self, diagram, from_=None, to=None, count=1, line=None, **kwds):
+    def __init__(self, diagram, flow, from_=None, to=None, count=1, line=None, **kwds):
         super().__init__(diagram, class_name='Flux', **kwds)
         self._from_potential = diagram.find_element('#' + from_, Potential)
         self._to_potentials = [diagram.find_element('#' + name, Potential) for name in to.split()]
         self._count = int(count)
         self._curve_tokens = dict(start=parser.StyleTokens.create(self._style, 'curve-start'),
                                   end=parser.StyleTokens.create(self._style, 'curve-end'))
-        self._curve_segments = dict(start=None, end=None)
+        self._curve_segments = dict(start=[], end=[])
+        self._flow = flow
 
     @property
     def from_potential(self):
@@ -160,19 +181,47 @@ class Flux(Element, PositionedElement):
             self._curve_segments[pos] = self._parse_curve_segments(tokens)
 
     def _parse_curve_segments(self, tokens):
-        # "210 x-pos #u16 #v5, -90 y-pos #NCE"
-        if tokens is None:
-            return None
+        """
+        <line-point> ::= <coord-pair> | <line-angle> <constraint>
+        <coord-pair> ::= '(' <length> ',' <length> ')'
+        <constraint> ::= ('until-x' | 'until-y') <relative-point>
+        <relative-point> ::= <id-list> | [ <offset> <reln> ] <id-list>
+
+        """
+        # "210 until-x #u16 #v5, -90 until-y #NCE"
         segments = []
-        while True:
+        while tokens is not None:
             angle, tokens = parser.get_number(tokens)
+            # Normalise angle...
             token = tokens.next()
             if (token.type != 'ident'
-             or token.lower_value not in ['x-pos', 'y-pos']):
+             or token.lower_value not in ['until-x', 'until-y']):
                 raise SyntaxError("Unknown constraint for curve segment.")
-            direction = 0 if token.lower_value == 'x-pos' else 1
+            constraint = 0 if token.lower_value == 'until-x' else 1
+            # Check that angle != +/-90 if until-x
+            # Check that angle != 0/180 if until-y
+            token = tokens.peek()
+            if token.type == '() block':
+                token = tokens.next()
+                offset, _ = parser.get_coordinates(parser.StyleTokens(token.content), allow_local=False)
+                if token.type != 'ident' or token.lower_value != 'from':
+                    raise SyntaxError("'from' expected.")
+                token = tokens.next()
+            elif token.type in ['number', 'dimension']:
+                length, tokens = parser.get_length(tokens)
+                token = tokens.next()
+                if (token.type != 'ident'
+                 or token.lower_value not in layout.POSITION_RELATIONS):
+                    raise SyntaxError("Unknown relationship for offset.")
+                reln = token.lower_value
+                if reln in layout.HORIZONTAL_RELATIONS:
+                    offset = ((length[0] if reln == 'right' else -length[0], length[1]), (0, ''))
+                else:   # VERTICAL_RELATIONS
+                    offset = ((0, ''), (length[0] if reln == 'right' else -length[0], length[1]))
+                token = tokens.next()
+            else:
+                offset = ((0, ''), (0, ''))
             dependencies = []
-            token = tokens.next()
             while token.type == 'hash':
                 try:
                     dependency = self.diagram.find_element('#' + token.value)
@@ -184,7 +233,7 @@ class Flux(Element, PositionedElement):
                     break
             if not dependencies:
                 raise SyntaxError("Identifier(s) expected")
-            segments.append((angle, direction, dependencies))
+            segments.append((angle, constraint, offset, dependencies))
             if token == ',':
                 continue
             elif tokens.peek() is None:
@@ -193,54 +242,43 @@ class Flux(Element, PositionedElement):
                 raise SyntaxError("Invalid syntax")
         return segments
 
-    @staticmethod
-    def curve_segments(start_pos, segments):
-        pos = start_pos
+    def _get_curve_segments(self, start_pos, segments, reverse=False):
+        last_pos = start_pos
         points = [start_pos]
         for segment in segments:
             angle = segment[0]
-            end_pos = layout.Position.centroid(segment[2])  # Centre of dependencies
-            if segment[1] == 0:   #  x-pos
-                dx = end_pos[0] - pos[0]
+            offset = self.diagram.unit_converter.pixel_pair(segment[2], add_offset=False)
+            end_pos = offset + layout.Position.centroid(segment[3])  # Centre of dependencies
+            if segment[1] == 0:   #  until-x
+                dx = end_pos[0] - last_pos[0]
                 dy = dx*math.tan(angle*math.pi/180)
-                end_pos[1] = pos[1] - dy
-            else: ##  segment[1] == y:   #  y-pos
-                dy = pos[1] - end_pos[1]
+                end_pos[1] = last_pos[1] - dy
+            else: ##  segment[1] == y:   #  until-y
+                dy = last_pos[1] - end_pos[1]
                 dx = dy*math.tan((90-angle)*math.pi/180)
-                end_pos[0] = pos[0] + dx
+                end_pos[0] = last_pos[0] + dx
             points.append(end_pos)
-            pos = end_pos
-        return points
+            last_pos = end_pos
+        if self._flow.transporter is not None:
+            trans_coords = self._flow.transporter.coords
+            if (trans_coords[0] == points[-1][0]
+             or trans_coords[1] == points[-1][1]):
+                points[-1] += self._flow.flux_offset(self)
+        return points if not reverse else list(reversed(points))
 
-    def svg(self, flow):
+    def svg(self):
         svg = []
-        compartment = (flow.transporter.container.geometry
-                       if flow.transporter is not None
-                       else None)
-
-        (from_x, from_y) = self.from_potential.coords
-        if self._curve_segments['start'] is not None:
-            flow_points = self.curve_segments((from_x, from_y), self._curve_segments['start'])
-        else:
-            flow_points = [(from_x, from_y)]
-
-        if compartment is not None:
-            # Are the from and flow elements on the same side
-            # of the transporter's compartment?
-            if (compartment.contains(flow.geometry) == compartment.contains(self.from_potential.geometry)):
-                flow_points.extend([flow.coords, flow.transporter.coords])
-            else:
-                flow_points.append(flow.transporter.coords)
+        flux_points = self._get_curve_segments(self.from_potential.coords, self._curve_segments['start'])
+        flux_points.extend(self._flow.get_flow_line(self))
         for to in self.to_potentials:
-            if (compartment is None
-             or compartment.contains(flow.geometry) != compartment.contains(self.from_potential.geometry)):
-                flow_points.append(flow.coords)
-            flow_points.append(to.coords)
+            # Can have multiple `to` potentials
+            points = list(flux_points)
+            points.extend(self._get_curve_segments(to.coords, self._curve_segments['end'], reverse=True))
             svg.append('<path fill="none" stroke="#222222" stroke-width="{:g}" opacity="0.6"'
                 .format(self.count*2.5)
               + ' d="M{:g},{:g} {:s}"/>'
-                .format(from_x, from_y,
-                       ' '.join(['L{:g},{:g}'.format(*point) for point in flow_points[1:]])))
+                .format(points[0][0], points[0][1],
+                       ' '.join(['L{:g},{:g}'.format(*point) for point in points[1:]])))
         # repeated flux.count times
         return svg
 

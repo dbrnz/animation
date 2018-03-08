@@ -29,22 +29,76 @@ FLOW_OFFSET = (40, 'x')
 
 #------------------------------------------------------------------------------
 
-HORIZONTAL_RELN  = ['left', 'right']
-VERTICAL_RELN    = ['above', 'below']
-POSITION_RELATIONS = HORIZONTAL_RELN + VERTICAL_RELN
+HORIZONTAL_RELATIONS = ['left', 'right']
+VERTICAL_RELATIONS = ['above', 'below']
+POSITION_RELATIONS = (HORIZONTAL_RELATIONS
+                    + VERTICAL_RELATIONS)
 
-COMPARTMENT_BOUNDARIES = ['top', 'bottom', 'left', 'right',
-                          'top-left', 'top-right',
-                          'bottom-left', 'bottom-right']
+HORIZONTAL_BOUNDARIES = ['top', 'bottom']
+VERTICAL_BOUNDARIES = ['left', 'right']
+CORNER_BOUNDARIES = ['top-left', 'top-right',
+                     'bottom-left', 'bottom-right']
+COMPARTMENT_BOUNDARIES = (HORIZONTAL_BOUNDARIES
+                        + VERTICAL_BOUNDARIES)
+                        ## + CORNER_BOUNDARIES)   ## FUTURE
 
 #------------------------------------------------------------------------------
+
+
+class Point(object):
+    def __init__(self, x=0.0, y=0.0):
+        self._coords = [x, y]
+
+    @property
+    def x(self):
+        return self._coords[0]
+
+    @property
+    def y(self):
+        return self._coords[1]
+
+    def __str__(self):
+        return "<Point ({:g}, {:g})>".format(*self._coords)
+
+    def __len__(self):
+        return 2
+
+    def __add__(self, other):
+        return Point(self.x + other.x, self.y + other.y)
+
+    def __sub__(self, other):
+        return Point(self.x - other.x, self.y - other.y)
+
+    def __mul__(self, other):
+        return Point(other*self.x, other*self.y)
+
+    def __rmul__(self, other):
+        return Point(other*self.x, other*self.y)
+
+    def __truediv__(self, other):
+        return Point(self.x/other, self.y/other)
+
+    def __itruediv__(self, other):
+        return Point(self.x/other, self.y/other)
+
+    def __getitem__(self, key):
+        return self._coords[key]
+
+    def __setitem__(self, key, value):
+        self._coords[key] = value
+
+    def copy(self):
+        return Point(self.x, self.y)
+
+#------------------------------------------------------------------------------
+
 
 class Position(object):
     def __init__(self, element):
         self._element = element
         self._lengths = None
         self._relationships = list()
-        self._coords = [None, None]
+        self._coords = None
         self._dependencies = set()  # of ids and elements
 
     def __bool__(self):
@@ -52,7 +106,7 @@ class Position(object):
 
     @property
     def coords(self):
-        return tuple(self._coords)
+        return self._coords
 
     @property
     def dependencies(self):
@@ -60,7 +114,7 @@ class Position(object):
 
     @property
     def has_coords(self):
-        return None not in self._coords
+        return self._coords is not None
 
     @property
     def resolved(self):
@@ -81,35 +135,35 @@ class Position(object):
     def set_lengths(self, lengths):
         self._lengths = lengths
 
-    _orientation = { 'centre': -1, 'center': -1, 'left': 0, 'right': 0, 'above': 1, 'below': 1 }
+    _orientation = { 'centre': -1, 'center': -1,
+                     'left': 0, 'right': 0,
+                     'above': 1, 'below': 1 }
 
     @staticmethod
     def centroid(dependencies):
         # find average position of dependencies
-        coords = [0.0, 0.0]
+        coords = Point()
         for dependency in dependencies:
             if not dependency.position.resolved:
                 raise ValueError("No position for '{}' element".format(dependency))
-            coords[0] += dependency.position.coords[0]
-            coords[1] += dependency.position.coords[1]
-        coords[0] /= len(dependencies)
-        coords[1] /= len(dependencies)
+            coords += dependency.position.coords
+        coords /= len(dependencies)
         return coords
 
     def _resolve_point(self, unit_converter, offset, reln, dependencies):
         '''
-        :return: tuple(tuple(x, y), orientation) where orientation == 0 means
+        :return: tuple(tuple(x, y), index) where index == 0 means
                  horizontal and 1 means vertical.
         '''
         coords = self.centroid(dependencies)
-        orientation = Position._orientation[reln]
-        if orientation >= 0:
-            adjust = unit_converter.pixels(offset, orientation+1, False)
-        if   reln == 'left':  coords[0] -= adjust
-        elif reln == 'right': coords[0] += adjust
-        elif reln == 'above': coords[1] -= adjust
-        elif reln == 'below': coords[1] += adjust
-        return (tuple(coords), orientation)
+        index = Position._orientation[reln]
+        if index >= 0:
+            adjust = unit_converter.pixels(offset, index+1, False)
+            if reln in ['left', 'above']:
+                coords[index] -= adjust
+            else: # reln in ['right', 'below']
+                coords[index] += adjust
+        return (coords, index)
 
     def resolve(self):
         '''
@@ -133,14 +187,11 @@ class Position(object):
         pos="top"  #                 } Centered in top, spaced evenly (`transporter-spacing`?)
         pos="top"  #                 }
         '''
-
         unit_converter = self._element.container.unit_converter
-
         if self._lengths:
-            print(self._element.container, self._element, self._lengths, self._coords)
             self._coords = unit_converter.pixel_pair(self._lengths)
-
-        elif None in self._coords and self._relationships:
+        elif self._coords is None and self._relationships:
+            self._coords = Point()
             if len(self._relationships) == 1:
                 # Have just a single constraint
                 offset = self._relationships[0][0]
@@ -172,10 +223,11 @@ class Position(object):
 ##        pos="right; 10 below #t2"  ## same as pos="1000 right #compartment; 10 below #t2"
                         pass
                     else:
-                        (coords, orientation) = self._resolve_point(unit_converter,
-                                                                    offset, reln, dependencies)
-                        orientation = orientation - 1  # Swap meaning
-                        self._coords[orientation] = coords[orientation]
+                        (coords, index) = self._resolve_point(unit_converter,
+                                                              offset, reln, dependencies)
+                        if offset is None:
+                            index = index - 1  # Swap meaning
+                        self._coords[index] = coords[index]
 
 #------------------------------------------------------------------------------
 
@@ -210,7 +262,7 @@ class UnitConverter(object):
     def __str__(self):
         return 'UC: global={}, local={}, offset={}'.format(self._global_size, self._local_size, self._local_offset)
 
-    def pixels(self, length, dimension, add_offset=True):
+    def pixels(self, length, dimension=0, add_offset=True):
         if length is not None:
             units = length[1]
             if units.startswith('%'):
@@ -230,7 +282,8 @@ class UnitConverter(object):
         return 0
 
     def pixel_pair(self, coords, add_offset=True):
-        return tuple(self.pixels(l, (n+1), add_offset) for n, l in enumerate(coords))
+        return Point(self.pixels(coords[0], 1, add_offset),
+                     self.pixels(coords[1], 2, add_offset))
 
 #------------------------------------------------------------------------------
 
@@ -240,26 +293,3 @@ if __name__ == "__main__":
     doctest.testmod()
 
 #------------------------------------------------------------------------------
-
-'''
-
-import shapely.geometry as geo
-import shapely.affinity as affine
-
-layout diagram == assigning geometry
-
-compartment by compatment, starting with innermost ones ==> want reverse compartment/container order.
-
-laying out a compartment:
- * boundary --> geo.Polygon
- * transporters --> geo.Point
- * interior quantities --> geo.Point
-
-geo.MultiPoint, geo.MultiLineString, geo.MultiPolygon
-
-geo.GeometryCollection
-
-Compartments scaled when placed in a containing compartment.
-
-'''
-

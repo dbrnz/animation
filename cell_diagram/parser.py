@@ -167,7 +167,7 @@ def get_length(tokens, default=None):
 # -----------------------------------------------------------------------------
 
 
-def get_coordinates(tokens):
+def get_coordinates(tokens, allow_local=True):
     """
     Get a coordinate pair.
 
@@ -183,20 +183,19 @@ def get_coordinates(tokens):
                 if got_comma:
                     raise SyntaxError("Unexpected comma.")
                 got_comma = True
-            elif got_comma and token.type in ['dimension', 'number', 'percentage']:
+            elif (got_comma
+             and (token.type in ['dimension', 'number']
+               or allow_local and token.type == 'percentage')):
                 got_comma = False
                 tokens.back()
                 length, tokens = get_length(tokens)
                 coords.append(length)
             else:
                 raise SyntaxError("Invalid syntax.")
-
     except StopIteration:
         pass
-
     if len(coords) != 2:
         raise SyntaxError("Expected length pair.")
-
     return (coords, tokens)
 
 # -----------------------------------------------------------------------------
@@ -356,7 +355,7 @@ class Parser(object):
             if e.tag == CellDL_namespace('flux'):
                 if 'from_' not in e.attributes or 'to' not in e.attributes:
                     raise SyntaxError("Flux requires 'from' and 'to' potentials.")
-                flux = bg.Flux(self._diagram, style=e.style, **e.attributes)
+                flux = bg.Flux(self._diagram, flow, style=e.style, **e.attributes)
                 if flow.transporter is None:
                     if container is None:
                         container = flux.from_potential.container
@@ -415,7 +414,7 @@ class Parser(object):
             self.parse_bond_graph(bond_graph_element)
         else:
             self._bond_graph = bg.BondGraph(self._diagram)
-
+        self._diagram.set_bond_graph(self._bond_graph)
 
     def parse(self, file, stylesheet=None):
         logging.debug('PARSE: %s', file)
@@ -478,6 +477,6 @@ class Parser(object):
         # parse 'line' attribute
         # assign line segments
 
-        return (self._diagram, self._bond_graph)
+        return self._diagram
 
 # -----------------------------------------------------------------------------

@@ -53,9 +53,9 @@ class Container(Element, PositionedElement):
     @property
     def geometry(self):
         if self._geometry is None and self.position.has_coords:
-            self._geometry = geo.box(self.coords[0], self.coords[1],
-                                     self.coords[0] + self._width,
-                                     self.coords[1] + self._height)
+            self._geometry = geo.box(self.coords[0], self.coords[1],  # Top left corner
+                                     self.coords[0] + self._width,    # Right
+                                     self.coords[1] + self._height)   # Bottom
         return self._geometry
 
     def set_pixel_size(self, pixel_size):
@@ -151,6 +151,17 @@ class Quantity(Element, PositionedElement):
 class Transporter(Element, PositionedElement):
     def __init__(self, container, **kwds):
         super().__init__(container, class_name='Transporter', **kwds)
+        self._compartment_side = None
+        self._flow = None
+        self._width = (10, 'x')   ### From style...
+
+    @property
+    def compartment_side(self):
+        return self._compartment_side
+
+    @property
+    def width(self):
+        return self._width
 
     def parse_geometry(self):
         """
@@ -169,7 +180,7 @@ class Transporter(Element, PositionedElement):
             if (token.type != 'ident'
              or token.lower_value not in layout.COMPARTMENT_BOUNDARIES):
                 raise SyntaxError('Invalid compartment boundary.')
-            boundary = token.lower_value
+            self._compartment_side = token.lower_value
             offset, tokens = parser.get_percentage(tokens)
             token = tokens.peek()
             if token and token.type == 'hash':
@@ -179,11 +190,10 @@ class Transporter(Element, PositionedElement):
                         dependencies.append('#' + token.value)
                     except StopIteration:
                         break
-
         except StopIteration:
             raise SyntaxError("Invalid `transporter` position")
 ## We can (and should ??) now set lengths if no element dependencies
-        self._position.add_relationship(offset, boundary, dependencies)
+        self._position.add_relationship(offset, self._compartment_side, dependencies)
         self._position.add_dependencies(dependencies)
 
     def svg(self):
@@ -203,6 +213,7 @@ class Diagram(Container):
         self._height = self._number_from_style('height', 0)
         self._flow_offset = self._length_from_style('flow-offset', layout.FLOW_OFFSET)
         self._quantity_offset = self._length_from_style('quantity-offset', layout.QUANTITY_OFFSET)
+        self._bond_graph = None
 
     def _length_from_style(self, name, default):
         if self.style and name in self.style:
@@ -215,6 +226,10 @@ class Diagram(Container):
             value, _ = parser.get_number(parser.StyleTokens(self.style.get(name)))
             return value
         return default
+
+    @property
+    def bond_graph(self):
+        return self._bond_graph
 
     @property
     def elements(self):
@@ -236,13 +251,15 @@ class Diagram(Container):
     def quantity_offset(self):
         return self._quantity_offset
 
+    def set_bond_graph(self, bond_graph):
+        self._bond_graph = bond_graph
+
     def add_element(self, element):
         self._elements.append(element)
         if element.id is not None:
             if element.id in self._elements_by_id:
                 raise KeyError("Duplicate 'id': {}".format(element.id))
             self._elements_by_id[element.id] = element
-
         self._elements_by_name[element.full_name] = element
         # Also add to element's container
 
@@ -254,7 +271,7 @@ class Diagram(Container):
         return e if e is not None and isinstance(e, cls) else None
 
     def position_elements(self):
-        self.position.set_coords((0, 0))
+        self.position.set_coords(layout.Point())
 
         # Build the dependency graph
         g = nx.DiGraph()
@@ -283,7 +300,11 @@ class Diagram(Container):
                     e.set_unit_converter(layout.UnitConverter(self.pixel_size, e.pixel_size, e.position.coords))
 
 
-    def svg(self, bond_graph):
+        # Now that we have element positions we can calculate the offsets
+        # of flux lines passing through transporters
+        self.bond_graph.set_offsets()
+
+    def svg(self):
         svg = ['<?xml version="1.0" encoding="UTF-8"?>']
         svg.append(('<svg xmlns="http://www.w3.org/2000/svg"'
                     ' xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"'
@@ -291,8 +312,7 @@ class Diagram(Container):
                    .format(self._width, self._height))
 # # Add <def>s for common shapes??
         svg.extend(super().svg())
-        if bond_graph is not None:
-            svg.extend(bond_graph.svg())
+        svg.extend(self.bond_graph.svg())
         svg.append('</svg>')
         return '\n'.join(svg)
 

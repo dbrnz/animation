@@ -143,6 +143,7 @@ class PositionedElement(object):
         else:
             seen_horizontal = False
             seen_vertical = False
+            constraints = 0
             while True:
                 using_default = token.type not in ['number', 'dimension', 'percentage']
                 offset, tokens = parser.get_length(tokens, default=default_offset)
@@ -171,17 +172,19 @@ class PositionedElement(object):
                         except StopIteration:
                             break
                 if token == ',':
-                    if using_default:
-                        # No default offsets if two (or more) constraints
-                        offset = None
-                    if (seen_horizontal and reln in layout.HORIZONTAL_RELN
-                     or seen_vertical and reln in layout.VERTICAL_RELN):
+                    constraints += 1
+                    if (seen_horizontal and reln in layout.HORIZONTAL_RELATIONS
+                     or seen_vertical and reln in layout.VERTICAL_RELATIONS):
                         raise SyntaxError("Constraints must have different directions.")
+                if using_default and constraints >= 1:
+                    # No default offsets if there will be two (or more) constraints
+                    offset = None
                 self._position.add_relationship(offset, reln, dependencies)
                 element_dependencies.extend(dependencies)
-                seen_horizontal = reln in layout.HORIZONTAL_RELN
-                seen_vertical = reln in layout.VERTICAL_RELN
+                seen_horizontal = reln in layout.HORIZONTAL_RELATIONS
+                seen_vertical = reln in layout.VERTICAL_RELATIONS
                 if token == ',':
+                    token = tokens.peek()
                     continue
                 elif tokens.peek() is None:
                     break
