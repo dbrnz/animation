@@ -120,6 +120,7 @@ class Flow(Element, PositionedElement):
             for n, p in enumerate(sorted(flux_offset.items(), key=operator.itemgetter(1))):
                 self._flux_offsets[p[0]][index] = (self.diagram.unit_converter.pixels(
                                                       self.transporter.width,
+                                                      index,
                                                       add_offset=False)
                                                  *(-0.5 + n/float(num_fluxes - 1)))
 
@@ -138,6 +139,7 @@ class Flow(Element, PositionedElement):
             transporter_end[index] += sign*(self.diagram
                                                 .unit_converter.pixels(
                                                       TRANSPORTER_EXTRA,
+                                                      index,
                                                       add_offset=False))
             offset = self._flux_offsets[flux]
             # Are the from and flow elements on the same side

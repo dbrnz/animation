@@ -158,7 +158,7 @@ class Position(object):
         coords = self.centroid(dependencies)
         index = Position._orientation[reln]
         if index >= 0:
-            adjust = unit_converter.pixels(offset, index+1, False)
+            adjust = unit_converter.pixels(offset, index, False)
             if reln in ['left', 'above']:
                 coords[index] -= adjust
             else: # reln in ['right', 'below']
@@ -262,28 +262,21 @@ class UnitConverter(object):
     def __str__(self):
         return 'UC: global={}, local={}, offset={}'.format(self._global_size, self._local_size, self._local_offset)
 
-    def pixels(self, length, dimension=0, add_offset=True):
+    def pixels(self, length, index, add_offset=True):
         if length is not None:
             units = length[1]
+            if 'x' in units: index = 0
+            elif 'y' in units: index = 1
             if units.startswith('%'):
-                if   'x' in units or ('y' not in units and dimension == 1):
-                    offset = length[0]*self._local_size[0]/100.0
-                elif 'y' in units or ('x' not in units and dimension == 2):
-                    offset = length[0]*self._local_size[1]/100.0
-                if dimension == 1:
-                    return (self._local_offset[0] if add_offset else 0) + offset
-                else:
-                    return (self._local_offset[1] if add_offset else 0) + offset
+                offset = length[0]*self._local_size[index]/100.0
+                return ((self._local_offset[index] if add_offset else 0) + offset)
             else:
-                if   'x' in units or ('y' not in units and dimension == 1):
-                    return length[0]*self._global_size[0]/1000.0
-                elif 'y' in units or ('x' not in units and dimension == 2):
-                    return length[0]*self._global_size[1]/1000.0
+                return length[0]*self._global_size[index]/1000.0
         return 0
 
     def pixel_pair(self, coords, add_offset=True):
-        return Point(self.pixels(coords[0], 1, add_offset),
-                     self.pixels(coords[1], 2, add_offset))
+        return Point(self.pixels(coords[0], 0, add_offset),
+                     self.pixels(coords[1], 1, add_offset))
 
 #------------------------------------------------------------------------------
 
