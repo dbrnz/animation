@@ -364,10 +364,10 @@
             curve-start: -53 until-x 20 left #NKE, 0 until-x #m_NCE;
         }
         flow[transporter="m_NCE"] > flux[from="u23"][to="u17"] {
-            curve-end: 0 until-x #m_NCE;
+            curve-end: 0 until-x #m_NCE offset (0, -3x);
         }
         flow[transporter="m_Ca"] > flux[from="u23"][to="u17"] {
-            curve-end: 0 until-x #m_Ca;
+            curve-end: 0 until-x #m_Ca offset (0, 1x);
         }
 
         transporter[id="m_NHE"] {

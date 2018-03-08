@@ -202,8 +202,8 @@ class Flux(Element, PositionedElement):
             # Check that angle != 0/180 if until-y
             token = tokens.peek()
             if token.type == '() block':
-                token = tokens.next()
                 offset, _ = parser.get_coordinates(parser.StyleTokens(token.content), allow_local=False)
+                token = tokens.next()
                 if token.type != 'ident' or token.lower_value != 'from':
                     raise SyntaxError("'from' expected.")
                 token = tokens.next()
@@ -232,8 +232,19 @@ class Flux(Element, PositionedElement):
                 except StopIteration:
                     break
             if not dependencies:
-                raise SyntaxError("Identifier(s) expected")
-            segments.append((angle, constraint, offset, dependencies))
+                raise SyntaxError("Identifier(s) expected.")
+
+            if token.type == 'ident' and token.lower_value == 'offset':
+                token = tokens.next()
+                if token.type == '() block':
+                    line_offset, _ = parser.get_coordinates(parser.StyleTokens(token.content), allow_local=False)
+                    token = tokens.peek()
+                else:
+                    raise SyntaxError("Offset expected.")
+            else:
+                line_offset = None
+
+            segments.append((angle, constraint, offset, dependencies, line_offset))
             if token == ',':
                 continue
             elif tokens.peek() is None:
@@ -257,6 +268,10 @@ class Flux(Element, PositionedElement):
                 dy = last_pos[1] - end_pos[1]
                 dx = dy*math.tan((90-angle)*math.pi/180)
                 end_pos[0] = last_pos[0] + dx
+            if segment[4] is not None:
+                line_offset = self.diagram.unit_converter.pixel_pair(segment[4], add_offset=False)
+                points[-1] += line_offset
+                end_pos += line_offset
             points.append(end_pos)
             last_pos = end_pos
         if self._flow.transporter is not None:
