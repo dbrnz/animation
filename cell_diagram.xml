@@ -138,117 +138,116 @@
         <potential id="u26" quantity="q26"/>
 
         <flow id="v1" transporter="Na">
-            <flux from="u1" to="u2"/>
+            <flux from="u1" to="u2" class="sodium"/>
         </flow>
         <flow id="v2" transporter="Na_b">
-            <flux from="u1" to="u2"/>
+            <flux from="u1" to="u2" class="sodium"/>
         </flow>
         <flow id="v3" transporter="pNa">
-            <flux from="u1" to="u2"/>
+            <flux from="u1" to="u2" class="sodium"/>
         </flow>
         <flow id="v4" transporter="NKE">
-            <flux from="u2" to="u1" count="3"/>
-            <flux from="u4" to="u5" count="2"/>
+            <flux from="u2" to="u1" count="3" class="sodium"/>
+            <flux from="u4" to="u5" count="2" class="potassium"/>
         </flow>
         <flow id="v5" transporter="NCE">
-            <flux from="u1" to="u2" count="3"/>
-            <flux from="u17" to="u16"/>
+            <flux from="u1" to="u2" count="3" class="sodium"/>
+            <flux from="u17" to="u16" class="calcium"/>
         </flow>
         <flow id="v6" transporter="NBC">
-            <flux from="u1" to="u2"/>
-            <flux from="u9" to="u10"/>
+            <flux from="u1" to="u2" class="sodium"/>
+            <flux from="u9" to="u10" class="anions"/>
         </flow>
         <flow id="v7" transporter="NHE">
-            <flux from="u14" to="u13"/>
-            <flux from="u1" to="u2"/>
+            <flux from="u14" to="u13" class="hydrogen"/>
+            <flux from="u1" to="u2" class="sodium"/>
         </flow>
         <flow id="v8" transporter="m_NCE">
-            <flux from="u2" to="u3" count="3"/>
+            <flux from="u2" to="u3" count="3" class="sodium"/>
             <flux from="u23" to="u17"/>
         </flow>
         <flow id="v9" transporter="m_NHE">
-            <flux from="u3" to="u2"/>
-            <flux from="u14" to="u15"/>
+            <flux from="u3" to="u2" class="sodium"/>
+            <flux from="u14" to="u15" class="hydrogen"/>
         </flow>
 
         <flow id="v10" transporter="K1">
-            <flux from="u4" to="u5"/>
+            <flux from="u4" to="u5" class="potassium"/>
         </flow>
         <flow id="v11" transporter="Kr">
-            <flux from="u4" to="u5"/>
+            <flux from="u4" to="u5" class="potassium"/>
         </flow>
         <flow id="v12" transporter="Ks">
-            <flux from="u4" to="u5"/>
+            <flux from="u4" to="u5" class="potassium"/>
         </flow>
         <flow id="v13" transporter="Katp">
-            <flux from="u4" to="u5"/>
+            <flux from="u4" to="u5" class="potassium"/>
         </flow>
         <flow id="v14" transporter="m_KHE">
-            <flux from="u6" to="u5"/>
-            <flux from="u14" to="u15"/>
+            <flux from="u6" to="u5" class="potassium"/>
+            <flux from="u14" to="u15" class="hydrogen"/>
         </flow>
         <flow id="v15" transporter="m_K">
-            <flux from="u5" to="u6"/>
+            <flux from="u5" to="u6" class="potassium"/>
         </flow>
         <flow id="v16" transporter="Cl">
-            <flux from="u12" to="u11"/>
+            <flux from="u12" to="u11" class="chloride"/>
         </flow>
         <flow id="v17" transporter="CHE">
-            <flux from="u11" to="u12"/>
-            <flux from="u8" to="u7"/>
+            <flux from="u11" to="u12" class="chloride"/>
+            <flux from="u8" to="u7" class="anion"/>
         </flow>
         <flow id="v18" transporter="AE">
-            <flux from="u11" to="u12"/>
-            <flux from="u10" to="u9"/>
+            <flux from="u11" to="u12" class="chloride"/>
+            <flux from="u10" to="u9" class="anion"/>
         </flow>
         <flow id="v19" transporter="pCa">
-            <flux from="u17" to="u16"/>
+            <flux from="u17" to="u16" class="calcium"/>
         </flow>
         <flow id="v20" transporter="Ca_b">
-            <flux from="u16" to="u17"/>
+            <flux from="u16" to="u17" class="calcium"/>
         </flow>
         <flow id="v21" transporter="Ca_t">
-            <flux from="u16" to="u17"/>
+            <flux from="u16" to="u17" class="calcium"/>
         </flow>
         <flow id="v22" transporter="CaL">
-            <flux from="u16" to="u18"/>
+            <flux from="u16" to="u18" class="calcium"/>
         </flow>
         <flow id="v23" transporter="RyR">
-            <flux from="u21" to="u18"/>
+            <flux from="u21" to="u18" class="calcium"/>
         </flow>
         <flow id="v24">
-            <flux from="u18" to="u17"/>
+            <flux from="u18" to="u17" class="calcium"/>
         </flow>
-        <flow id="v25" class="dashed">
-            <!-- what does a dashed path signify?? -->
-            <flux from="u17" to="u19"/>
+        <flow id="v25">
+            <flux from="u17" to="u19" class="calcium dashed"/>
         </flow>
-        <flow id="v26" class="dashed">
-            <flux from="u17" to="u20"/>
+        <flow id="v26">
+            <flux from="u17" to="u20" class="calcium dashed"/>
         </flow>
         <flow id="v27" transporter="SERCA">
-            <flux from="u17" to="u21" count="2"/>
+            <flux from="u17" to="u21" count="2" class="calcium"/>
         </flow>
         <flow id="v28">  <!-- implicit default ?? -->
-            <flux from="u21" to="u22"/>
+            <flux from="u21" to="u22" class="calcium"/>
         </flow>
         <flow id="v29" transporter="m_Ca">
-            <flux from="u23" to="u17"/>
+            <flux from="u23" to="u17" class="calcium"/>
         </flow>
 
         <!-- flow v30 ?? -->
 
         <flow id="v31" transporter="m_CI">
-            <flux from="u14" to="u15"/>
+            <flux from="u14" to="u15" class="hydrogen"/>
         </flow>
         <flow id="v32" transporter="m_CIII">
-            <flux from="u14" to="u15"/>
+            <flux from="u14" to="u15" class="hydrogen"/>
         </flow>
         <flow id="v33" transporter="m_CIV">
-            <flux from="u14" to="u15"/>
+            <flux from="u14" to="u15" class="hydrogen"/>
         </flow>
         <flow id="v34" transporter="m_CII">
-            <flux from="u14" to="u15"/>
+            <flux from="u14" to="u15" class="hydrogen"/>
         </flow>
         <flow id="v35">
             <flux from="u24" to="u25 u26"/>
