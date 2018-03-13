@@ -17,7 +17,7 @@ class CellMembrane(object):
         </marker>
         <!-- Straight segments are built from two base elements at 180 degrees to each other -->
         <g id="{ID_BASE}_element">
-            <use transform="translate({OFFSET}, -2.9)" xlink:href="#{ID_BASE}_base_element"/>
+            <use transform="translate({OFFSET}, {SPACING})" xlink:href="#{ID_BASE}_base_element"/>
             <use transform="rotate(180) translate({OFFSET}, 0)" xlink:href="#{ID_BASE}_base_element"/>
         </g>
         <!-- Marker for straight segments -->
@@ -26,17 +26,17 @@ class CellMembrane(object):
         </marker>
       </defs>"""
 
-    # Number of outer markers in a corner
-    OUTER_MARKERS = 9
-
-    # Number of inner markers in a corner
-    INNER_MARKERS = 3
-
     def __init__(self, id, width, height, id_base='cell_membrane',
-                 marker_radius=2.4, marker_tail=17, stroke_width=1,
-                 stroke_colour='#0092DF', fill_colour='#BFDDFF'):
+                 outer_markers=9, inner_markers=3, marker_radius=2.4, marker_tail=17,
+                 stroke_width=1, stroke_colour='#0092DF', fill_colour='#BFDDFF'):
+        """
+        :param outer_markers: Number of outer markers in a corner.
+        :param immer_markers: Number of inner markers in a corner.
+        """
         self._id = id
         self._id_base = id_base
+        self._outer_markers = outer_markers
+        self._inner_markers = inner_markers
         self._marker_radius = marker_radius
         self._marker_tail = marker_tail
         self._stroke_width = stroke_width
@@ -44,10 +44,10 @@ class CellMembrane(object):
         self._fill_colour = fill_colour
         # Computed parameters
         self._marker_width = 2.0*self._marker_radius + self._stroke_width
-        self._outer_marker_angle = 90/self.OUTER_MARKERS
-        self._outer_radius = self._marker_width/(2*asin(pi/(4*self.OUTER_MARKERS)))
-        self._inner_marker_angle = 90/self.INNER_MARKERS
-        self._inner_radius = self._marker_width/(2*asin(pi/(4*self.INNER_MARKERS)))
+        self._outer_marker_angle = 90/self._outer_markers
+        self._outer_radius = self._marker_width/(2*asin(pi/(4*self._outer_markers)))
+        self._inner_marker_angle = 90/self._inner_markers
+        self._inner_radius = self._marker_width/(2*asin(pi/(4*self._inner_markers)))
 
         self._line_width = self._outer_radius - self._inner_radius
         # We round the width and height to ensure an integral number of line markers will fit on a side
@@ -72,15 +72,17 @@ class CellMembrane(object):
             R = self._outer_radius
             dt = self._outer_marker_angle*pi/180
             marker_id = '{}_inward_marker'.format(self._id_base)
+            count = self._outer_markers
             transform.append('rotate({:g})'.format(self._outer_marker_angle/2.0))
         else:
             R = self._inner_radius
             dt = self._inner_marker_angle*pi/180
             marker_id = '{}_outward_marker'.format(self._id_base)
+            count = self._inner_markers
         transform.append('translate(0, {:g})'.format(R))
         path = ['M0,0']
         t = 0
-        while t <= pi/2:
+        for n in range(count+1):
             path.append('a0,0 0 0,0 {:g},{:g}'.format(R*(sin(t+dt)-sin(t)), R*(cos(t+dt)-cos(t))))
             t += dt
         return '''
@@ -112,14 +114,15 @@ class CellMembrane(object):
     def side(self, orientation):
         translation = ((0, 0) if orientation == 'top' else
                        (self._marker_width/2.0, self._height-self._line_width) if orientation == 'bottom' else
-                       (-self._line_width, self._line_width+self._marker_width/2.0) if orientation == 'left' else
-                       (self._inner_width+self._line_width, self._line_width))
-        path = ['M{:g},{:g}'.format(self._outer_radius, self._line_width/2.0)]
+                       (0, self._marker_width/2.0) if orientation == 'left' else
+                       (self._width-self._line_width, 0))
         marker_id = '{}_marker'.format(self._id_base)
         if orientation in ['top', 'bottom']:
+            path = ['M{:g},{:g}'.format(self._outer_radius, self._line_width/2.0)]
             count = self._horizontal_markers
             step_format = 'l{:g},0'
         else:
+            path = ['M{:g},{:g}'.format(self._line_width/2.0, self._outer_radius)]
             count = self._vertical_markers
             step_format = 'l0,{:g}'
         for n in range(count):
@@ -136,7 +139,7 @@ class CellMembrane(object):
         svg = [self.SVG_DEFS.format(RADIUS=self._marker_radius, TAIL=self._marker_tail,
                                     WIDTH=self._stroke_width, STROKE=self._stroke_colour,
                                     FILL=self._fill_colour, ID_BASE=self._id_base,
-                                    OFFSET=-self._line_width/2.0)]
+                                    OFFSET=-self._line_width/2.0, SPACING=-self._marker_width/2.0)]
         svg.append('<g id="{}">'.format(self._id))
         svg.extend(self.corner('top-left'))
         svg.extend(self.corner('top-right'))
