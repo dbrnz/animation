@@ -48,23 +48,25 @@ class CellMembrane(object):
         self._outer_radius = self._marker_width/(2*asin(pi/(4*self._outer_markers)))
         self._inner_marker_angle = 90/self._inner_markers
         self._inner_radius = self._marker_width/(2*asin(pi/(4*self._inner_markers)))
-
+        # The thickness of straight lines
         self._line_width = self._outer_radius - self._inner_radius
         # We round the width and height to ensure an integral number of line markers will fit on a side
-        self._horizontal_markers = int(0.5 + (width-2*self._outer_radius)/self._marker_width)
-        self._vertical_markers = int(0.5 + (height-2*self._outer_radius)/self._marker_width)
+        self._horizontal_markers = int(0.5 + (width - self._line_width/2.0 - self._inner_radius)/self._marker_width)
+        self._vertical_markers = int(0.5 + (height - self._line_width/2.0 - self._inner_radius)/self._marker_width)
+        # The size of the straight line portion
         self._inner_width = self._marker_width*self._horizontal_markers
         self._inner_height = self._marker_width*self._vertical_markers
-        self._width = self._inner_width + 2*self._outer_radius
-        self._height = self._inner_height + 2*self._outer_radius
+        # The size of the bounding box
+        self._outer_width = self._inner_width + 2*self._outer_radius
+        self._outer_height = self._inner_height + 2*self._outer_radius
 
     @property
     def width(self):
-        return self._width
+        return self._outer_width - self._line_width
 
     @property
     def height(self):
-        return self._height
+        return self._outer_height - self._line_width
 
     def corner_path(self, outer_path):
         transform = [ ]
@@ -113,9 +115,9 @@ class CellMembrane(object):
 
     def side(self, orientation):
         translation = ((0, 0) if orientation == 'top' else
-                       (self._marker_width/2.0, self._height-self._line_width) if orientation == 'bottom' else
+                       (self._marker_width/2.0, self.height) if orientation == 'bottom' else
                        (0, self._marker_width/2.0) if orientation == 'left' else
-                       (self._width-self._line_width, 0))
+                       (self.width, 0))
         marker_id = '{}_marker'.format(self._id_base)
         if orientation in ['top', 'bottom']:
             path = ['M{:g},{:g}'.format(self._outer_radius, self._line_width/2.0)]
@@ -135,12 +137,12 @@ class CellMembrane(object):
                      trans_x=translation[0], trans_y=translation[1],
                      path=' '.join(path), marker=marker_id)]
 
-    def svg(self):
+    def svg(self, outline=False):
         svg = [self.SVG_DEFS.format(RADIUS=self._marker_radius, TAIL=self._marker_tail,
                                     WIDTH=self._stroke_width, STROKE=self._stroke_colour,
                                     FILL=self._fill_colour, ID_BASE=self._id_base,
                                     OFFSET=-self._line_width/2.0, SPACING=-self._marker_width/2.0)]
-        svg.append('<g id="{}">'.format(self._id))
+        svg.append('<g id="{}" transform="translate({:g},{:g})">'.format(self._id, -self._line_width/2.0, -self._line_width/2.0))
         svg.extend(self.corner('top-left'))
         svg.extend(self.corner('top-right'))
         svg.extend(self.corner('bottom-left'))
@@ -149,19 +151,27 @@ class CellMembrane(object):
         svg.extend(self.side('left'))
         svg.extend(self.side('bottom'))
         svg.extend(self.side('right'))
+        if outline:
+            svg.append('<path stroke="#0000FF" fill="none" d="M0,0 L{R:g},0 L{R:g},{B:g} L0,{B:g} z"/>'
+                       .format(R=self._outer_width, B=self._outer_height))
         svg.append('</g>')
+        if outline:
+            svg.append('<path stroke="#FF0000" fill="none" d="M0,0 L{R:g},0 L{R:g},{B:g} L0,{B:g} z"/>'
+                       .format(R=self.width, B=self.height))
         return '\n'.join(svg)
 
 def wrap_svg(svg):
     return """<?xml version="1.0" standalone="no"?>
 <svg  version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
       width="800" height="400"
-      viewBox="-10 -10 400 200">
+      viewBox="-10 -10 400 300">
       {SVG:s}
 </svg>""".format(SVG=svg)
 
 if __name__ == '__main__':
-    membrane = CellMembrane('cell', 300, 100)
+    membrane = CellMembrane('cell', 300, 200)
+      #, outer_markers=12, inner_markers=8, marker_tail=10, stroke_width=0.5)
+      #, marker_radius=5, marker_tail=35)
     svg = wrap_svg(membrane.svg())
     f = open('../m.svg', 'w')
     f.write(svg)
