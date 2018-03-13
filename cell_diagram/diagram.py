@@ -311,8 +311,9 @@ class Diagram(Container):
         svg = ['<?xml version="1.0" encoding="UTF-8"?>']
         svg.append(('<svg xmlns="http://www.w3.org/2000/svg"'
                     ' xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"'
-                    ' viewBox="0 0 {:g} {:g}">')
-                   .format(self._width, self._height))
+                    ' width="{width:g}" height="{height:g}"'
+                    ' viewBox="0 0 {width:g} {height:g}">')
+                   .format(width=self._width, height=self._height))
 # # Add <def>s for common shapes??
         svg.extend(super().svg())
         svg.extend(self.bond_graph.svg())
