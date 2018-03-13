@@ -28,6 +28,7 @@ import networkx as nx
 from . import layout
 from . import parser
 from .element import Element, PositionedElement
+from .svg_elements import CellMembrane
 
 # -----------------------------------------------------------------------------
 
@@ -69,17 +70,19 @@ class Container(Element, PositionedElement):
 
     def svg(self):
         # Put everything into a group with id and class attributes
-        svg = ['<g{}>'.format(self.id_class())]
+        svg = ['<g {}>'.format(self.id_class())]
         if self.position.has_coords:
-            top_left = self.position.coords
-            bottom_right = (top_left[0] + self._width,
-                            top_left[1] + self._height)
-            svg.append(('<path fill="#eeeeee" stroke="#222222"'
-                        ' stroke-width="2.0" opacity="0.6"'
-                        ' d="M{left:g},{top:g} L{right:g},{top:g}'
-                        ' L{right:g},{bottom:g} L{left:g},{bottom:g} z"/>')
-                       .format(left=top_left[0], right=bottom_right[0],
-                               top=top_left[1], bottom=bottom_right[1]))
+            svg.append('<g transform="translate({:g}, {:g})">'.format(*self.position.coords))
+            if self.is_class('cell'):  ## style.get('membrane') will name a class
+                id = self._id[1:] if self._id else ''
+                svg.append(CellMembrane(id, self._width, self._height).svg())
+            elif not isinstance(self, Diagram):
+                svg.append(('<path fill="#eeeeee" stroke="#222222"'
+                            ' stroke-width="2.0" opacity="0.6"'
+                            ' d="M0,0 L{right:g},0'
+                            ' L{right:g},{bottom:g} L0,{bottom:g} z"/>')
+                           .format(right=self._width, bottom=self._height))
+            svg.append('</g>')
         for component in self._components:
             svg.extend(component.svg())
         svg.append('</g>')
