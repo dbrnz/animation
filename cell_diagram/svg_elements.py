@@ -27,7 +27,7 @@ class CellMembrane(object):
       </defs>"""
 
     def __init__(self, id, width, height, id_base='cell_membrane',
-                 outer_markers=9, inner_markers=3, marker_radius=2.4, marker_tail=17,
+                 outer_markers=9, inner_markers=3, marker_radius=4,
                  stroke_width=1, stroke_colour='#0092DF', fill_colour='#BFDDFF'):
         """
         :param outer_markers: Number of outer markers in a corner.
@@ -38,7 +38,6 @@ class CellMembrane(object):
         self._outer_markers = outer_markers
         self._inner_markers = inner_markers
         self._marker_radius = marker_radius
-        self._marker_tail = marker_tail
         self._stroke_width = stroke_width
         self._stroke_colour = stroke_colour
         self._fill_colour = fill_colour
@@ -50,6 +49,7 @@ class CellMembrane(object):
         self._inner_radius = self._marker_width/(2*asin(pi/(4*self._inner_markers)))
         # The thickness of straight lines
         self._line_width = self._outer_radius - self._inner_radius
+        self._marker_tail = 0.9*(self._line_width - self._marker_radius - self._stroke_width)
         # We round the width and height to ensure an integral number of line markers will fit on a side
         self._horizontal_markers = int(0.5 + (width - self._line_width/2.0 - self._inner_radius)/self._marker_width)
         self._vertical_markers = int(0.5 + (height - self._line_width/2.0 - self._inner_radius)/self._marker_width)
@@ -67,6 +67,10 @@ class CellMembrane(object):
     @property
     def height(self):
         return self._outer_height - self._line_width
+
+    @property
+    def thickness(self):
+        return self._line_width
 
     def corner_path(self, outer_path):
         transform = [ ]
