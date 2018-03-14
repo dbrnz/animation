@@ -62,18 +62,22 @@ class BondGraph(Element):
 
     def svg(self):
         svg = [ ]
+        # First draw all lines
         for p, q in self.potentials.items():
             (x, y) = p.coords
             (qx, qy) = q.coords
             svg.append('<path fill="none" stroke="#222222" stroke-width="2.0" opacity="0.6"'
                      + ' d="M{start_x:g},{start_y:g} L{end_x:g},{end_y:g}"/>'
                        .format(start_x=x, start_y=y, end_x=qx, end_y=qy))
-            svg.extend(p.svg(fill='#c0ffc0'))
         # Link potentials via flows and fluxes
         for flow in self.flows:
-            svg.extend(flow.svg(fill='#ff8080'))
             for flux in flow.fluxes:
                 svg.extend(flux.svg())
+        # Then symbols
+        for p, q in self.potentials.items():
+            svg.extend(p.svg(fill='#c0ffc0'))
+        for flow in self.flows:
+            svg.extend(flow.svg(fill='#ff8080'))
         return svg
 
 #------------------------------------------------------------------------------
