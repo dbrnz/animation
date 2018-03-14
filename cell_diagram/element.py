@@ -47,9 +47,9 @@ class Element(object):
                                if (container and container.full_name and name)
                                else None)
         self._class_name = class_name
-        self._class = class_
+        self._classes = class_.split() if class_ is not None else []
         self._label = label if label else name
-        self._style = style
+        self._style = style if style is not None else {}
         super().__init__()   # Now initialise any PositionedElement mixin
 
     def __str__(self):
@@ -86,16 +86,25 @@ class Element(object):
     def style(self):
         return self._style
 
+    def get_style_as_string(self, name):
+        tokens = self._style.get(name, None)
+        return (' '.join([t.value for t in tokens
+                          if t.type not in ['comment', 'whitespace']])
+                if tokens else None)
+
+    def is_class(self, name):
+        return name in self._classes
+
     def set_container(self, container):
         self._container = container
 
     def id_class(self):
         s = []
         if self._id is not None:
-            s.append(' id="{}"'.format(self._id))
-        if self._class is not None:
-            s.append(' class="{}"'.format(self._class))
-        return ''.join(s)
+            s.append('id="{}"'.format(self._id[1:]))
+        if self._classes:
+            s.append('class="{}"'.format(' '.join(self._classes)))
+        return ' '.join(s)
 
 # -----------------------------------------------------------------------------
 
