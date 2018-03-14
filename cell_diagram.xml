@@ -296,6 +296,7 @@
         #cell {
             size: (80%, 70%);
             position: (11%, 25%);
+            membrane: CellMembrane;
         }
         #Na { position:   top  9%; }
         #Na_b { position: top 13%; }

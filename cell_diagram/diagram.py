@@ -27,8 +27,8 @@ import networkx as nx
 
 from . import layout
 from . import parser
+from . import svg_elements
 from .element import Element, PositionedElement
-from .svg_elements import CellMembrane
 
 # -----------------------------------------------------------------------------
 
@@ -67,15 +67,21 @@ class Container(Element, PositionedElement):
 
     def add_component(self, component):
         self._components.append(component)
+        ## Keep name directory...
 
     def svg(self):
         # Put everything into a group with id and class attributes
         svg = ['<g {}>'.format(self.id_class())]
         if self.position.has_coords:
             svg.append('<g transform="translate({:g}, {:g})">'.format(*self.position.coords))
-            if self.is_class('cell'):  ## style.get('membrane') will name a class
+            membrane_class = self.get_style_as_string('membrane')
+            if membrane_class in dir(svg_elements):
                 id = self._id[1:] if self._id else ''
-                svg.append(CellMembrane(id, self._width, self._height).svg())
+                membrane = svg_elements.__dict__.get(membrane_class)(id, self._width, self._height)
+                svg.append(membrane.svg())
+                # We need to set membrane earlier so can use adjusted width/height
+                # and membrane.thickness for transporter/flow offset (which becomes
+                # specific to compartment).
             elif not isinstance(self, Diagram):
                 svg.append(('<path fill="#eeeeee" stroke="#222222"'
                             ' stroke-width="2.0" opacity="0.6"'
