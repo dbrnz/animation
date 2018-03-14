@@ -123,6 +123,10 @@ class PositionedElement(object):
         return self._position
 
     @property
+    def position_resolved(self):
+        return self._position is not None and self._position.resolved
+
+    @property
     def coords(self):
         return self._position.coords
 
@@ -140,69 +144,11 @@ class PositionedElement(object):
         * Position as coords: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
         * Position as offset: relation with absolute offset from element(s) -- `300 above #q1 #q2`
         """
-        if self._position_tokens is None:
-            return
-        tokens = self._position_tokens
-        element_dependencies = []
-        token = tokens.peek()
-        if token.type == '() block':
-            tokens.next()
-            lengths, _ = parser.get_coordinates(parser.StyleTokens(token.content))
-            self._position.set_lengths(lengths)
-        else:
-            seen_horizontal = False
-            seen_vertical = False
-            constraints = 0
-            while True:
-                using_default = token.type not in ['number', 'dimension', 'percentage']
-                offset, tokens = parser.get_length(tokens, default=default_offset)
-                token = tokens.next()
-                if (token.type != 'ident'
-                 or token.lower_value not in layout.POSITION_RELATIONS):
-                    raise SyntaxError("Unknown relationship for position.")
-                reln = token.lower_value
-                dependencies = []
-                token = tokens.peek()
-                if ((token is None or token ==',')
-                 and default_dependency is not None):
-                    dependencies.append(default_dependency)
-                elif (token is None
-                  or (token.type != 'hash' and token != ',')):
-                    raise SyntaxError("Identifier(s) expected")
-                else:
-                    tokens.next()   # We peeked above...
-                    while token.type == 'hash':
-                        try:
-                            dependency = self.diagram.find_element('#' + token.value)
-                            if dependency is None:
-                                raise KeyError("Unknown element '#{}".format(token.value))
-                            dependencies.append(dependency)
-                            token = tokens.next()
-                        except StopIteration:
-                            break
-                if token == ',':
-                    constraints += 1
-                    if (seen_horizontal and reln in layout.HORIZONTAL_RELATIONS
-                     or seen_vertical and reln in layout.VERTICAL_RELATIONS):
-                        raise SyntaxError("Constraints must have different directions.")
-                if using_default and constraints >= 1:
-                    # No default offsets if there will be two (or more) constraints
-                    offset = None
-                self._position.add_relationship(offset, reln, dependencies)
-                element_dependencies.extend(dependencies)
-                seen_horizontal = reln in layout.HORIZONTAL_RELATIONS
-                seen_vertical = reln in layout.VERTICAL_RELATIONS
-                if token == ',':
-                    token = tokens.peek()
-                    continue
-                elif tokens.peek() is None:
-                    break
-                else:
-                    raise SyntaxError("Invalid syntax")
-        self._position.add_dependencies(element_dependencies)
+        if self._position_tokens is not None:
+            self.position.parse(self._position_tokens, default_offset, default_dependency)
 
     def svg(self, stroke='none', fill='#cccccc'):
-        svg = ['<g{}>'.format(self.id_class())]
+        svg = ['<g {}>'.format(self.id_class())]
         if self.position.has_coords:
             (x, y) = self.coords
             svg.append(('  <circle r="10.0" cx="{:g}" cy="{:g}"'

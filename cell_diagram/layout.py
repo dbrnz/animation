@@ -118,7 +118,7 @@ class Position(object):
 
     @property
     def resolved(self):
-        return None not in self._coords
+        return self._coords is not None and None not in self._coords
 
     def add_dependencies(self, dependencies):
         self._dependencies.update(dependencies)
@@ -149,6 +149,69 @@ class Position(object):
             coords += dependency.position.coords
         coords /= len(dependencies)
         return coords
+
+    def parse(self, tokens, default_offset, default_dependency):
+        """
+        * Position as coords: absolute or % of container -- `(100, 300)` or `(10%, 30%)`
+        * Position as offset: relation with absolute offset from element(s) -- `300 above #q1 #q2`
+        """
+        element_dependencies = []
+        token = tokens.peek()
+        if token.type == '() block':
+            tokens.next()
+            lengths, _ = parser.get_coordinates(parser.StyleTokens(token.content))
+            self.set_lengths(lengths)
+        else:
+            seen_horizontal = False
+            seen_vertical = False
+            constraints = 0
+            while True:
+                using_default = token.type not in ['number', 'dimension', 'percentage']
+                offset, tokens = parser.get_length(tokens, default=default_offset)
+                token = tokens.next()
+                if (token.type != 'ident'
+                 or token.lower_value not in POSITION_RELATIONS):
+                    raise SyntaxError("Unknown relationship for position.")
+                reln = token.lower_value
+                dependencies = []
+                token = tokens.peek()
+                if ((token is None or token ==',')
+                 and default_dependency is not None):
+                    dependencies.append(default_dependency)
+                elif (token is None
+                  or (token.type != 'hash' and token != ',')):
+                    raise SyntaxError("Identifier(s) expected")
+                else:
+                    tokens.next()   # We peeked above...
+                    while token.type == 'hash':
+                        try:
+                            dependency = self._element.diagram.find_element('#' + token.value)
+                            if dependency is None:
+                                raise KeyError("Unknown element '#{}".format(token.value))
+                            dependencies.append(dependency)
+                            token = tokens.next()
+                        except StopIteration:
+                            break
+                if token == ',':
+                    constraints += 1
+                    if (seen_horizontal and reln in HORIZONTAL_RELATIONS
+                     or seen_vertical and reln in VERTICAL_RELATIONS):
+                        raise SyntaxError("Constraints must have different directions.")
+                if using_default and constraints >= 1:
+                    # No default offsets if there will be two (or more) constraints
+                    offset = None
+                self.add_relationship(offset, reln, dependencies)
+                element_dependencies.extend(dependencies)
+                seen_horizontal = reln in HORIZONTAL_RELATIONS
+                seen_vertical = reln in VERTICAL_RELATIONS
+                if token == ',':
+                    token = tokens.peek()
+                    continue
+                elif tokens.peek() is None:
+                    break
+                else:
+                    raise SyntaxError("Invalid syntax")
+        self.add_dependencies(element_dependencies)
 
     def _resolve_point(self, unit_converter, offset, reln, dependencies):
         '''

@@ -279,7 +279,13 @@ class Diagram(Container):
             e = self._elements_by_name.get(id_or_name)
         return e if e is not None and isinstance(e, cls) else None
 
-    def position_elements(self):
+    def layout(self):
+        """
+        Set positions (and sizes) of all components in the diagram.
+
+        We position and size all compartments before positioning
+        other elements.
+        """
         self.position.set_coords(layout.Point())
 
         # Build the dependency graph
@@ -302,7 +308,7 @@ class Diagram(Container):
         # Now resolve element positions in dependency order
         self.set_unit_converter(layout.UnitConverter(self.pixel_size, self.pixel_size))
         for e in nx.topological_sort(g):
-            if e != self:
+            if e != self and not e.position_resolved:
                 e.resolve_position()
                 if isinstance(e, Compartment):
                     e.set_pixel_size(e.container.unit_converter.pixel_pair(e.size.lengths, False))

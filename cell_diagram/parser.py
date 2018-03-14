@@ -54,7 +54,7 @@ class StyleTokens(object):
 
     @classmethod
     def create(cls, style, name):
-        tokens = style.get(name, None) if style is not None else None
+        tokens = style.get(name, None)
         return cls(tokens) if tokens else None
 
     def __iter__(self):
@@ -465,7 +465,7 @@ class Parser(object):
             raise SyntaxError(error)
 
         try:
-            self._diagram.position_elements()
+            self._diagram.layout()
         except Exception as err:
             error = "{}".format(err)
         if error:
