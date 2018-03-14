@@ -18,7 +18,6 @@
 #
 #------------------------------------------------------------------------------
 
-import math
 import operator
 from collections import OrderedDict
 
@@ -165,9 +164,8 @@ class Flux(Element, PositionedElement):
         self._from_potential = diagram.find_element('#' + from_, Potential)
         self._to_potentials = [diagram.find_element('#' + name, Potential) for name in to.split()]
         self._count = int(count)
-        self._curve_tokens = dict(start=parser.StyleTokens.create(self._style, 'curve-start'),
-                                  end=parser.StyleTokens.create(self._style, 'curve-end'))
-        self._curve_segments = dict(start=[], end=[])
+        self._lines = dict(start=layout.Line(self, parser.StyleTokens.create(self._style, 'line-start')),
+                           end=layout.Line(self, parser.StyleTokens.create(self._style, 'line-end')))
         self._flow = flow
 
     @property
@@ -183,118 +181,18 @@ class Flux(Element, PositionedElement):
         return self._count
 
     def parse_geometry(self):
-        for pos, tokens in self._curve_tokens.items():
-            self._curve_segments[pos] = self._parse_curve_segments(tokens)
-
-    def _parse_curve_segments(self, tokens):
-        """
-        <line-point> ::= <coord-pair> | <line-angle> <constraint>
-        <coord-pair> ::= '(' <length> ',' <length> ')'
-        <constraint> ::= ('until-x' | 'until-y') <relative-point>
-        <relative-point> ::= <id-list> | [ <offset> <reln> ] <id-list>
-
-        """
-        # "210 until-x #u16 #v5, -90 until-y #NCE"
-        segments = []
-        while tokens is not None:
-            angle, tokens = parser.get_number(tokens)
-            # Normalise angle...
-            token = tokens.next()
-            if (token.type != 'ident'
-             or token.lower_value not in ['until-x', 'until-y']):
-                raise SyntaxError("Unknown constraint for curve segment.")
-            constraint = 0 if token.lower_value == 'until-x' else 1
-            # Check that angle != +/-90 if until-x
-            # Check that angle != 0/180 if until-y
-            token = tokens.peek()
-            if token.type == '() block':
-                offset, _ = parser.get_coordinates(parser.StyleTokens(token.content), allow_local=False)
-                token = tokens.next()
-                if token.type != 'ident' or token.lower_value != 'from':
-                    raise SyntaxError("'from' expected.")
-                token = tokens.next()
-            elif token.type in ['number', 'dimension']:
-                length, tokens = parser.get_length(tokens)
-                token = tokens.next()
-                if (token.type != 'ident'
-                 or token.lower_value not in layout.POSITION_RELATIONS):
-                    raise SyntaxError("Unknown relationship for offset.")
-                reln = token.lower_value
-                if reln in layout.HORIZONTAL_RELATIONS:
-                    offset = ((length[0] if reln == 'right' else -length[0], length[1]), (0, ''))
-                else:   # VERTICAL_RELATIONS
-                    offset = ((0, ''), (length[0] if reln == 'right' else -length[0], length[1]))
-                token = tokens.next()
-            else:
-                offset = ((0, ''), (0, ''))
-            dependencies = []
-            while token.type == 'hash':
-                try:
-                    dependency = self.diagram.find_element('#' + token.value)
-                    if dependency is None:
-                        raise KeyError("Unknown element '#{}".format(token.value))
-                    dependencies.append(dependency)
-                    token = tokens.next()
-                except StopIteration:
-                    break
-            if not dependencies:
-                raise SyntaxError("Identifier(s) expected.")
-
-            if token.type == 'ident' and token.lower_value == 'offset':
-                token = tokens.next()
-                if token.type == '() block':
-                    line_offset, _ = parser.get_coordinates(parser.StyleTokens(token.content), allow_local=False)
-                    token = tokens.peek()
-                else:
-                    raise SyntaxError("Offset expected.")
-            else:
-                line_offset = None
-
-            segments.append((angle, constraint, offset, dependencies, line_offset))
-            if token == ',':
-                continue
-            elif tokens.peek() is None:
-                break
-            else:
-                raise SyntaxError("Invalid syntax")
-        return segments
-
-    def _get_curve_segments(self, start_pos, segments, reverse=False):
-        last_pos = start_pos
-        points = [start_pos]
-        for segment in segments:
-            angle = segment[0]
-            offset = self.diagram.unit_converter.pixel_pair(segment[2], add_offset=False)
-            end_pos = offset + layout.Position.centroid(segment[3])  # Centre of dependencies
-            if segment[1] == 0:   #  until-x
-                dx = end_pos[0] - last_pos[0]
-                dy = dx*math.tan(angle*math.pi/180)
-                end_pos[1] = last_pos[1] - dy
-            else: ##  segment[1] == y:   #  until-y
-                dy = last_pos[1] - end_pos[1]
-                dx = dy*math.tan((90-angle)*math.pi/180)
-                end_pos[0] = last_pos[0] + dx
-            if segment[4] is not None:
-                line_offset = self.diagram.unit_converter.pixel_pair(segment[4], add_offset=False)
-                points[-1] += line_offset
-                end_pos += line_offset
-            points.append(end_pos)
-            last_pos = end_pos
-        if self._flow.transporter is not None:
-            trans_coords = self._flow.transporter.coords
-            if (trans_coords[0] == points[-1][0]
-             or trans_coords[1] == points[-1][1]):
-                points[-1] += self._flow.flux_offset(self)
-        return points if not reverse else list(reversed(points))
+        for line in self._lines.values():
+            line.parse()
 
     def svg(self):
         svg = []
-        flux_points = self._get_curve_segments(self.from_potential.coords, self._curve_segments['start'])
+        flux_points = self._lines['start'].points(self.from_potential.coords, flow=self._flow)
         flux_points.extend(self._flow.get_flow_line(self))
         for to in self.to_potentials:
             # Can have multiple `to` potentials
             points = list(flux_points)
-            points.extend(self._get_curve_segments(to.coords, self._curve_segments['end'], reverse=True))
+            points.extend(self._lines['end'].points(to.coords, flow=self._flow, reverse=True))
+            # TODO: Get colour of line from class...
             svg.append('<path fill="none" stroke="#222222" stroke-width="{:g}" opacity="0.6"'
                 .format(self.count*2.5)
               + ' d="M{:g},{:g} {:s}"/>'

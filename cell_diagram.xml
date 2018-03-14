@@ -361,13 +361,13 @@
         }
 
         flow[transporter="m_NCE"] > flux[from="u2"][to="u3"] {
-            curve-start: -53 until-x 20 left #NKE, 0 until-x #m_NCE;
+            line-start: -53 until-x 20 left #NKE, 0 until-x #m_NCE;
         }
         flow[transporter="m_NCE"] > flux[from="u23"][to="u17"] {
-            curve-end: 0 until-x #m_NCE offset (0, -3);
+            line-end: 0 until-x #m_NCE offset (0, -3);
         }
         flow[transporter="m_Ca"] > flux[from="u23"][to="u17"] {
-            curve-end: 0 until-x #m_Ca offset (0, 3);
+            line-end: 0 until-x #m_Ca offset (0, 3);
         }
 
         transporter[id="m_NHE"] {
@@ -377,7 +377,7 @@
             position: above;
         }
         flow[transporter="m_NHE"] > flux[from="u3"][to="u2"] {
-            curve-end: -50 until-x 20 left #NKE, 0 until-x #m_NHE;
+            line-end: -50 until-x 20 left #NKE, 0 until-x #m_NHE;
             }
 
         #m_K { position:    top 34%; }
@@ -403,10 +403,10 @@
         #u19 { position:  45% below #K1; }
         #u20 { position:  40 below #u19; }
         flow[id="v25"] > flux[from="u17"][to="u19"] {
-            curve-start: -12 until-y #v25;
+            line-start: -12 until-y #v25;
             }
         flow[id="v26"] > flux[from="u17"][to="u20"] {
-            curve-start: -20 until-y #v26;
+            line-start: -20 until-y #v26;
             }
 
 
@@ -419,23 +419,23 @@
             position: left;
             }
         flow[transporter="NCE"] > flux[from="u1"][to="u2"] {
-            curve-start: 195 until-x #u16 #v5, -90 until-y #NCE;
+            line-start: 195 until-x #u16 #v5, -90 until-y #NCE;
             }
 
         flow[transporter="NBC"] {
             position: above;
             }
         flow[transporter="NBC"] > flux[from="u1"][to="u2"] {
-            curve-start: 48 until-x #pNa #NKE, 0 until-x #NBC;
-            curve-end: -36 until-x 20 left #NKE, 0 until-x #NBC;
+            line-start: 48 until-x #pNa #NKE, 0 until-x #NBC;
+            line-end: -36 until-x 20 left #NKE, 0 until-x #NBC;
             }
 
         flow[transporter="NHE"] {
             position: above;
             }
         flow[transporter="NHE"] > flux[from="u1"][to="u2"] {
-            curve-start: 50 until-x #pNa #NKE, 0 until-x #NHE;
-            curve-end: -39 until-x 20 left #NKE, 0 until-x #NHE;
+            line-start: 50 until-x #pNa #NKE, 0 until-x #NHE;
+            line-end: -39 until-x 20 left #NKE, 0 until-x #NHE;
             }
 
         #v10 { position: above; }
@@ -447,14 +447,14 @@
             position: above;
             }
         flow[transporter="m_KHE"] > flux[from="u6"][to="u5"] {
-            curve-end: -49 until-x 10 right #Katp, 0 until-x #m_KHE;
+            line-end: -49 until-x 10 right #Katp, 0 until-x #m_KHE;
             }
 
         flow[transporter="m_K"] {
             position: above;
             }
         flow[transporter="m_K"] > flux[from="u5"][to="u6"] {
-            curve-start: -52 until-x 10 right #Katp, 0 until-x #m_K;
+            line-start: -52 until-x 10 right #Katp, 0 until-x #m_K;
             }
 
         #v16 { position: above; }
@@ -468,7 +468,7 @@
             position: left;
             }
         flow[transporter="CaL"] > flux[from="u16"][to="u18"] {
-            curve-start: -90 until-y #CaL;
+            line-start: -90 until-y #CaL;
             }
 
         #v23 { position: right; }

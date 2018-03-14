@@ -18,6 +18,10 @@
 #
 #------------------------------------------------------------------------------
 
+import math
+
+#------------------------------------------------------------------------------
+
 from . import bondgraph as bg
 from . import diagram as dia
 from . import parser
@@ -307,6 +311,117 @@ class Size(object):
     @property
     def lengths(self):
         return self._lengths
+
+#------------------------------------------------------------------------------
+
+
+class Line(object):
+
+    def __init__(self, element, tokens):
+        self._element = element
+        self._tokens = tokens
+        self._segments = []
+
+    def parse(self):
+        """
+        <line-point> ::= <coord-pair> | <line-angle> <constraint>
+        <coord-pair> ::= '(' <length> ',' <length> ')'
+        <constraint> ::= ('until-x' | 'until-y') <relative-point>
+        <relative-point> ::= <id-list> | [ <offset> <reln> ] <id-list>
+
+        """
+        # "210 until-x #u16 #v5, -90 until-y #NCE"
+        self._segments = []
+        tokens = self._tokens
+        while tokens is not None:
+            angle, tokens = parser.get_number(tokens)
+            # Normalise angle...
+            token = tokens.next()
+            if (token.type != 'ident'
+             or token.lower_value not in ['until-x', 'until-y']):
+                raise SyntaxError("Unknown constraint for curve segment.")
+            constraint = 0 if token.lower_value == 'until-x' else 1
+            # Check that angle != +/-90 if until-x
+            # Check that angle != 0/180 if until-y
+            token = tokens.peek()
+            if token.type == '() block':
+                offset, _ = parser.get_coordinates(parser.StyleTokens(token.content), allow_local=False)
+                token = tokens.next()
+                if token.type != 'ident' or token.lower_value != 'from':
+                    raise SyntaxError("'from' expected.")
+                token = tokens.next()
+            elif token.type in ['number', 'dimension']:
+                length, tokens = parser.get_length(tokens)
+                token = tokens.next()
+                if (token.type != 'ident'
+                 or token.lower_value not in POSITION_RELATIONS):
+                    raise SyntaxError("Unknown relationship for offset.")
+                reln = token.lower_value
+                if reln in HORIZONTAL_RELATIONS:
+                    offset = ((length[0] if reln == 'right' else -length[0], length[1]), (0, ''))
+                else:   # VERTICAL_RELATIONS
+                    offset = ((0, ''), (length[0] if reln == 'right' else -length[0], length[1]))
+                token = tokens.next()
+            else:
+                offset = ((0, ''), (0, ''))
+            dependencies = []
+            while token.type == 'hash':
+                try:
+                    dependency = self._element.diagram.find_element('#' + token.value)
+                    if dependency is None:
+                        raise KeyError("Unknown element '#{}".format(token.value))
+                    dependencies.append(dependency)
+                    token = tokens.next()
+                except StopIteration:
+                    break
+            if not dependencies:
+                raise SyntaxError("Identifier(s) expected.")
+
+            if token.type == 'ident' and token.lower_value == 'offset':
+                token = tokens.next()
+                if token.type == '() block':
+                    line_offset, _ = parser.get_coordinates(parser.StyleTokens(token.content), allow_local=False)
+                    token = tokens.peek()
+                else:
+                    raise SyntaxError("Offset expected.")
+            else:
+                line_offset = None
+
+            self._segments.append((angle, constraint, offset, dependencies, line_offset))
+            if token == ',':
+                continue
+            elif tokens.peek() is None:
+                break
+            else:
+                raise SyntaxError("Invalid syntax")
+
+    def points(self, start_pos, flow=None, reverse=False):
+        last_pos = start_pos
+        points = [start_pos]
+        for segment in self._segments:
+            angle = segment[0]
+            offset = self._element.diagram.unit_converter.pixel_pair(segment[2], add_offset=False)
+            end_pos = offset + Position.centroid(segment[3])  # Centre of dependencies
+            if segment[1] == 0:   #  until-x
+                dx = end_pos[0] - last_pos[0]
+                dy = dx*math.tan(angle*math.pi/180)
+                end_pos[1] = last_pos[1] - dy
+            else: ##  segment[1] == y:   #  until-y
+                dy = last_pos[1] - end_pos[1]
+                dx = dy*math.tan((90-angle)*math.pi/180)
+                end_pos[0] = last_pos[0] + dx
+            if segment[4] is not None:
+                line_offset = self._element.diagram.unit_converter.pixel_pair(segment[4], add_offset=False)
+                points[-1] += line_offset
+                end_pos += line_offset
+            points.append(end_pos)
+            last_pos = end_pos
+        if flow.transporter is not None:
+            trans_coords = flow.transporter.coords
+            if (trans_coords[0] == points[-1][0]
+             or trans_coords[1] == points[-1][1]):
+                points[-1] += flow.flux_offset(self._element)
+        return points if not reverse else list(reversed(points))
 
 #------------------------------------------------------------------------------
 
