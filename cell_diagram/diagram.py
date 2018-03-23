@@ -155,11 +155,14 @@ class Quantity(Element, PositionedElement):
         svg = ['<g{}{}>'.format(self.id_class(), self.display())]
         if self.position.has_coords:
             (x, y) = self.coords
-            svg.append(('  <rect rx="10.0" ry="10" x="{:g}" y="{:g}"'
-                        ' width="40" height="30" stroke="none" fill="{:s}"/>')
-                       .format(x-20, y-15, self.colour))
-            svg.append('  <text x="{:g}" y="{:g}">{:s}</text>'
-                       .format(x-9, y+6, self._local_name))
+            (w, h) = (layout.QUANTITY_WIDTH, layout.QUANTITY_HEIGHT)
+            svg.append(('  <rect rx="{}" ry="{}" x="{}" y="{}"'
+                        ' width="{}" height="{}" stroke="none" fill="{}"/>')
+                       .format(0.375*w, 0.375*h, x-w/2, y-h/2, w, h, self.colour))
+            # Text should be centered
+            # self.svg_text() in PositionedElement
+            svg.append(('  <text text-anchor="middle" dominant-baseline="central"'
+                        ' x="{}" y="{}">{}</text>').format(x, y, self._local_name))
         svg.append('</g>')
         return svg
 
@@ -226,7 +229,7 @@ class Transporter(Element, PositionedElement):
                           0 if self.compartment_side in layout.HORIZONTAL_BOUNDARIES else 90))
             svg.append(element.svg())
             svg.append('</g>')
-        svg.extend(super().svg(stroke='#ffff00'))
+        svg.extend(super().svg())
         return svg
 
 # -----------------------------------------------------------------------------

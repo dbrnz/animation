@@ -94,9 +94,17 @@ class Element(object):
         colour = parser.get_colour(parser.StyleTokens(tokens))
         return colour
 
+    @property
+    def stroke(self):
+        return self.get_style_as_string('stroke', 'none')
+
+    @property
+    def stroke_width(self):
+        return self.get_style_as_string('stroke-width', '1')
+
     def get_style_as_string(self, name, default=None):
         tokens = self._style.get(name, None)
-        return (' '.join([t.value if t.type != 'hash' else ('#' + t.value)
+        return (' '.join([str(t.value) if t.type != 'hash' else ('#' + t.value)
                            for t in tokens if t.type not in ['comment', 'whitespace']])
                 if tokens is not None else default)
 
@@ -159,15 +167,15 @@ class PositionedElement(object):
         if self._position_tokens is not None:
             self.position.parse(self._position_tokens, default_offset, default_dependency)
 
-    def svg(self, stroke='none'):
+    def svg(self):
         svg = ['<g{}{}>'.format(self.id_class(), self.display())]
         if self.position.has_coords:
             (x, y) = self.coords
             svg.append(('  <circle r="{}" cx="{}" cy="{}"'
-                        ' stroke="{}" fill="{}"/>')
-                       .format(layout.ELEMENT_RADIUS, x, y, stroke, self.colour))
-            svg.append('  <text x="{:g}" y="{:g}">{:s}</text>'
-                       .format(x-9, y+6, self._local_name))
+                        ' stroke="{}" stroke-width="{}" fill="{}"/>')
+                       .format(layout.ELEMENT_RADIUS, x, y, self.stroke, self.stroke_width, self.colour))
+            svg.append(('  <text text-anchor="middle" dominant-baseline="central"'
+                        ' x="{}" y="{}">{}</text>').format(x, y, self._local_name))
         svg.append('</g>')
         return svg
 

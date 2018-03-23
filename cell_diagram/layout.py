@@ -35,7 +35,11 @@ FLOW_OFFSET = (40, 'x')
 
 TRANSPORTER_EXTRA = (15, 'x')
 
-ELEMENT_RADIUS = 15  # SVG pixels
+# SVG sizes, in pixels
+ELEMENT_RADIUS = 15
+
+QUANTITY_WIDTH = 40
+QUANTITY_HEIGHT = 30
 
 #------------------------------------------------------------------------------
 
