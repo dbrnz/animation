@@ -28,8 +28,14 @@ from . import parser
 
 #------------------------------------------------------------------------------
 
+# These could come from stylesheet
+
 QUANTITY_OFFSET = (40, 'x')
 FLOW_OFFSET = (40, 'x')
+
+TRANSPORTER_EXTRA = (15, 'x')
+
+ELEMENT_RADIUS = 15  # SVG pixels
 
 #------------------------------------------------------------------------------
 

@@ -163,9 +163,9 @@ class PositionedElement(object):
         svg = ['<g{}{}>'.format(self.id_class(), self.display())]
         if self.position.has_coords:
             (x, y) = self.coords
-            svg.append(('  <circle r="10.0" cx="{:g}" cy="{:g}"'
-                        ' stroke="{:s}" fill="{:s}"/>')
-                       .format(x, y, stroke, self.colour))
+            svg.append(('  <circle r="{}" cx="{}" cy="{}"'
+                        ' stroke="{}" fill="{}"/>')
+                       .format(layout.ELEMENT_RADIUS, x, y, stroke, self.colour))
             svg.append('  <text x="{:g}" y="{:g}">{:s}</text>'
                        .format(x-9, y+6, self._local_name))
         svg.append('</g>')

@@ -134,7 +134,6 @@ class Flow(Element, PositionedElement):
                                                  *(-0.5 + n/float(num_fluxes - 1)))
 
     def get_flow_line(self, flux):
-        TRANSPORTER_EXTRA = (10, 'x')  ## Get from CSS ???
         points = []
         if self.transporter is not None:
             compartment = self.transporter.container.geometry
@@ -147,7 +146,7 @@ class Flow(Element, PositionedElement):
             transporter_end = self.transporter.coords.copy()
             transporter_end[index] += sign*(self.diagram
                                                 .unit_converter.pixels(
-                                                      TRANSPORTER_EXTRA,
+                                                      layout.TRANSPORTER_EXTRA,
                                                       index,
                                                       add_offset=False))
             offset = self._flux_offsets[flux]
