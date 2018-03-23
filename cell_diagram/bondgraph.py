@@ -21,6 +21,8 @@
 import operator
 from collections import OrderedDict
 
+import shapely.geometry as geo
+
 #------------------------------------------------------------------------------
 
 from . import diagram as dia
@@ -32,6 +34,9 @@ from .element import Element, PositionedElement
 
 FLOW_OFFSET      = 30  # pixels   ### From stylesheet??
 POTENTIAL_OFFSET = 30  # pixels
+
+LINE_OFFSET = 3.5
+LINE_WIDTH  = 2.5
 
 #------------------------------------------------------------------------------
 
@@ -184,6 +189,13 @@ class Flux(Element, PositionedElement):
         for line in self._lines.values():
             line.parse()
 
+    def _svg_line(self, line):
+        points = line.coords
+        return ('<path fill="none" stroke="{}" stroke-width="{}" opacity="0.6"'
+                ' d="M{:g},{:g} {:s}"/>').format(self.colour, LINE_WIDTH,
+                       points[0][0], points[0][1],
+                       ' '.join(['L{:g},{:g}'.format(*point) for point in points[1:]]))
+
     def svg(self):
         svg = []
         flux_points = self._lines['start'].points(self.from_potential.coords, flow=self._flow)
@@ -192,13 +204,20 @@ class Flux(Element, PositionedElement):
             # Can have multiple `to` potentials
             points = list(flux_points)
             points.extend(self._lines['end'].points(to.coords, flow=self._flow, reverse=True))
-            # TODO: Get colour of line from class...
-            svg.append('<path fill="none" stroke="#222222" stroke-width="{:g}" opacity="0.6"'
-                .format(self.count*2.5)
-              + ' d="M{:g},{:g} {:s}"/>'
-                .format(points[0][0], points[0][1],
-                       ' '.join(['L{:g},{:g}'.format(*point) for point in points[1:]])))
-        # repeated flux.count times
+
+            line = geo.LineString(points)
+            if (self.count % 2) == 0:  # An even number of lines
+                for n in range(self.count // 2):
+                    offset = (n + 0.5)*LINE_OFFSET
+                    svg.append(self._svg_line(line.parallel_offset(offset, 'left', join_style=2)))
+                    svg.append(self._svg_line(line.parallel_offset(offset, 'right', join_style=2)))
+            else:
+                for n in range(self.count // 2):
+                    offset = (n + 1)*LINE_OFFSET
+                    svg.append(self._svg_line(line.parallel_offset(offset, 'left', join_style=2)))
+                    svg.append(self._svg_line(line.parallel_offset(offset, 'right', join_style=2)))
+                svg.append(self._svg_line(line))
+            ## TODO: Add arrow end markers
         return svg
 
 #------------------------------------------------------------------------------
