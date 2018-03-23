@@ -163,15 +163,15 @@ class Position(object):
         token = tokens.peek()
         if token.type == '() block':
             tokens.next()
-            lengths, _ = parser.get_coordinates(parser.StyleTokens(token.content))
+            lengths = parser.get_coordinates(parser.StyleTokens(token.content))
             self.set_lengths(lengths)
         else:
             seen_horizontal = False
             seen_vertical = False
             constraints = 0
-            while True:
+            while token is not None:
                 using_default = token.type not in ['number', 'dimension', 'percentage']
-                offset, tokens = parser.get_length(tokens, default=default_offset)
+                offset = parser.get_length(tokens, default=default_offset)
                 token = tokens.next()
                 if (token.type != 'ident'
                  or token.lower_value not in POSITION_RELATIONS):
@@ -179,23 +179,18 @@ class Position(object):
                 reln = token.lower_value
                 dependencies = []
                 token = tokens.peek()
-                if ((token is None or token ==',')
-                 and default_dependency is not None):
+                if token in [None, ','] and default_dependency is not None:
                     dependencies.append(default_dependency)
-                elif (token is None
-                  or (token.type != 'hash' and token != ',')):
+                elif token is not None and token.type != 'hash' and token != ',':
                     raise SyntaxError("Identifier(s) expected")
-                else:
+                elif token is not None:
                     tokens.next()   # We peeked above...
-                    while token.type == 'hash':
-                        try:
-                            dependency = self._element.diagram.find_element('#' + token.value)
-                            if dependency is None:
-                                raise KeyError("Unknown element '#{}".format(token.value))
-                            dependencies.append(dependency)
-                            token = tokens.next()
-                        except StopIteration:
-                            break
+                    while token is not None and token.type == 'hash':
+                        dependency = self._element.diagram.find_element('#' + token.value)
+                        if dependency is None:
+                            raise KeyError("Unknown element '#{}".format(token.value))
+                        dependencies.append(dependency)
+                        token = tokens.next()
                 if token == ',':
                     constraints += 1
                     if (seen_horizontal and reln in HORIZONTAL_RELATIONS
@@ -304,7 +299,7 @@ class Size(object):
         self._lengths = None
         for token in parser.StyleTokens(tokens):
             if token.type == '() block':
-                self._lengths, _ = parser.get_coordinates(parser.StyleTokens(token.content))
+                self._lengths = parser.get_coordinates(parser.StyleTokens(token.content))
             else:
                 raise SyntaxError("Parenthesised pair of lengths expected.")
 
@@ -331,10 +326,12 @@ class Line(object):
 
         """
         # "210 until-x #u16 #v5, -90 until-y #NCE"
+        if self._tokens is None:
+            return
         self._segments = []
         tokens = self._tokens
-        while tokens is not None:
-            angle, tokens = parser.get_number(tokens)
+        while tokens.peek() is not None:
+            angle = parser.get_number(tokens)
             # Normalise angle...
             token = tokens.next()
             if (token.type != 'ident'
@@ -345,13 +342,13 @@ class Line(object):
             # Check that angle != 0/180 if until-y
             token = tokens.peek()
             if token.type == '() block':
-                offset, _ = parser.get_coordinates(parser.StyleTokens(token.content), allow_local=False)
+                offset = parser.get_coordinates(parser.StyleTokens(token.content), allow_local=False)
                 token = tokens.next()
                 if token.type != 'ident' or token.lower_value != 'from':
                     raise SyntaxError("'from' expected.")
                 token = tokens.next()
             elif token.type in ['number', 'dimension']:
-                length, tokens = parser.get_length(tokens)
+                length = parser.get_length(tokens)
                 token = tokens.next()
                 if (token.type != 'ident'
                  or token.lower_value not in POSITION_RELATIONS):
@@ -365,22 +362,19 @@ class Line(object):
             else:
                 offset = ((0, ''), (0, ''))
             dependencies = []
-            while token.type == 'hash':
-                try:
-                    dependency = self._element.diagram.find_element('#' + token.value)
-                    if dependency is None:
-                        raise KeyError("Unknown element '#{}".format(token.value))
-                    dependencies.append(dependency)
-                    token = tokens.next()
-                except StopIteration:
-                    break
+            while token is not None and token.type == 'hash':
+                dependency = self._element.diagram.find_element('#' + token.value)
+                if dependency is None:
+                    raise KeyError("Unknown element '#{}".format(token.value))
+                dependencies.append(dependency)
+                token = tokens.next()
             if not dependencies:
                 raise SyntaxError("Identifier(s) expected.")
 
-            if token.type == 'ident' and token.lower_value == 'offset':
+            if token is not None and token.type == 'ident' and token.lower_value == 'offset':
                 token = tokens.next()
                 if token.type == '() block':
-                    line_offset, _ = parser.get_coordinates(parser.StyleTokens(token.content), allow_local=False)
+                    line_offset = parser.get_coordinates(parser.StyleTokens(token.content), allow_local=False)
                     token = tokens.peek()
                 else:
                     raise SyntaxError("Offset expected.")

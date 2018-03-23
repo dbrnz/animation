@@ -81,14 +81,18 @@ class StyleTokens(object):
 
     def next(self, skip_space=True):
         self._skip_space = skip_space
-        return next(self)
+        try:
+            token = next(self)
+        except StopIteration:
+            return None
+        return token
 
     def back(self):
         self._buffer.append(self._value)
 
     def peek(self, skip_space=True):
+        self._skip_space = skip_space
         try:
-            self._skip_space = skip_space
             token = next(self)
         except StopIteration:
             return None
@@ -104,14 +108,13 @@ Convention is that `tokens` is at **last** token processed.
 def get_number(tokens):
     """
     :param tokens: `StyleTokens` of tokens
-    :return: tuple(value, tokens)
+    :return: numeric value
     """
     token = tokens.next()
     if token.type != 'number':
         raise SyntaxError("Number expected.")
     else:
-        return ((token.int_value if token.is_integer else token.value,
-                 tokens))
+        return token.int_value if token.is_integer else token.value
 
 # -----------------------------------------------------------------------------
 
@@ -119,12 +122,12 @@ def get_number(tokens):
 def get_percentage(tokens, default=None):
     """
     :param tokens: `StyleTokens` of tokens
-    :return: tuple(Length, tokens)
+    :return: Length
     """
     token = tokens.peek()
     if token is None or token.type != 'percentage':
         if default is not None:
-            return (default, tokens)
+            return default
         else:
             raise SyntaxError('Percentage expected.')
     percentage = (token.int_value if token.is_integer else token.value)
@@ -137,7 +140,7 @@ def get_percentage(tokens, default=None):
         raise SyntaxError("Modifier ({}) must be 'x' or 'y'.".format(modifier))
     elif modifier != '':
         tokens.next()
-    return ((percentage, '%' + modifier), tokens)
+    return (percentage, '%' + modifier)
 
 
 # -----------------------------------------------------------------------------
@@ -145,7 +148,7 @@ def get_percentage(tokens, default=None):
 def get_length(tokens, default=None):
     """
     :param tokens: `StyleTokens` of tokens
-    :return: tuple(Length, tokens)
+    :return: Length
 
     `100`, `100x`, `100y`
     """
@@ -154,7 +157,7 @@ def get_length(tokens, default=None):
         return get_percentage(tokens, default)
     elif token is None or token.type not in ['number', 'dimension']:
         if default is not None:
-            return (default, tokens)
+            return default
         else:
             raise SyntaxError('Length expected.')
     value = (token.int_value if token.is_integer else token.value)
@@ -162,7 +165,7 @@ def get_length(tokens, default=None):
     if modifier not in ['', 'x', 'y']:
         raise SyntaxError("Modifier must be 'x' or 'y'.")
     tokens.next()
-    return ((value, modifier), tokens)
+    return (value, modifier)
 
 # -----------------------------------------------------------------------------
 
@@ -172,31 +175,29 @@ def get_coordinates(tokens, allow_local=True):
     Get a coordinate pair.
 
     :param tokens: `StyleTokens` of tokens
-    :return: tuple(tuple(Length, Length), tokens)
+    :return: tuple(Length, Length)
     """
     coords = []
     got_comma = True
-    try:
-        while True:
-            token = tokens.next()
-            if token == ',':
-                if got_comma:
-                    raise SyntaxError("Unexpected comma.")
-                got_comma = True
-            elif (got_comma
-             and (token.type in ['dimension', 'number']
-               or allow_local and token.type == 'percentage')):
-                got_comma = False
-                tokens.back()
-                length, tokens = get_length(tokens)
-                coords.append(length)
-            else:
-                raise SyntaxError("Invalid syntax.")
-    except StopIteration:
-        pass
+    token = tokens.next()
+    while token is not None:
+        if token == ',':
+            if got_comma:
+                raise SyntaxError("Unexpected comma.")
+            got_comma = True
+        elif (got_comma
+         and (token.type in ['dimension', 'number']
+           or allow_local and token.type == 'percentage')):
+            got_comma = False
+            tokens.back()
+            length = get_length(tokens)
+            coords.append(length)
+        else:
+            raise SyntaxError("Invalid syntax.")
+        token = tokens.next()
     if len(coords) != 2:
         raise SyntaxError("Expected length pair.")
-    return (coords, tokens)
+    return coords
 
 # -----------------------------------------------------------------------------
 

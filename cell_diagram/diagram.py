@@ -122,7 +122,7 @@ class Compartment(Container):
         lengths = None
         for token in self._position_tokens:
             if token.type == '() block' and lengths is None:
-                lengths, _ = parser.get_coordinates(parser.StyleTokens(token.content))
+                lengths = parser.get_coordinates(parser.StyleTokens(token.content))
             elif lengths is not None:
                 raise SyntaxError("Position already defined.")
         self._position.set_lengths(lengths)
@@ -190,7 +190,7 @@ class Transporter(Element, PositionedElement):
              or token.lower_value not in layout.COMPARTMENT_BOUNDARIES):
                 raise SyntaxError('Invalid compartment boundary.')
             self._compartment_side = token.lower_value
-            offset, tokens = parser.get_percentage(tokens)
+            offset = parser.get_percentage(tokens)
             token = tokens.peek()
             if token and token.type == 'hash':
                 while token.type == 'hash':
@@ -226,13 +226,13 @@ class Diagram(Container):
 
     def _length_from_style(self, name, default):
         if self.style and name in self.style:
-            value, _ = parser.get_length(parser.StyleTokens(self.style.get(name)))
+            value = parser.get_length(parser.StyleTokens(self.style.get(name)))
             return value
         return default
 
     def _number_from_style(self, name, default):
         if self.style and name in self.style:
-            value, _ = parser.get_number(parser.StyleTokens(self.style.get(name)))
+            value = parser.get_number(parser.StyleTokens(self.style.get(name)))
             return value
         return default
 
