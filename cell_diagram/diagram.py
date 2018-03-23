@@ -71,7 +71,7 @@ class Container(Element, PositionedElement):
 
     def svg(self):
         # Put everything into a group with id and class attributes
-        svg = ['<g {}>'.format(self.id_class())]
+        svg = ['<g{}{}>'.format(self.id_class(), self.display())]
         if self.position.has_coords:
             svg.append('<g transform="translate({:g}, {:g})">'.format(*self.position.coords))
             element_class = self.get_style_as_string('svg-element')

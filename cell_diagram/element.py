@@ -106,8 +106,12 @@ class Element(object):
     def set_container(self, container):
         self._container = container
 
+    def display(self):
+        d = self.get_style_as_string('display')
+        return ' display="{}"'.format(d) if d else ''
+
     def id_class(self):
-        s = []
+        s = ['']
         if self._id is not None:
             s.append('id="{}"'.format(self._id[1:]))
         if self._classes:
@@ -155,8 +159,8 @@ class PositionedElement(object):
         if self._position_tokens is not None:
             self.position.parse(self._position_tokens, default_offset, default_dependency)
 
-        svg = ['<g {}>'.format(self.id_class())]
     def svg(self, stroke='none'):
+        svg = ['<g{}{}>'.format(self.id_class(), self.display())]
         if self.position.has_coords:
             (x, y) = self.coords
             svg.append(('  <circle r="10.0" cx="{:g}" cy="{:g}"'
