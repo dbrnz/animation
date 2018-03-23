@@ -32,8 +32,8 @@
     <diagram>
         <quantity id="q1"  class="sodium"    label="$\text{q}_1^{[\text{Na}^+]_\text{o}}$"/>
         <quantity id="q4"  class="potassium" label="$\text{q}_4^{[\text{K}^+]_\text{o}}$"/>
-        <quantity id="q7"  class="anion"     label="$\text{q}_7^{[\text{OH}^-]_\text{o}}$" />
-        <quantity id="q9"  class="anion"     label="$\text{q}_9^{[\text{HCO}_3^-]_\text{o}}$"/>
+        <quantity id="q7"  class="hydroxide"     label="$\text{q}_7^{[\text{OH}^-]_\text{o}}$" />
+        <quantity id="q9"  class="bicarbonate"     label="$\text{q}_9^{[\text{HCO}_3^-]_\text{o}}$"/>
         <quantity id="q11" class="chloride"  label="$\text{q}_11^{[\text{Cl}^-]_\text{o}}$"/>
         <quantity id="q13" class="hydrogen"  label="$\text{q}_13^{[\text{H}^+]_\text{o}}$" />
         <quantity id="q16" class="calcium"   label="$\text{q}_16^{[\text{Ca}^{2+}]_\text{o}}$"/>
@@ -43,7 +43,7 @@
             <transporter id="Na_b" class="sodium channel" label="$\text{I}_\text{Na,b}"/>
             <transporter id="pNa"  class="sodium channel" label="$\text{I}_\text{pNa}"/>
 
-            <transporter id="NKE"  class="metabolic sodium potassium exchanger"/>
+            <transporter id="NKE"  class="sodium potassium atp exchanger"/>
 
             <transporter id="K1"   class="potassium channel" label="$\text{I}_\text{K1}"/>
             <transporter id="Kr"   class="potassium channel" label="$\text{I}_\text{Kr}"/>
@@ -51,13 +51,13 @@
             <transporter id="Katp" class="potassium channel" label="$\text{I}_{\text{K}_\text{ATP}}"/>
 
             <transporter id="NBC"  class="sodium bicarbonate exchanger"/>
-            <transporter id="CHE"  class="chloride hydrogen exchanger"/>
-            <transporter id="AE"   class="anion exchanger"/>
+            <transporter id="CHE"  class="hydroxide chloride exchanger"/>
+            <transporter id="AE"   class="bicarbonate exchanger"/>
             <transporter id="Cl"   class="chloride channel" label="$\text{I}_\text{Cl}"/>
             <transporter id="NHE"  class="sodium hydrogen exchanger"/>
 
             <transporter id="NCE"  class="sodium calcium exchanger"/>
-            <transporter id="pCa"  class="metabolic calcium exchanger"/>
+            <transporter id="pCa"  class="calcium atp channel"/>
             <transporter id="Ca_b" class="calcium channel" label="$\text{I}_\text{Ca,b}"/>
             <transporter id="Ca_t" class="calcium channel" label="$\text{I}_\text{Ca,t}"/>
             <transporter id="CaL"  class="calcium channel" label="$\text{I}_\text{CaL}"/>
@@ -65,8 +65,8 @@
             <quantity id="q2"  class="sodium"    label="$\text{q}_2^{[\text{Na}^+]_\text{i}}$"/>
             <quantity id="q5"  class="potassium" label="$\text{q}_5^{[\text{K}^+]_\text{i}}$"/>
 
-            <quantity id="q8"  class="anion"     label="$\text{q}_8^{[\text{OH}^-]_\text{i}}$"/>
-            <quantity id="q10" class="anion"     label="$\text{q}_10^{[\text{HCO}_3^-]_\text{i}}$"/>
+            <quantity id="q8"  class="hydroxide" label="$\text{q}_8^{[\text{OH}^-]_\text{i}}$"/>
+            <quantity id="q10" class="bicarbonate" label="$\text{q}_10^{[\text{HCO}_3^-]_\text{i}}$"/>
             <quantity id="q12" class="chloride"  label="$\text{q}_12^{[\text{Cl}^-]_\text{i}}$"/>
 
             <quantity id="q14" class="hydrogen"  label="$\text{q}_14^{[\text{H}^+]_\text{i}}$"/>
@@ -77,13 +77,13 @@
             <quantity id="q20" class="calcium"   label="$\text{q}_20^{[\text{Ca}^{2+}\text{-TRPN}]_\text{i}}$"/>
 
             <compartment id="atp" class="metabolic">
-                <quantity id="q24" class="metabolic" label="$\text{q}_24^{[\text{ATP}]_\text{i}}$"/>
+                <quantity id="q24" class="atp" label="$\text{q}_24^{[\text{ATP}]_\text{i}}$"/>
                 <quantity id="q25" class="metabolic" label="$\text{q}_25^{[\text{ADP}]}$"/>
                 <quantity id="q26" class="metabolic" label="$\text{q}_26^{[\text{P}]_\text{i}}$"/>
             </compartment>
 
             <compartment id="SR" class="organelle reticulum">
-                <transporter id="SERCA" class="metabolic calcium exchanger"/>
+                <transporter id="SERCA" class="calcium atp channel"/>
                 <transporter id="RyR"   class="calcium channel"/>
 
                 <quantity id="q21" class="calcium" label="$\text{q}_21^{[\text{Ca}^{2+}]_\text{i}}$"/>
@@ -98,8 +98,8 @@
                 <transporter id="m_CIII" label="CIII" class="hydrogen exchanger"/>
                 <transporter id="m_CIV"  label="CIV"  class="hydrogen exchanger"/>
                 <transporter id="m_CII"  label="CII"  class="hydrogen exchanger"/>
-                <transporter id="m_K"    label="K"    class="potassium"/>
-                <transporter id="m_Ca"   label="Ca"   class="calcium"/>
+                <transporter id="m_K"    label="K"    class="potassium diffuser"/>
+                <transporter id="m_Ca"   label="Ca"   class="calcium diffuser"/>
 
                 <quantity id="q23" class="calcium"   label="$\text{q}_23^{[\text{Ca}^{2+}]_\text{i}}$"/>
                 <quantity id="q3"  class="sodium"    label="$\text{q}_3^{[\text{Na}^+]_\text{i}}$"/>
@@ -156,7 +156,7 @@
         </flow>
         <flow id="v6" transporter="NBC">
             <flux from="u1" to="u2" class="sodium"/>
-            <flux from="u9" to="u10" class="anions"/>
+            <flux from="u9" to="u10" class="anion"/>
         </flow>
         <flow id="v7" transporter="NHE">
             <flux from="u14" to="u13" class="hydrogen"/>
@@ -164,7 +164,7 @@
         </flow>
         <flow id="v8" transporter="m_NCE">
             <flux from="u2" to="u3" count="3" class="sodium"/>
-            <flux from="u23" to="u17"/>
+            <flux from="u23" to="u17" class="calcium"/>
         </flow>
         <flow id="v9" transporter="m_NHE">
             <flux from="u3" to="u2" class="sodium"/>
@@ -250,7 +250,7 @@
             <flux from="u14" to="u15" class="hydrogen"/>
         </flow>
         <flow id="v35">
-            <flux from="u24" to="u25 u26"/>
+            <flux from="u24" to="u25 u26" class="metabolic"/>
         </flow>
     </bond-graph>
 
