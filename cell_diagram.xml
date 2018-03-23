@@ -43,20 +43,20 @@
             <transporter id="Na_b" class="sodium channel" label="$\text{I}_\text{Na,b}"/>
             <transporter id="pNa"  class="sodium channel" label="$\text{I}_\text{pNa}"/>
 
-            <transporter id="NKE"  class="sodium potassium atp exchanger"/>
+            <transporter id="NKE"  class="sodium atp exchanger"/>
 
             <transporter id="K1"   class="potassium channel" label="$\text{I}_\text{K1}"/>
             <transporter id="Kr"   class="potassium channel" label="$\text{I}_\text{Kr}"/>
             <transporter id="Ks"   class="potassium channel" label="$\text{I}_\text{Ks}"/>
             <transporter id="Katp" class="potassium channel" label="$\text{I}_{\text{K}_\text{ATP}}"/>
 
-            <transporter id="NBC"  class="sodium bicarbonate exchanger"/>
-            <transporter id="CHE"  class="hydroxide chloride exchanger"/>
+            <transporter id="NBC"  class="bicarbonate exchanger"/>
+            <transporter id="CHE"  class="hydroxide exchanger"/>
             <transporter id="AE"   class="bicarbonate exchanger"/>
             <transporter id="Cl"   class="chloride channel" label="$\text{I}_\text{Cl}"/>
-            <transporter id="NHE"  class="sodium hydrogen exchanger"/>
+            <transporter id="NHE"  class="hydrogen exchanger"/>
 
-            <transporter id="NCE"  class="sodium calcium exchanger"/>
+            <transporter id="NCE"  class="sodium exchanger"/>
             <transporter id="pCa"  class="calcium atp channel"/>
             <transporter id="Ca_b" class="calcium channel" label="$\text{I}_\text{Ca,b}"/>
             <transporter id="Ca_t" class="calcium channel" label="$\text{I}_\text{Ca,t}"/>
@@ -83,7 +83,7 @@
             </compartment>
 
             <compartment id="SR" class="organelle reticulum">
-                <transporter id="SERCA" class="calcium atp channel"/>
+                <transporter id="SERCA" class="calcium atp"/>
                 <transporter id="RyR"   class="calcium channel"/>
 
                 <quantity id="q21" class="calcium" label="$\text{q}_21^{[\text{Ca}^{2+}]_\text{i}}$"/>
@@ -91,13 +91,13 @@
             </compartment>
 
             <compartment id="mitochrondion" class="organelle mitochondrion">
-                <transporter id="m_NCE"  label="NCE"  class="sodium calcium exchanger"/>
-                <transporter id="m_NHE"  label="NHE"  class="sodium hydrogen exchanger"/>
-                <transporter id="m_KHE"  label="KHE"  class="potassium hydrogen exchanger"/>
-                <transporter id="m_CI"   label="CI"   class="hydrogen exchanger"/>
-                <transporter id="m_CIII" label="CIII" class="hydrogen exchanger"/>
-                <transporter id="m_CIV"  label="CIV"  class="hydrogen exchanger"/>
-                <transporter id="m_CII"  label="CII"  class="hydrogen exchanger"/>
+                <transporter id="m_NCE"  label="NCE"  class="sodium atp exchanger"/>
+                <transporter id="m_NHE"  label="NHE"  class="hydrogen exchanger"/>
+                <transporter id="m_KHE"  label="KHE"  class="hydrogen exchanger"/>
+                <transporter id="m_CI"   label="CI"   class="mitochrondial-complex"/>
+                <transporter id="m_CIII" label="CIII" class="mitochrondial-complex"/>
+                <transporter id="m_CIV"  label="CIV"  class="mitochrondial-complex"/>
+                <transporter id="m_CII"  label="CII"  class="mitochrondial-complex"/>
                 <transporter id="m_K"    label="K"    class="potassium diffuser"/>
                 <transporter id="m_Ca"   label="Ca"   class="calcium diffuser"/>
 
