@@ -86,11 +86,19 @@ class Element(object):
     def style(self):
         return self._style
 
-    def get_style_as_string(self, name):
+    @property
+    def colour(self):
+        tokens = self._style.get('colour', self._style.get('color', None))
+        if tokens is None:
+            return "#000000"
+        colour = parser.get_colour(parser.StyleTokens(tokens))
+        return colour
+
+    def get_style_as_string(self, name, default=None):
         tokens = self._style.get(name, None)
-        return (' '.join([t.value for t in tokens
-                          if t.type not in ['comment', 'whitespace']])
-                if tokens else None)
+        return (' '.join([t.value if t.type != 'hash' else ('#' + t.value)
+                           for t in tokens if t.type not in ['comment', 'whitespace']])
+                if tokens is not None else default)
 
     def is_class(self, name):
         return name in self._classes
@@ -147,13 +155,13 @@ class PositionedElement(object):
         if self._position_tokens is not None:
             self.position.parse(self._position_tokens, default_offset, default_dependency)
 
-    def svg(self, stroke='none', fill='#cccccc'):
         svg = ['<g {}>'.format(self.id_class())]
+    def svg(self, stroke='none'):
         if self.position.has_coords:
             (x, y) = self.coords
             svg.append(('  <circle r="10.0" cx="{:g}" cy="{:g}"'
                         ' stroke="{:s}" fill="{:s}"/>')
-                       .format(x, y, stroke, fill))
+                       .format(x, y, stroke, self.colour))
             svg.append('  <text x="{:g}" y="{:g}">{:s}</text>'
                        .format(x-9, y+6, self._local_name))
         svg.append('</g>')

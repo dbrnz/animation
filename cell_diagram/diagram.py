@@ -74,11 +74,11 @@ class Container(Element, PositionedElement):
         svg = ['<g {}>'.format(self.id_class())]
         if self.position.has_coords:
             svg.append('<g transform="translate({:g}, {:g})">'.format(*self.position.coords))
-            membrane_class = self.get_style_as_string('membrane')
-            if membrane_class in dir(svg_elements):
+            element_class = self.get_style_as_string('svg-element')
+            if element_class in dir(svg_elements):
                 id = self._id[1:] if self._id else ''
-                membrane = svg_elements.__dict__.get(membrane_class)(id, self._width, self._height)
-                svg.append(membrane.svg())
+                element = svg_elements.__dict__.get(element_class)(id, self._width, self._height)
+                svg.append(element.svg())
                 # We need to set membrane earlier so can use adjusted width/height
                 # and membrane.thickness for transporter/flow offset (which becomes
                 # specific to compartment).
@@ -152,7 +152,16 @@ class Quantity(Element, PositionedElement):
                                                default_dependency=self._potential)
 
     def svg(self):
-        return super().svg(stroke='#ff0000', fill='#FF80ff')
+        svg = ['<g{}{}>'.format(self.id_class(), self.display())]
+        if self.position.has_coords:
+            (x, y) = self.coords
+            svg.append(('  <rect rx="10.0" ry="10" x="{:g}" y="{:g}"'
+                        ' width="40" height="30" stroke="none" fill="{:s}"/>')
+                       .format(x-20, y-15, self.colour))
+            svg.append('  <text x="{:g}" y="{:g}">{:s}</text>'
+                       .format(x-9, y+6, self._local_name))
+        svg.append('</g>')
+        return svg
 
 # -----------------------------------------------------------------------------
 
@@ -206,7 +215,19 @@ class Transporter(Element, PositionedElement):
         self._position.add_dependencies(dependencies)
 
     def svg(self):
-        return super().svg(stroke='#ffff00', fill='#80FFFF')
+        svg = []
+        element_class = self.get_style_as_string('svg-element')
+        if element_class in dir(svg_elements):
+            svg.append('<g{}{}>'.format(self.id_class(), self.display()))
+            id = self._id[1:] if self._id else ''
+            element = (svg_elements.__dict__.get(element_class)(
+                          id,
+                          self.coords,
+                          0 if self.compartment_side in layout.HORIZONTAL_BOUNDARIES else 90))
+            svg.append(element.svg())
+            svg.append('</g>')
+        svg.extend(super().svg(stroke='#ffff00'))
+        return svg
 
 # -----------------------------------------------------------------------------
 
@@ -326,9 +347,11 @@ class Diagram(Container):
                     ' width="{width:g}" height="{height:g}"'
                     ' viewBox="0 0 {width:g} {height:g}">')
                    .format(width=self._width, height=self._height))
-# # Add <def>s for common shapes??
         svg.extend(super().svg())
         svg.extend(self.bond_graph.svg())
+        svg.append('<defs>')
+        svg.extend(svg_elements.DefinesStore.defines())
+        svg.append('</defs>')
         svg.append('</svg>')
         return '\n'.join(svg)
 

@@ -35,6 +35,8 @@ from . import SyntaxError
 from . import bondgraph as bg
 from . import diagram as dia
 
+from .svg_elements import GradientStore
+
 # -----------------------------------------------------------------------------
 
 NAMESPACE = 'http://www.cellml.org/celldl/1.0#'
@@ -198,6 +200,47 @@ def get_coordinates(tokens, allow_local=True):
     if len(coords) != 2:
         raise SyntaxError("Expected length pair.")
     return coords
+
+# -----------------------------------------------------------------------------
+
+
+def get_colour(tokens):
+    token = tokens.peek()
+    if token.type == 'function':
+        tokens.next()
+        if token.name not in ['radial-gradient', 'linear-gradient']:
+            raise SyntaxError("Unknown colour gradient.")
+        gradient = token.name[0:6]
+        tokens = StyleTokens(token.arguments)
+        stop_colours = []
+        token = tokens.peek()
+        while token is not None:
+            colour = get_colour_value(tokens)
+            token = tokens.next()
+            if token is not None and token.type == 'percentage':
+                stop = token.value
+                token = tokens.next()
+            else:
+                stop = None
+            if token not in [None, ',']:
+                raise SyntaxError("Gradient stop percentage expected.")
+            stop_colours.append((colour, stop))
+            token = tokens.peek()
+        return GradientStore.url(gradient, stop_colours)
+    else:
+        return get_colour_value(tokens)
+
+# -----------------------------------------------------------------------------
+
+
+def get_colour_value(tokens):
+    token = tokens.next()
+    if token is not None:
+        if token.type == 'hash':
+            return '#' + token.value
+        elif token.type == 'ident':
+            return token.value
+    raise SyntaxError("Colour expected.")
 
 # -----------------------------------------------------------------------------
 

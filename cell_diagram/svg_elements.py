@@ -1,30 +1,123 @@
+# -----------------------------------------------------------------------------
+#
+#  Cell Diagramming Language
+#
+#  Copyright (c) 2018  David Brooks
+#
+#  Licensed under the Apache License, Version 2.0 (the "License");
+#  you may not use this file except in compliance with the License.
+#  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+#  Unless required by applicable law or agreed to in writing, software
+#  distributed under the License is distributed on an "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#  See the License for the specific language governing permissions and
+#  limitations under the License.
+#
+# -----------------------------------------------------------------------------
+
 from math import cos, sin, asin, pi
 
-class CellMembrane(object):
+# -----------------------------------------------------------------------------
+
+class SvgElement(object):
+    def __init__(self, id, id_base):
+        self._id = id
+        self._id_base = id_base
+
+# -----------------------------------------------------------------------------
+
+
+class DefinesStore(object):
+    _defs = {}
+
+    @classmethod
+    def add(cls, id, defs):
+        cls._defs[id] = defs
+
+    @classmethod
+    def defines(cls):
+        return list(cls._defs.values())
+
+# -----------------------------------------------------------------------------
+
+
+class Gradient(object):
+    def __init__(self, gradient, stop_colours):
+        self._gradient = gradient
+        self._stop_colours = stop_colours
+
+    def __eq__(self, other):
+        return (isinstance(other, Gradient)
+            and self._gradient == other._gradient
+            and self._stop_colours == other._stop_colours)
+
+    def __hash__(self):
+        h = hash((self._gradient, str(self._stop_colours)))
+        return h
+
+    def svg(self, id):
+        stops = []
+        nstops = len(self._stop_colours)
+        for n, stop in enumerate(self._stop_colours):
+            if n > 0:
+                offset = ' offset="{}%"'.format(stop[1] if stop[1] is not None else n*100.0/(nstops-1))
+            else:
+                offset = ' offset="{}%"'.format(stop[1]) if stop[1] is not None else ''
+            stops.append('<stop{} stop-color="{}"/>'.format(offset, stop[0]))
+        return ('<{gradient}Gradient id="{id}">{stops}</{gradient}Gradient>'
+                .format(gradient=self._gradient, id=id, stops='/n'.join(stops)))
+
+# -----------------------------------------------------------------------------
+
+
+class GradientStore(object):
+    _gradients_to_id = {}
+    _next_id = 0
+
+    @classmethod
+    def next_id(cls):
+        cls._next_id += 1
+        return "_GRADIENT_{}_".format(cls._next_id)
+
+    @classmethod
+    def url(cls, gradient, stop_colours):
+        g = Gradient(gradient, stop_colours)
+        id = cls._gradients_to_id.get(g, None)
+        if id is None:
+            id = cls.next_id()
+            cls._gradients_to_id[g] = id
+            DefinesStore.add(id, g.svg(id))
+        return "url(#{})".format(id)
+
+# -----------------------------------------------------------------------------
+
+
+class CellMembrane(SvgElement):
     SVG_DEFS="""
-      <defs>
         <g id="{ID_BASE}_base_element">
             <circle cx="0" cy="0" r="{RADIUS}" stroke-width="{WIDTH}"/>
             <line x1="{RADIUS}" y1="0" x2="{TAIL}" y2="0" stroke-width="{WIDTH}"/>
         </g>
         <!-- Inward pointing marker -->
         <marker id="{ID_BASE}_inward_marker" markerUnits="userSpaceOnUse" style="overflow: visible" orient="auto">
-            <use stroke="{STROKE}" fill="{FILL}" xlink:href="#{ID_BASE}_base_element" transform="rotate(270)"/>
+            <use stroke="{STROKE}" fill="{FILL}" href="#{ID_BASE}_base_element" transform="rotate(270)"/>
         </marker>
         <!-- Outward pointing marker -->
         <marker id="{ID_BASE}_outward_marker" markerUnits="userSpaceOnUse" style="overflow: visible" orient="auto">
-            <use stroke="{STROKE}" fill="{FILL}" xlink:href="#{ID_BASE}_base_element" transform="rotate(90)"/>
+            <use stroke="{STROKE}" fill="{FILL}" href="#{ID_BASE}_base_element" transform="rotate(90)"/>
         </marker>
         <!-- Straight segments are built from two base elements at 180 degrees to each other -->
         <g id="{ID_BASE}_element">
-            <use transform="translate({OFFSET}, {SPACING})" xlink:href="#{ID_BASE}_base_element"/>
-            <use transform="rotate(180) translate({OFFSET}, 0)" xlink:href="#{ID_BASE}_base_element"/>
+            <use transform="translate({OFFSET}, {SPACING})" href="#{ID_BASE}_base_element"/>
+            <use transform="rotate(180) translate({OFFSET}, 0)" href="#{ID_BASE}_base_element"/>
         </g>
         <!-- Marker for straight segments -->
         <marker id="{ID_BASE}_marker" markerUnits="userSpaceOnUse" style="overflow: visible" orient="auto">
-            <use stroke="{STROKE}" fill="{FILL}" xlink:href="#{ID_BASE}_element" transform="rotate(90)"/>
-        </marker>
-      </defs>"""
+            <use stroke="{STROKE}" fill="{FILL}" href="#{ID_BASE}_element" transform="rotate(90)"/>
+        </marker>"""
 
     def __init__(self, id, width, height, id_base='cell_membrane',
                  outer_markers=9, inner_markers=3, marker_radius=4,
@@ -33,8 +126,7 @@ class CellMembrane(object):
         :param outer_markers: Number of outer markers in a corner.
         :param immer_markers: Number of inner markers in a corner.
         """
-        self._id = id
-        self._id_base = id_base
+        super().__init__(id, id_base)
         self._outer_markers = outer_markers
         self._inner_markers = inner_markers
         self._marker_radius = marker_radius
@@ -42,7 +134,7 @@ class CellMembrane(object):
         self._stroke_colour = stroke_colour
         self._fill_colour = fill_colour
         # Computed parameters
-        self._marker_width = 2.0*self._marker_radius + self._stroke_width
+        self._marker_width = 2.0*marker_radius + self._stroke_width
         self._outer_marker_angle = 90/self._outer_markers
         self._outer_radius = self._marker_width/(2*asin(pi/(4*self._outer_markers)))
         self._inner_marker_angle = 90/self._inner_markers
@@ -59,6 +151,15 @@ class CellMembrane(object):
         # The size of the bounding box
         self._outer_width = self._inner_width + 2*self._outer_radius
         self._outer_height = self._inner_height + 2*self._outer_radius
+        # The <defs> element for the membrane
+        DefinesStore.add(id_base, self.SVG_DEFS.format(RADIUS=marker_radius,
+                                                       TAIL=self._marker_tail,
+                                                       WIDTH=stroke_width,
+                                                       STROKE=stroke_colour,
+                                                       FILL=fill_colour,
+                                                       ID_BASE=id_base,
+                                                       OFFSET=-self._line_width/2.0,
+                                                       SPACING=-self._marker_width/2.0))
 
     @property
     def width(self):
@@ -100,13 +201,13 @@ class CellMembrane(object):
         outer_radius = self._outer_radius
         outer_path = self.corner_path(True)
         svg = []
-        rotation = (180 if position == 'top-left' else
-                    270 if position == 'top-right' else
-                    90 if position == 'bottom-left' else
+        rotation = (180 if position == 'top_left' else
+                    270 if position == 'top_right' else
+                    90 if position == 'bottom_left' else
                     0)
-        translation = ((0, 0) if position == 'top-left' else
-                       (0, self._inner_width) if position == 'top-right' else
-                       (self._inner_height, 0) if position == 'bottom-left' else
+        translation = ((0, 0) if position == 'top_left' else
+                       (0, self._inner_width) if position == 'top_right' else
+                       (self._inner_height, 0) if position == 'bottom_left' else
                        (self._inner_width, self._inner_height)
                       )
         svg.append('<g id="{}_{}"'.format(self._id_base, position)
@@ -142,15 +243,12 @@ class CellMembrane(object):
                      path=' '.join(path), marker=marker_id)]
 
     def svg(self, outline=False):
-        svg = [self.SVG_DEFS.format(RADIUS=self._marker_radius, TAIL=self._marker_tail,
-                                    WIDTH=self._stroke_width, STROKE=self._stroke_colour,
-                                    FILL=self._fill_colour, ID_BASE=self._id_base,
-                                    OFFSET=-self._line_width/2.0, SPACING=-self._marker_width/2.0)]
-        svg.append('<g id="{}" transform="translate({:g},{:g})">'.format(self._id, -self._line_width/2.0, -self._line_width/2.0))
-        svg.extend(self.corner('top-left'))
-        svg.extend(self.corner('top-right'))
-        svg.extend(self.corner('bottom-left'))
-        svg.extend(self.corner('bottom-right'))
+        svg = []
+        svg.append('<g transform="translate({:g},{:g})">'.format(-self._line_width/2.0, -self._line_width/2.0))
+        svg.extend(self.corner('top_left'))
+        svg.extend(self.corner('top_right'))
+        svg.extend(self.corner('bottom_left'))
+        svg.extend(self.corner('bottom_right'))
         svg.extend(self.side('top'))
         svg.extend(self.side('left'))
         svg.extend(self.side('bottom'))
@@ -164,15 +262,104 @@ class CellMembrane(object):
                        .format(R=self.width, B=self.height))
         return '\n'.join(svg)
 
-def wrap_svg(svg):
-    return """<?xml version="1.0" standalone="no"?>
-<svg  version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-      width="800" height="400"
-      viewBox="-10 -10 400 300">
-      {SVG:s}
-</svg>""".format(SVG=svg)
+# -----------------------------------------------------------------------------
+
+
+class _TransporterElement(SvgElement):
+    def __init__(self, id, coords, rotation, height, defs, defined_height, id_base):
+        super().__init__(id, id_base)
+        self._coords = coords
+        self._rotation = rotation
+        self._height = height
+        self._defined_height = defined_height
+        DefinesStore.add(id_base, defs.format(ID_BASE=id_base))
+
+    def svg(self):
+        svg = ['<use href="#{ID_BASE}_element" transform="translate({X:g}, {Y:g})'
+               .format(ID_BASE=self._id_base, X=self._coords[0], Y=self._coords[1])]
+        scaling = self._height/float(self._defined_height)
+        if scaling != 1.0:
+            svg.append(' scale({})'.format(scaling))
+        if self._rotation != 0:
+            svg.append(' rotate({})'.format(self._rotation))
+        svg.append('" />')
+        return ''.join(svg)
+
+# -----------------------------------------------------------------------------
+
+
+class Channel(_TransporterElement):
+    SVG_DEFS="""
+        <linearGradient id="{ID_BASE}_fill">
+          <stop offset="0%"    stop-color="#57FAFF"/>
+          <stop offset="13.5%" stop-color="#45C8D2"/>
+          <stop offset="30.4%" stop-color="#328F9F"/>
+          <stop offset="46.8%" stop-color="#216175"/>
+          <stop offset="62.4%" stop-color="#153C54"/>
+          <stop offset="76.8%" stop-color="#0B223C"/>
+          <stop offset="89.8%" stop-color="#06132E"/>
+          <stop offset="100%"  stop-color="#040D29"/>
+        </linearGradient>
+        <path id="{ID_BASE}_sub_element" fill="url(#{ID_BASE}_fill)"
+          d="M0,0 a10,10 0 0 1 20,0 v80 a10,10 0 0 1 -20,0 v-80 z"/>
+        <g id="{ID_BASE}_element" transform="translate(-10, -40)">
+          <use opacity="0.85" href="#{ID_BASE}_sub_element" transform="translate(  0, -5)"/>
+          <use opacity="0.85" href="#{ID_BASE}_sub_element" transform="translate( 15,  0)" />
+          <use opacity="0.75" href="#{ID_BASE}_sub_element" transform="translate(-15,  0)" />
+          <use opacity="0.60" href="#{ID_BASE}_sub_element" transform="translate( -1,  5)" />
+        </g>"""
+
+    HEIGHT = 100
+    WIDTH = 50
+
+    def __init__(self, id, coords, rotation, height=0.6*HEIGHT, id_base='channel'):
+        super().__init__(id, coords, rotation, height, self.SVG_DEFS, self.HEIGHT, id_base)
+
+# -----------------------------------------------------------------------------
+
+
+class Exchanger_TO_FINISH(_TransporterElement):
+    def __init__(self, id, coords, rotation, height=40, id_base='exchanger'):
+        super().__init__(id, coords, rotation, height, '', height, id_base)
+
+# -----------------------------------------------------------------------------
+
+
+class PMRChannel(_TransporterElement):
+    SVG_DEFS="""
+        <radialGradient id="{ID_BASE}_fill">
+            <stop offset="0%"     stop-color="#FBFAE2"/>
+            <stop offset="12.03%" stop-color="#FCFADD"/>
+            <stop offset="26.62%" stop-color="#FFF9CD"/>
+            <stop offset="42.55%" stop-color="#FCF6B4"/>
+            <stop offset="59.43%" stop-color="#FDEF90"/>
+            <stop offset="77.06%" stop-color="#FEE863"/>
+            <stop offset="95.06%" stop-color="#FEE12A"/>
+            <stop offset="100%"   stop-color="#FEDE12"/>
+        </radialGradient>
+        <path id="{ID_BASE}_element" fill="url(#{ID_BASE}_fill)"  transform="translate(-22, -25)"
+            stroke="#010101" stroke-width="2" stroke-linejoin="miter"
+            d="M0,0 c0,-25 15,-30 22,-12 c7,-18 22,-13 22,12 v50 c0,25 -15,30 -22,12 c-7,18 -22,13 -22,-12 v-50 z"/>"""
+
+    HEIGHT = 80
+    WIDTH = 44
+
+    def __init__(self, id, coords, rotation, height=0.6*HEIGHT, id_base='pmr_channel'):
+        super().__init__(id, coords, rotation, height, self.SVG_DEFS, self.HEIGHT, id_base)
+
+# -----------------------------------------------------------------------------
+
 
 if __name__ == '__main__':
+
+    def wrap_svg(svg):
+        return """<?xml version="1.0" standalone="no"?>
+    <svg  version="1.1" xmlns="http://www.w3.org/2000/svg"
+          width="800" height="400"
+          viewBox="-10 -10 400 300">
+          {SVG:s}
+    </svg>""".format(SVG=svg)
+
     membrane = CellMembrane('cell', 300, 200)
       #, outer_markers=12, inner_markers=8, marker_tail=10, stroke_width=0.5)
       #, marker_radius=5, marker_tail=35)

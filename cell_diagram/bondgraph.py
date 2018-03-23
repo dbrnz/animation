@@ -70,18 +70,19 @@ class BondGraph(Element):
         for p, q in self.potentials.items():
             (x, y) = p.coords
             (qx, qy) = q.coords
-            svg.append('<path fill="none" stroke="#222222" stroke-width="2.0" opacity="0.6"'
-                     + ' d="M{start_x:g},{start_y:g} L{end_x:g},{end_y:g}"/>'
-                       .format(start_x=x, start_y=y, end_x=qx, end_y=qy))
+            svg.append(('<path fill="none" stroke="{colour}" stroke-width="{swidth}" opacity="0.6"'
+                        ' d="M{start_x:g},{start_y:g} L{end_x:g},{end_y:g}"/>')
+                       .format(colour=q.colour, swidth=LINE_WIDTH,
+                               start_x=x, start_y=y, end_x=qx, end_y=qy))
         # Link potentials via flows and fluxes
         for flow in self.flows:
             for flux in flow.fluxes:
                 svg.extend(flux.svg())
         # Then symbols
         for p, q in self.potentials.items():
-            svg.extend(p.svg(fill='#c0ffc0'))
+            svg.extend(p.svg())
         for flow in self.flows:
-            svg.extend(flow.svg(fill='#ff8080'))
+            svg.extend(flow.svg())
         return svg
 
 #------------------------------------------------------------------------------
