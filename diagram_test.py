@@ -18,10 +18,6 @@
 #
 # -----------------------------------------------------------------------------
 
-import logging
-
-# -----------------------------------------------------------------------------
-
 from cell_diagram.parser import Parser
 
 # -----------------------------------------------------------------------------
@@ -33,52 +29,30 @@ def parse(file, stylesheet=None):
 
 # -----------------------------------------------------------------------------
 
+def display_svg(file):
+    try:
+        diagram = parse('{}.xml'.format(file))
+        svg = diagram.svg()
+    except Exception as msg:
+        raise
+        print('ERROR: {}',format(msg))
+        sys.exit(1)
+    try:
+        import OpenCOR as oc
+        browser = oc.browserWebView()
+        browser.setContent(svg, "image/svg+xml")
+    except ImportError:
+        f = open('{}.svg'.format(file), 'w')
+        f.write(svg)
+        f.close()
+
 
 if __name__ == '__main__':
+    import sys
+
+    import logging
     # logging.getLogger().setLevel(logging.DEBUG)
 
-    stylesheet = '''
-        #q21 {
-          colour : pink ;
-        }
-        .cell {
-          shape: (12, 8);
-          colour: blue;
-          /* closed-cylinder, rectangle, circle/ellipse */
-          /* thickness, size, aspect-ratio, ... */
-        }
-        .sodium {
-          colour: yellow;
-          /* symbol, ... */
-        }
-        .potassium {
-          colour: green;
-        }
-        .channel {
-          position: bottom;
-        }
-        #i_Leak {
-          position: right;
-        }
-      '''
+    display_svg('cell_diagram')
 
-    #    diagram, graph = parse('cell_diagram.xml', stylesheet)
-    # #  diagram = parse('bond_graph.xml')
-
-    diagram, graph = parse('cell_diagram.xml') # atp.xml')
-
-    t = open('t.svg', 'w')
-    t.write(diagram.svg(graph))
-    t.close()
-
-#    g.vs['x'] = [0,  2,   2,     0,    2,   2,   1]
-#    g.vs['y'] = [0, -0.4, 0.4,  -0.3, -0.7, 0.7, 0]
-#    g.vs['size'] = 40
-#    layout = g.layout("auto")
-#    print(g)
-#    for l in layout:
-#        print(l)
-# #    igraph.plot(g, layout=layout, keep_aspect_ratio=True,
-# #                margin=50) ##, target='atp.svg')
-# #  bbox=(500, 400),
 # -----------------------------------------------------------------------------
