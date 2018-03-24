@@ -485,10 +485,10 @@
         #u19 { position:  45% below #K1; }
         #u20 { position:  40 below #u19; }
         flow[id="v25"] > flux[from="u17"][to="u19"] {
-            line-start: -12 until-y #v25;
+            line-start: until #v25;
             }
         flow[id="v26"] > flux[from="u17"][to="u20"] {
-            line-start: -20 until-y #v26;
+            line-start: until #v26;
             }
 
 

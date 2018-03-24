@@ -340,14 +340,22 @@ class Line(object):
             return
         self._segments = []
         tokens = self._tokens
-        while tokens.peek() is not None:
-            angle = parser.get_number(tokens)
+        token = tokens.peek()
+        while token is not None:
+            angle = parser.get_number(tokens) if token.type == 'number' else None
             # Normalise angle...
             token = tokens.next()
-            if (token.type != 'ident'
-             or token.lower_value not in ['until-x', 'until-y']):
+            if (token is None
+             or token.type != 'ident'
+             or token.lower_value not in ['until', 'until-x', 'until-y']):
                 raise SyntaxError("Unknown constraint for curve segment.")
-            constraint = 0 if token.lower_value == 'until-x' else 1
+            if angle is None and token.lower_value in ['until-x', 'until-y']:
+                raise SyntaxError("Angle expected.")
+            elif angle is not None and token.lower_value == 'until':
+                raise SyntaxError("Unexpected angle.")
+            constraint = (-1 if token.lower_value == 'until-x'
+                      else 1 if token.lower_value == 'until-y'
+                      else 0)
             # Check that angle != +/-90 if until-x
             # Check that angle != 0/180 if until-y
             token = tokens.peek()
@@ -392,12 +400,10 @@ class Line(object):
                 line_offset = None
 
             self._segments.append((angle, constraint, offset, dependencies, line_offset))
-            if token == ',':
-                continue
-            elif tokens.peek() is None:
-                break
-            else:
+
+            if token not in [None, ',']:
                 raise SyntaxError("Invalid syntax")
+            token = tokens.peek()
 
     def points(self, start_pos, flow=None, reverse=False):
         last_pos = start_pos
@@ -406,11 +412,11 @@ class Line(object):
             angle = segment[0]
             offset = self._element.diagram.unit_converter.pixel_pair(segment[2], add_offset=False)
             end_pos = offset + Position.centroid(segment[3])  # Centre of dependencies
-            if segment[1] == 0:   #  until-x
+            if segment[1] == -1:   #  until-x
                 dx = end_pos[0] - last_pos[0]
                 dy = dx*math.tan(angle*math.pi/180)
                 end_pos[1] = last_pos[1] - dy
-            else: ##  segment[1] == y:   #  until-y
+            elif segment[1] == 1:  #  until-y
                 dy = last_pos[1] - end_pos[1]
                 dx = dy*math.tan((90-angle)*math.pi/180)
                 end_pos[0] = last_pos[0] + dx
