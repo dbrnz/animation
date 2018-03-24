@@ -259,8 +259,43 @@
             width: 1600;           /* SVG `pixel` units */
             height:1000;           /* SVG `pixel` units */
             flow-offset: 30x;      /* From its transporter */
-            quantity-offset: 37x;   /* From its potential   */
+            quantity-offset: 37x;  /* From its potential   */
         }
+
+        #cell {
+            size: (70%, 60%);
+            position: (20%, 25%);
+            /* Also `membrane: CellMembrane dashed #888;` */
+            /* svg-element: CellMembrane #2B90CF #C2DDF3;  / * class name followed by class specific parameters */
+            /*  #0092DF  #BFDDFF  */
+            svg-element: CellMembrane;
+            svg-colour: #2B90CF #C2DDF3; /* Or derive fill colour...*/
+        }
+
+        #mitochrondion {
+            size: (30%, 30%);
+            position: (50%, 55%);
+            svg-element: Mitochrondion;
+            svg-colour: #763693;
+        }
+
+        #SR {
+            size: (25%, 25%);
+            position: (14%, 65%);  /* Set y-pos as above #CaL by #RyR offset */
+            svg-element: RoundedRectangle;
+            svg-colour: #A2C6FF;
+        }
+
+        #atp {
+            size: (15%, 40%);
+            position: (85%, 5%);
+            svg-element: RoundedRectangle;
+            svg-colour: black;
+            svg-line: dashed;
+        }
+
+
+        /* Colours of elemenst */
 
         .sodium {
             colour: #FE44F9;
@@ -354,6 +389,7 @@
         }
 
         /* Quantity positioning is by default wrt potentials */
+
         #q1 { position: above; }
         #q4 { position: above; }
         #q7 { position: above; }
@@ -383,11 +419,6 @@
         #q10 { position: below; }
         #q12 { position: below; }
 
-        #cell {
-            size: (70%, 60%);
-            position: (11%, 25%);
-            svg-element: CellMembrane;
-        }
         #Na { position:   top  9%; }
         #Na_b { position: top 13%; }
         #pNa { position:  top 17%; }
@@ -415,10 +446,9 @@
         #q19 { position: right; }
         #q20 { position: right; }
 
-        #atp {
-            size: (15%, 40%);
-            position: (85%, 5%);
-        }
+
+        /* Metabolic elements */
+
         #q24 { position: above; }
         #u24 { position: (15%, 50%); }
         #q25 { position: (85%, 15%); }
@@ -426,21 +456,18 @@
         #q26 { position: (85%, 85%); }
         #u26 { position: above; }
 
-        #SR {
-            size: (25%, 25%);
-            position: (14%, 65%);  /* Set y-pos as above #CaL by #RyR offset */
-        }
-        #RyR { position: left 40%; }
+
+        /* Sarcoplasmic reticulum elements */
+
         #SERCA { position: top 35%; }
         #q21 { position: below; }
         #u21 { position: right #RyR, below #SERCA; }
         #q22 { position: below; }
         #u22 { position: 40% right #u21; }
 
-        #mitochrondion {
-            size: (30%, 30%);
-            position: (50%, 55%);
-        }
+
+        /* Mitochrodion elements */
+
         #m_Ca { position: top 5%; }
 
         transporter[id="m_NCE"] {
