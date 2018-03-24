@@ -35,7 +35,8 @@ class DefinesStore(object):
 
     @classmethod
     def add(cls, id, defs):
-        cls._defs[id] = defs
+        if id not in cls._defs:
+            cls._defs[id] = defs
 
     @classmethod
     def defines(cls):
@@ -55,8 +56,7 @@ class Gradient(object):
             and self._stop_colours == other._stop_colours)
 
     def __hash__(self):
-        h = hash((self._gradient, str(self._stop_colours)))
-        return h
+        return hash((self._gradient, str(self._stop_colours)))
 
     def svg(self, id):
         stops = []
