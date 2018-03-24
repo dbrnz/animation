@@ -137,9 +137,7 @@ class Quantity(Element, PositionedElement):
             svg.append(('  <rect rx="{}" ry="{}" x="{}" y="{}"'
                         ' width="{}" height="{}" stroke="none" fill="{}"/>')
                        .format(0.375*w, 0.375*h, x-w/2, y-h/2, w, h, self.colour))
-            # Text should be centered
-            # self.svg_text() in PositionedElement
-            svg.append(svg_elements.Text.typeset(self.label, x-0.4*w, y+h/4))
+            svg.append(svg_elements.Text.typeset(self.label, x, y))
         svg.append('</g>')
         return svg
 

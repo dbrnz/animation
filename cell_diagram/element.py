@@ -177,8 +177,7 @@ class PositionedElement(object):
                         ' stroke="{}" stroke-width="{}" fill="{}"/>')
                        .format(layout.ELEMENT_RADIUS, x, y, self.stroke, self.stroke_width, self.colour))
             if isinstance(self, diagram.Transporter):  ## TODO: Improve...
-                w = layout.ELEMENT_RADIUS
-                svg.append(svg_elements.Text.typeset(self.label, x-0.8*w, y+w/2))
+                svg.append(svg_elements.Text.typeset(self.label, x, y))
             else:
                 svg.append(('  <text text-anchor="middle" dominant-baseline="central"'
                             ' x="{}" y="{}">{}</text>').format(x, y, self._local_name))

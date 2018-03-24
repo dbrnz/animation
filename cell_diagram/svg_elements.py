@@ -423,8 +423,10 @@ class Text(object):
 
     @classmethod
     def typeset(cls, s, x, y):
+        svg, size = mathjax.typeset(s, cls.next_id())
+        w, h, va = (6*float(size[0][:-2]), 6*float(size[1][:-2]), 6*float(size[2][:-2]))
         return ('<g transform="translate({}, {}) scale(0.017)">{}</g>'
-                .format(x, y, mathjax.typeset(s, cls.next_id())))
+                .format(x-w/2, y+h/2 + va, svg))
 
 # -----------------------------------------------------------------------------
 
