@@ -20,7 +20,13 @@
 
 from math import cos, sin, asin, pi
 
+
 # -----------------------------------------------------------------------------
+
+LINE_WIDTH  = 2
+
+# -----------------------------------------------------------------------------
+
 
 class SvgElement(object):
     def __init__(self, id, id_base):
@@ -392,6 +398,15 @@ class Arrow(object):
 
 # -----------------------------------------------------------------------------
 
+
+def svg_line(line, colour, reverse=False, display=''):
+    points = list(reversed(line.coords)) if reverse else line.coords
+    return ('<path fill="none" stroke="{}" stroke-width="{}" {}'
+            ' marker-end="{}" d="M{:g},{:g} {:s}"/>').format(colour, LINE_WIDTH,
+                   display, Arrow.url(colour), points[0][0], points[0][1],
+                   ' '.join(['L{:g},{:g}'.format(*point) for point in points[1:]]))
+
+# -----------------------------------------------------------------------------
 
 if __name__ == '__main__':
 
