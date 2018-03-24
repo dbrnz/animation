@@ -90,7 +90,7 @@ class Element(object):
     def colour(self):
         tokens = self._style.get('colour', self._style.get('color', None))
         if tokens is None:
-            return "#808080"
+            return '#808080'
         colour = parser.get_colour(parser.StyleTokens(tokens))
         return colour
 

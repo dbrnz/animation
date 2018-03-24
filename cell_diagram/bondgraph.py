@@ -33,9 +33,6 @@ from .svg_elements import svg_line
 
 #------------------------------------------------------------------------------
 
-FLOW_OFFSET      = 30  # pixels   ### From stylesheet??
-POTENTIAL_OFFSET = 30  # pixels
-
 LINE_OFFSET = 3.5
 
 #------------------------------------------------------------------------------

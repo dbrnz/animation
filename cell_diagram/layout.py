@@ -30,10 +30,10 @@ from . import parser
 
 # These could come from stylesheet
 
-QUANTITY_OFFSET = (40, 'x')
-FLOW_OFFSET = (40, 'x')
+QUANTITY_OFFSET = (60, 'x')
+FLOW_OFFSET = (60, 'x')
 
-TRANSPORTER_EXTRA = (15, 'x')
+TRANSPORTER_EXTRA = (25, 'x')
 
 # SVG sizes, in pixels
 ELEMENT_RADIUS = 15

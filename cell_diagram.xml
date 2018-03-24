@@ -156,7 +156,7 @@
         </flow>
         <flow id="v6" transporter="NBC">
             <flux from="u1" to="u2" class="sodium"/>
-            <flux from="u9" to="u10" class="anion"/>
+            <flux from="u9" to="u10" class="bicarbonate"/>
         </flow>
         <flow id="v7" transporter="NHE">
             <flux from="u14" to="u13" class="hydrogen"/>
@@ -195,11 +195,11 @@
         </flow>
         <flow id="v17" transporter="CHE">
             <flux from="u11" to="u12" class="chloride"/>
-            <flux from="u8" to="u7" class="anion"/>
+            <flux from="u8" to="u7" class="hydroxide"/>
         </flow>
         <flow id="v18" transporter="AE">
             <flux from="u11" to="u12" class="chloride"/>
-            <flux from="u10" to="u9" class="anion"/>
+            <flux from="u10" to="u9" class="bicarbonate"/>
         </flow>
         <flow id="v19" transporter="pCa">
             <flux from="u17" to="u16" class="calcium"/>
@@ -255,65 +255,80 @@
     </bond-graph>
 
     <style>
-        .sodium { colour: #FE44F9; }
-        quantity.sodium { colour: radial-gradient(white 20%, #FEA3FB); }
-        transporter.sodium {
-            colour: radial-gradient(white 40%, #FE44F9);
-            stroke: #FE44F9;
+        diagram {
+            width: 1600;           /* SVG `pixel` units */
+            height:1000;           /* SVG `pixel` units */
+            flow-offset: 30x;      /* From its transporter */
+            quantity-offset: 37x;   /* From its potential   */
         }
 
-        .potassium { colour: #2209E1; }
-        quantity.potassium { colour: radial-gradient(white 20%, #9C9FF5); }
-        transporter.potassium {
-            colour: radial-gradient(white 40%, #2209E1);
+        .sodium {
+            colour: #FE44F9;
+            stroke: #FE44F9;
+            }
+        quantity.sodium { colour: radial-gradient(white 20%, #FEA3FB); }
+        transporter.sodium { colour: radial-gradient(white 40%, #FE44F9); }
+
+        .potassium {
+            colour: #2209E1;
             stroke: #2209E1;
         }
+        quantity.potassium { colour: radial-gradient(white 20%, #9C9FF5); }
+        transporter.potassium { colour: radial-gradient(white 40%, #2209E1); }
 
-        .calcium { colour: #0AD8FF; }
-        quantity.calcium { colour: radial-gradient(white 20%, #0AD8FF); }
-        transporter.calcium {
-            colour: radial-gradient(white 40%, #0AD8FF);
+        .calcium {
+            colour: #0AD8FF;
             stroke: #0AD8FF;
         }
+        quantity.calcium { colour: radial-gradient(white 20%, #0AD8FF); }
+        transporter.calcium { colour: radial-gradient(white 40%, #0AD8FF); }
 
-        .chloride { colour: #1AF32E; }
-        quantity.chloride { colour: radial-gradient(white 20%, #BEFFCA); }
-        transporter.chloride {
-            colour: radial-gradient(white 40%, #BEFFCA);
+        .chloride {
+            colour: #1AF32E;
             stroke: #1AF32E;
         }
+        quantity.chloride { colour: radial-gradient(white 20%, #BEFFCA); }
+        transporter.chloride { colour: radial-gradient(white 40%, #BEFFCA); }
 
-        .hydrogen { colour: #FFA606; }
+        .hydrogen {
+            colour: #FFA606;
+            stroke: #FFA606;
+        }
         quantity.hydrogen { colour: radial-gradient(white 20%, #FFD12E); }
         transporter.hydrogen {
             colour: radial-gradient(white 40%, #202020);
             stroke: #000000;
         }
 
-        .hydroxide { colour: #4A9B00; }
+        .hydroxide {
+            colour: #4A9B00;
+            stroke: #4A9B00;
+        }
         quantity.hydroxide { colour: radial-gradient(white 20%, #A4D5A0); }
         transporter.hydroxide {
             colour: radial-gradient(white 40%, #A4D5A0);
             stroke: #000000;
         }
 
-        .bicarbonate { colour: #A00096; }
+        .bicarbonate {
+            colour: #A00096;
+            stroke: #A00096;
+        }
         quantity.bicarbonate { colour: radial-gradient(white 20%, #B254AD); }
         transporter.bicarbonate {
             colour: radial-gradient(white 40%, #A00096);
             stroke: #000000;
         }
 
-        .metabolic { colour: #F50D00; }
+        .metabolic {
+            colour: #F50D00;
+            stroke: #FF808B;
+        }
         quantity.metabolic { colour: radial-gradient(white 20%, #FF808B); }
 
-        .atp { stroke: #FF6976; }
+        .atp { stroke: #EE1E2A; }
         quantity.atp { colour: radial-gradient(white 20%, #FF0E00); }
-        transporter.atp {
-            stroke: #EE1E2A;
-            stroke-width: 4;
-        }
-
+        transporter.atp { stroke-width: 4; }
 
         flow {
             colour: radial-gradient(#ABFF9E, #D5FFD5);
@@ -338,13 +353,6 @@
             display: none;
         }
 
-        diagram {
-            width: 1600;           /* SVG `pixel` units */
-            height:1000;           /* SVG `pixel` units */
-            flow-offset: 20x;      /* From its transporter */
-            quantity-offset: 30x;  /* From its potential   */
-        }
-
         /* Quantity positioning is by default wrt potentials */
         #q1 { position: above; }
         #q4 { position: above; }
@@ -365,7 +373,7 @@
         #u11 { position: 100 above #Cl; }
         #u12 { position:  60 below #Cl; }
         #u13 { position: 5x right #NHE, 100 above #NHE; }
-        #u14 { position: 5x right #NHE, 250 below #NHE; }
+        #u14 { position: 5x right #NHE, 200 below #NHE; }
         #u15 { position: right #u6, below #u14; }
 
         #q2 { position: below; }
@@ -376,7 +384,7 @@
         #q12 { position: below; }
 
         #cell {
-            size: (80%, 65%);
+            size: (70%, 60%);
             position: (11%, 25%);
             svg-element: CellMembrane;
         }
@@ -408,8 +416,8 @@
         #q20 { position: right; }
 
         #atp {
-            size: (15%, 30%);
-            position: (80%, 5%);
+            size: (15%, 40%);
+            position: (85%, 5%);
         }
         #q24 { position: above; }
         #u24 { position: (15%, 50%); }
@@ -420,10 +428,10 @@
 
         #SR {
             size: (25%, 25%);
-            position: (10%, 65%);
+            position: (14%, 65%);  /* Set y-pos as above #CaL by #RyR offset */
         }
-        #SERCA { position: top 25%; }
         #RyR { position: left 40%; }
+        #SERCA { position: top 35%; }
         #q21 { position: below; }
         #u21 { position: right #RyR, below #SERCA; }
         #q22 { position: below; }
@@ -442,8 +450,9 @@
             position: above;
         }
 
+        /* We don't need to use ids to locate elements */
         flow[transporter="m_NCE"] > flux[from="u2"][to="u3"] {
-            line-start: -53 until-x 20 left #NKE, 0 until-x #m_NCE;
+            line-start: -56 until-x 20 left #NKE, 0 until-x #m_NCE;
         }
         flow[transporter="m_NCE"] > flux[from="u23"][to="u17"] {
             line-end: 0 until-x #m_NCE offset (0, -3);
@@ -459,7 +468,7 @@
             position: above;
         }
         flow[transporter="m_NHE"] > flux[from="u3"][to="u2"] {
-            line-end: -50 until-x 20 left #NKE, 0 until-x #m_NHE;
+            line-end: -52 until-x 20 left #NKE, 0 until-x #m_NHE;
             }
 
         #m_K { position:    top 34%; }
@@ -479,8 +488,8 @@
         #u6 { position:  60 below #m_K #m_KHE; }
 
         #u16 { position:  60 left #Ca_b; }
-        #u17 { position:  40 right #Ca_b; }
-        #u18 { position:  40 right #CaL; }
+        #u17 { position:  50 right #Ca_b; }
+        #u18 { position:  50 right #CaL; }
 
         #u19 { position:  45% below #K1; }
         #u20 { position:  40 below #u19; }
@@ -529,14 +538,14 @@
             position: above;
             }
         flow[transporter="m_KHE"] > flux[from="u6"][to="u5"] {
-            line-end: -49 until-x 10 right #Katp, 0 until-x #m_KHE;
+            line-end: -47 until-x 10 right #Katp, 0 until-x #m_KHE;
             }
 
         flow[transporter="m_K"] {
             position: above;
             }
         flow[transporter="m_K"] > flux[from="u5"][to="u6"] {
-            line-start: -52 until-x 10 right #Katp, 0 until-x #m_K;
+            line-start: -50 until-x 10 right #Katp, 0 until-x #m_K;
             }
 
         #v16 { position: above; }
@@ -555,8 +564,8 @@
 
         #v23 { position: right; }
         #v24 { position: above #u18; }
-        #v25 { position: left #u19; }
-        #v26 { position: left #u20; }
+        #v25 { position: 35 left #u19; }
+        #v26 { position: 35 left #u20; }
         #v27 { position: above; }
         #v28 { position: 0 above #u21 #u22; }
         #v29 { position: above #m_Ca; }
