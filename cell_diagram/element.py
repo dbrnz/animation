@@ -176,11 +176,12 @@ class PositionedElement(object):
             svg.append(('  <circle r="{}" cx="{}" cy="{}"'
                         ' stroke="{}" stroke-width="{}" fill="{}"/>')
                        .format(layout.ELEMENT_RADIUS, x, y, self.stroke, self.stroke_width, self.colour))
-            if isinstance(self, diagram.Transporter):  ## TODO: Improve...
-                svg.append(svg_elements.Text.typeset(self.label, x, y))
+            if self.label.startswith('$') or isinstance(self, diagram.Transporter):  ## TODO: Improve...
+                angle = float(self.get_style_as_string('text-angle', '0'))
+                svg.append(svg_elements.Text.typeset(self.label, x, y, angle))
             else:
                 svg.append(('  <text text-anchor="middle" dominant-baseline="central"'
-                            ' x="{}" y="{}">{}</text>').format(x, y, self._local_name))
+                            ' x="{}" y="{}">{}</text>').format(x, y, self.label))
         svg.append('</g>')
         return svg
 
