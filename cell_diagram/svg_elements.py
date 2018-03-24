@@ -152,8 +152,8 @@ class CellMembrane(SvgElement):
         self._line_width = self._outer_radius - self._inner_radius
         self._marker_tail = 0.9*(self._line_width - self._marker_radius - self._stroke_width)
         # We round the width and height to ensure an integral number of line markers will fit on a side
-        self._horizontal_markers = int(0.5 + (width - self._line_width/2.0 - self._inner_radius)/self._marker_width)
-        self._vertical_markers = int(0.5 + (height - self._line_width/2.0 - self._inner_radius)/self._marker_width)
+        self._horizontal_markers = int(0.5 + (width - self._line_width/2.0 - 3*self._inner_radius)/self._marker_width)
+        self._vertical_markers = int(0.5 + (height - self._line_width/2.0 - 3*self._inner_radius)/self._marker_width)
         # The size of the straight line portion
         self._inner_width = self._marker_width*self._horizontal_markers
         self._inner_height = self._marker_width*self._vertical_markers
