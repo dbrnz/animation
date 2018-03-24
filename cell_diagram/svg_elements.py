@@ -346,7 +346,7 @@ class PMRChannel(_TransporterElement):
             <stop offset="95.06%" stop-color="#FEE12A"/>
             <stop offset="100%"   stop-color="#FEDE12"/>
         </radialGradient>
-        <path id="{ID_BASE}_element" fill="url(#{ID_BASE}_fill)"  transform="translate(-22, -25)"
+        <path id="{ID_BASE}_element" fill="url(#{ID_BASE}_fill)"  transform="translate(-22, -25) scale(1.1)"
             stroke="#010101" stroke-width="2" stroke-linejoin="miter"
             d="M0,0 c0,-25 15,-30 22,-12 c7,-18 22,-13 22,12 v50 c0,25 -15,30 -22,12 c-7,18 -22,13 -22,-12 v-50 z"/>"""
 
