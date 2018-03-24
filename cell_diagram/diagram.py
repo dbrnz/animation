@@ -36,12 +36,7 @@ from .element import Element, PositionedElement
 class Container(Element, PositionedElement):
     def __init__(self, container, class_name='Container', **kwds):
         super().__init__(container, class_name=class_name, **kwds)
-        self._components = []
         self._unit_converter = None
-
-    @property
-    def components(self):
-        return self._components
 
     @property
     def pixel_size(self):
@@ -65,10 +60,6 @@ class Container(Element, PositionedElement):
     def set_unit_converter(self, unit_converter):
         self._unit_converter = unit_converter
 
-    def add_component(self, component):
-        self._components.append(component)
-        ## Keep name directory...
-
     def svg(self):
         # Put everything into a group with id and class attributes
         svg = ['<g{}{}>'.format(self.id_class(), self.display())]
@@ -89,8 +80,6 @@ class Container(Element, PositionedElement):
                             ' L{right:g},{bottom:g} L0,{bottom:g} z"/>')
                            .format(right=self._width, bottom=self._height))
             svg.append('</g>')
-        for component in self._components:
-            svg.extend(component.svg())
         svg.append('</g>')
         return svg
 
@@ -102,18 +91,10 @@ class Compartment(Container):
         super().__init__(container, class_name='Compartment', **kwds)
         self._size = layout.Size(self.style.get('size', None)
                                  if self.style is not None else None)
-        self._transporters = []
 
     @property
     def size(self):
         return self._size
-
-    @property
-    def transporters(self):
-        return self._transporters
-
-    def add_transporter(self, transporter):
-        self._transporters.append(transporter)
 
     def parse_geometry(self):
         """
@@ -131,10 +112,7 @@ class Compartment(Container):
 
 
     def svg(self):
-        svg = super().svg()
-        for transporter in self._transporters:
-            svg.extend(transporter.svg())
-        return svg
+        return super().svg()
 
 # -----------------------------------------------------------------------------
 
@@ -238,9 +216,12 @@ class Transporter(Element, PositionedElement):
 class Diagram(Container):
     def __init__(self, **kwds):
         super().__init__(self, class_name='Diagram', **kwds)
-        self._elements = list()
+        self._elements = []
         self._elements_by_id = OrderedDict()
         self._elements_by_name = OrderedDict()
+        self._compartments = []
+        self._quantities = []
+        self._transporters = []
         self._layout = None
         self._width = self._number_from_style('width', 0)
         self._height = self._number_from_style('height', 0)
@@ -286,6 +267,18 @@ class Diagram(Container):
 
     def set_bond_graph(self, bond_graph):
         self._bond_graph = bond_graph
+
+    def add_compartment(self, compartment):
+        self.add_element(compartment)
+        self._compartments.append(compartment)
+
+    def add_quantity(self, quantity):
+        self.add_element(quantity)
+        self._quantities.append(quantity)
+
+    def add_transporter(self, transporter):
+        self.add_element(transporter)
+        self._transporters.append(transporter)
 
     def add_element(self, element):
         self._elements.append(element)
@@ -350,8 +343,13 @@ class Diagram(Container):
                     ' width="{width:g}" height="{height:g}"'
                     ' viewBox="0 0 {width:g} {height:g}">')
                    .format(width=self._width, height=self._height))
-        svg.extend(super().svg())
+        for c in self._compartments:
+            svg.extend(c.svg())
         svg.extend(self.bond_graph.svg())
+        for q in self._quantities:
+            svg.extend(q.svg())
+        for t in self._transporters:
+            svg.extend(t.svg())
         svg.append('<defs>')
         svg.extend(svg_elements.DefinesStore.defines())
         svg.append('</defs>')

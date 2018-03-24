@@ -358,19 +358,16 @@ class Parser(object):
 
     def parse_compartment(self, element, container):
         compartment = dia.Compartment(container, style=element.style, **element.attributes)
-        self._diagram.add_element(compartment)
-        container.add_component(compartment)
+        self._diagram.add_compartment(compartment)
         self.parse_container(element, compartment)
 
     def parse_quantity(self, element, container):
         quantity = dia.Quantity(container, style=element.style, **element.attributes)
-        self._diagram.add_element(quantity)
-        container.add_component(quantity)
+        self._diagram.add_quantity(quantity)
 
     def parse_transporter(self, element, compartment):
         transporter = dia.Transporter(compartment, style=element.style, **element.attributes)
-        self._diagram.add_element(transporter)
-        compartment.add_transporter(transporter)   ## Do when adding element to diagram??
+        self._diagram.add_transporter(transporter)
 
     def parse_bond_graph(self, element):
         for e in ElementChildren(element, self._stylesheets):
@@ -387,12 +384,12 @@ class Parser(object):
         if potential.quantity is None:
             raise SyntaxError("Missing or unknown quantity.")
         potential.set_container(potential.quantity.container)
-        self._diagram.add_element(potential)
+        self._diagram.add_element(potential)  ## Add to container...
         self._bond_graph.add_potential(potential)
 
     def parse_flow(self, element):
         flow = bg.Flow(self._diagram, style=element.style, **element.attributes)
-        self._diagram.add_element(flow)
+        self._diagram.add_element(flow)  ## Add to container?? But does flow have a container??
         container = flow.transporter.container if flow.transporter is not None else None
         for e in ElementChildren(element, self._stylesheets):
             self._last_element = e
