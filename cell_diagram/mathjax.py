@@ -22,13 +22,14 @@ def clean_svg(svg, id_base):
     h = xml.attrib.get('height', None)
     s = xml.attrib.get('style', 'N 0').split()
     va = s[1][:-1] if s[0] == 'vertical-align:' else None
+    vb = xml.attrib.get('viewBox', None)
     xml.attrib.clear()
     title = xml.find('{http://www.w3.org/2000/svg}title')
     if title is not None:
         xml.remove(title)
     suffix_ids(xml, 'id', id_base)
     suffix_ids(xml, '{http://www.w3.org/1999/xlink}href', id_base, new_attrib='href')
-    return (etree.tostring(xml, encoding='unicode'), (w, h, va))
+    return (etree.tostring(xml, encoding='unicode'), (w, h, va, vb))
 
 def typeset(latex, id_base):
     if latex.startswith('$') and latex.endswith('$'):
