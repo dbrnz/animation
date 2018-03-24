@@ -399,11 +399,12 @@ class Arrow(object):
 # -----------------------------------------------------------------------------
 
 
-def svg_line(line, colour, reverse=False, display=''):
+def svg_line(line, colour, reverse=False, display='', style=''):
     points = list(reversed(line.coords)) if reverse else line.coords
-    return ('<path fill="none" stroke="{}" stroke-width="{}" {}'
+    dash = ' stroke-dasharray="10,5"' if style == 'dashed' else ''
+    return ('<path fill="none" stroke="{}" stroke-width="{}" {} {}'
             ' marker-end="{}" d="M{:g},{:g} {:s}"/>').format(colour, LINE_WIDTH,
-                   display, Arrow.url(colour), points[0][0], points[0][1],
+                   display, dash, Arrow.url(colour), points[0][0], points[0][1],
                    ' '.join(['L{:g},{:g}'.format(*point) for point in points[1:]]))
 
 # -----------------------------------------------------------------------------

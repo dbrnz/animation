@@ -192,17 +192,22 @@ class Flux(Element, PositionedElement):
             points = list(flux_points)
             points.extend(self._lines['end'].points(to.coords, flow=self._flow, reverse=True))
             line = geo.LineString(points)
+            line_style = self.get_style_as_string('line-style', '')
             if (self.count % 2) == 0:  # An even number of lines
                 for n in range(self.count // 2):
                     offset = (n + 0.5)*LINE_OFFSET
-                    svg.append(svg_line(line.parallel_offset(offset, 'left', join_style=2), self.colour))
-                    svg.append(svg_line(line.parallel_offset(offset, 'right', join_style=2), self.colour, True))
+                    svg.append(svg_line(line.parallel_offset(offset, 'left', join_style=2), self.colour,
+                                        style=line_style))
+                    svg.append(svg_line(line.parallel_offset(offset, 'right', join_style=2), self.colour,
+                                        True, style=line_style))
             else:
                 for n in range(self.count // 2):
                     offset = (n + 1)*LINE_OFFSET
-                    svg.append(svg_line(line.parallel_offset(offset, 'left', join_style=2), self.colour))
-                    svg.append(svg_line(line.parallel_offset(offset, 'right', join_style=2), self.colour, True))
-                svg.append(svg_line(line, self.colour))
+                    svg.append(svg_line(line.parallel_offset(offset, 'left', join_style=2), self.colour,
+                                        style=line_style))
+                    svg.append(svg_line(line.parallel_offset(offset, 'right', join_style=2), self.colour,
+                                        True, style=line_style))
+                svg.append(svg_line(line, self.colour, style=line_style))
         return svg
 
 #------------------------------------------------------------------------------

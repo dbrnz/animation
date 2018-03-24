@@ -495,9 +495,11 @@
         #u20 { position:  40 below #u19; }
         flow[id="v25"] > flux[from="u17"][to="u19"] {
             line-start: until #v25;
+            line-style: dashed;
             }
         flow[id="v26"] > flux[from="u17"][to="u20"] {
             line-start: until #v26;
+            line-style: dashed;
             }
 
 
