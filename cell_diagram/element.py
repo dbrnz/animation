@@ -22,8 +22,10 @@ import shapely.geometry as geo
 
 # -----------------------------------------------------------------------------
 
+from . import diagram
 from . import layout
 from . import parser
+from . import svg_elements
 from . import SyntaxError
 
 # -----------------------------------------------------------------------------
@@ -48,7 +50,7 @@ class Element(object):
                                else None)
         self._class_name = class_name
         self._classes = class_.split() if class_ is not None else []
-        self._label = label if label else name
+        self._label = label if label else '\\text{{{}}}'.format(name)
         self._style = style if style is not None else {}
         super().__init__()   # Now initialise any PositionedElement mixin
 
@@ -174,8 +176,12 @@ class PositionedElement(object):
             svg.append(('  <circle r="{}" cx="{}" cy="{}"'
                         ' stroke="{}" stroke-width="{}" fill="{}"/>')
                        .format(layout.ELEMENT_RADIUS, x, y, self.stroke, self.stroke_width, self.colour))
-            svg.append(('  <text text-anchor="middle" dominant-baseline="central"'
-                        ' x="{}" y="{}">{}</text>').format(x, y, self._local_name))
+            if isinstance(self, diagram.Transporter):  ## TODO: Improve...
+                w = layout.ELEMENT_RADIUS
+                svg.append(svg_elements.Text.typeset(self.label, x-0.8*w, y+w/2))
+            else:
+                svg.append(('  <text text-anchor="middle" dominant-baseline="central"'
+                            ' x="{}" y="{}">{}</text>').format(x, y, self._local_name))
         svg.append('</g>')
         return svg
 

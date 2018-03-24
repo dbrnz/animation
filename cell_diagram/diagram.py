@@ -139,8 +139,7 @@ class Quantity(Element, PositionedElement):
                        .format(0.375*w, 0.375*h, x-w/2, y-h/2, w, h, self.colour))
             # Text should be centered
             # self.svg_text() in PositionedElement
-            svg.append(('  <text text-anchor="middle" dominant-baseline="central"'
-                        ' x="{}" y="{}">{}</text>').format(x, y, self._local_name))
+            svg.append(svg_elements.Text.typeset(self.label, x-0.4*w, y+h/4))
         svg.append('</g>')
         return svg
 

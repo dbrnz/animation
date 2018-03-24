@@ -20,6 +20,9 @@
 
 from math import cos, sin, asin, pi
 
+# -----------------------------------------------------------------------------
+
+from . import mathjax
 
 # -----------------------------------------------------------------------------
 
@@ -408,6 +411,23 @@ def svg_line(line, colour, reverse=False, display='', style=''):
                    ' '.join(['L{:g},{:g}'.format(*point) for point in points[1:]]))
 
 # -----------------------------------------------------------------------------
+
+
+class Text(object):
+    _next_id = 0
+
+    @classmethod
+    def next_id(cls):
+        cls._next_id += 1
+        return "_TEXT_{}_".format(cls._next_id)
+
+    @classmethod
+    def typeset(cls, s, x, y):
+        return ('<g transform="translate({}, {}) scale(0.017)">{}</g>'
+                .format(x, y, mathjax.typeset(s, cls.next_id())))
+
+# -----------------------------------------------------------------------------
+
 
 if __name__ == '__main__':
 
