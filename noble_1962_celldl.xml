@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<cell-diagram xmlns="http://www.cellml.org/celldl/1.0#">
+    <diagram>
+        <compartment id="cell" class="cell">
+            <transporter id="K"     class="potassium channel" label="$\text{K}^\text{+}$"/>
+            <transporter id="Na"    class="sodium channel" label="$\text{Na}^\text{+}$"/>
+            <transporter id="Leak"  class="channel" label="$\text{ }$"/>
+        </compartment>
+
+<!-- could have quantities/potentials with `display: none` and draw flux lines -->
+
+    </diagram>
+    <bond-graph>
+        <flow id="I_K" transporter="K" label="$\text{I}_\text{K}$"/>
+        <flow id="I_Na" transporter="Na" label="$\text{I}_\text{Na}$"/>
+        <flow id="I_Leak" transporter="Leak" label="$\text{I}_\text{Leak}$"/>
+    </bond-graph>
+    <style>
+        diagram {
+            width: 600;           /* SVG `pixel` units */
+            height: 400;          /* SVG `pixel` units */
+            flow-offset: 80x;     /* From its transporter */
+        }
+        #cell {
+            size: (60%, 60%);
+            position: (20%, 20%);
+            svg-element: CellMembrane;
+        }
+
+        .channel {
+            svg-element: PMRChannel;
+            colour: none;
+        }
+
+        .channel { svg-element: Channel; }
+        transporter.sodium { colour: radial-gradient(white 40%, #FE44F9); }
+        transporter.potassium { colour: radial-gradient(white 40%, #2209E1); }
+
+/* Work in progess...
+        transporter {
+            text-angle: 90;
+        }
+*/
+        flow { colour: none; }
+
+        #K { position:  top 25%; }
+        #Na { position:  top 75%; }
+        #Leak { position:  bottom 50%; }
+
+        /* Default to `outside`; position options are then `outside` and `inside` */
+        #I_K { position: above; }
+        #I_Na { position: above; }
+        #I_Leak { position: below; }
+    </style>
+</cell-diagram>
+
