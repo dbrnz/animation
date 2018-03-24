@@ -350,6 +350,49 @@ class PMRChannel(_TransporterElement):
 # -----------------------------------------------------------------------------
 
 
+class ArrowDefine(object):
+    def __init__(self, colour):
+        self._colour = colour
+
+    def __eq__(self, other):
+        return (isinstance(other, Arrow)
+            and self.colour == other._colour)
+
+    def __hash__(self):
+        return hash(self._colour)
+
+    def svg(self, id):
+        return """
+            <marker id="{id}" orient="auto" style="overflow: visible">
+                <path fill="{fill}" transform="rotate(90) translate(0, 11) scale(0.5)"
+                      d="M0,0l5,3.1l0.1-0.2l-3.3-8.2l-1.9-8.6l-1.9,8.6l-3.3,8.2l0.1,0.2l5-3.1z"/>
+            </marker>""".format(id=id, fill=self._colour)
+
+# -----------------------------------------------------------------------------
+
+
+class Arrow(object):
+    _arrows_to_id = {}
+    _next_id = 0
+
+    @classmethod
+    def next_id(cls):
+        cls._next_id += 1
+        return "_ARROW_{}_".format(cls._next_id)
+
+    @classmethod
+    def url(cls, colour):
+        a = ArrowDefine(colour)
+        id = cls._arrows_to_id.get(a, None)
+        if id is None:
+            id = cls.next_id()
+            cls._arrows_to_id[a] = id
+            DefinesStore.add(id, a.svg(id))
+        return "url(#{})".format(id)
+
+# -----------------------------------------------------------------------------
+
+
 if __name__ == '__main__':
 
     def wrap_svg(svg):
