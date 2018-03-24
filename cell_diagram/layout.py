@@ -38,8 +38,8 @@ TRANSPORTER_EXTRA = (25, 'x')
 # SVG sizes, in pixels
 ELEMENT_RADIUS = 15
 
-QUANTITY_WIDTH = 40
-QUANTITY_HEIGHT = 30
+QUANTITY_WIDTH = 50
+QUANTITY_HEIGHT = 35
 
 #------------------------------------------------------------------------------
 
