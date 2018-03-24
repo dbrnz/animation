@@ -30,81 +30,81 @@
     <!-- Representation of diagram at http://sites.bioeng.auckland.ac.nz/mwu035/mpb/  -->
 
     <diagram>
-        <quantity id="q1"  class="sodium"    label="\text{q}_1^{[\text{Na}^+]_\text{o}}"/>
-        <quantity id="q4"  class="potassium" label="\text{q}_4^{[\text{K}^+]_\text{o}}"/>
-        <quantity id="q7"  class="hydroxide"     label="\text{q}_7^{[\text{OH}^-]_\text{o}}" />
-        <quantity id="q9"  class="bicarbonate"     label="\text{q}_9^{[\text{HCO}_3^-]_\text{o}}"/>
-        <quantity id="q11" class="chloride"  label="\text{q}_{11}^{[\text{Cl}^-]_\text{o}}"/>
-        <quantity id="q13" class="hydrogen"  label="\text{q}_{13}^{[\text{H}^+]_\text{o}}" />
-        <quantity id="q16" class="calcium"   label="\text{q}_{16}^{[\text{Ca}^{2+}]_\text{o}}"/>
+        <quantity id="q1"  class="sodium"    label="$\text{q}_1^{[\text{Na}^+]_\text{o}}$"/>
+        <quantity id="q4"  class="potassium" label="$\text{q}_4^{[\text{K}^+]_\text{o}}$"/>
+        <quantity id="q7"  class="hydroxide" label="$\text{q}_7^{[\text{OH}^-]_\text{o}}$" />
+        <quantity id="q9"  class="bicarbonate" label="$\text{q}_9^{[\text{HCO}_3^-]_\text{o}}$"/>
+        <quantity id="q11" class="chloride"  label="$\text{q}_{11}^{[\text{Cl}^-]_\text{o}}$"/>
+        <quantity id="q13" class="hydrogen"  label="$\text{q}_{13}^{[\text{H}^+]_\text{o}}$" />
+        <quantity id="q16" class="calcium"   label="$\text{q}_{16}^{[\text{Ca}^{2+}]_\text{o}}$"/>
 
         <compartment id="cell" class="cell">
-            <transporter id="Na"   class="sodium channel" label="\text{I}_\text{Na}"/>
-            <transporter id="Na_b" class="sodium channel" label="\text{I}_\text{Na,b}"/>
-            <transporter id="pNa"  class="sodium channel" label="\text{I}_\text{pNa}"/>
+            <transporter id="Na"   class="sodium channel" label="$\text{I}_\text{Na}$"/>
+            <transporter id="Na_b" class="sodium channel" label="$\text{I}_\text{Na,b}$"/>
+            <transporter id="pNa"  class="sodium channel" label="$\text{I}_\text{pNa}$"/>
 
             <transporter id="NKE"  class="sodium atp exchanger"/>
 
-            <transporter id="K1"   class="potassium channel" label="\text{I}_\text{K1}"/>
-            <transporter id="Kr"   class="potassium channel" label="\text{I}_\text{Kr}"/>
-            <transporter id="Ks"   class="potassium channel" label="\text{I}_\text{Ks}"/>
-            <transporter id="Katp" class="potassium channel" label="\text{I}_{\text{K}_\text{ATP}}"/>
+            <transporter id="K1"   class="potassium channel" label="$\text{I}_\text{K1}$"/>
+            <transporter id="Kr"   class="potassium channel" label="$\text{I}_\text{Kr}$"/>
+            <transporter id="Ks"   class="potassium channel" label="$\text{I}_\text{Ks}$"/>
+            <transporter id="Katp" class="potassium channel" label="$\text{I}_{\text{K}_\text{ATP}}$"/>
 
             <transporter id="NBC"  class="bicarbonate exchanger"/>
             <transporter id="CHE"  class="hydroxide exchanger"/>
             <transporter id="AE"   class="bicarbonate exchanger"/>
-            <transporter id="Cl"   class="chloride channel" label="\text{I}_\text{Cl}"/>
+            <transporter id="Cl"   class="chloride channel" label="$\text{I}_\text{Cl}$"/>
             <transporter id="NHE"  class="hydrogen exchanger"/>
 
             <transporter id="NCE"  class="sodium exchanger"/>
             <transporter id="pCa"  class="calcium atp channel"/>
-            <transporter id="Ca_b" class="calcium channel" label="\text{I}_\text{Ca,b}"/>
-            <transporter id="Ca_t" class="calcium channel" label="\text{I}_\text{Ca,t}"/>
-            <transporter id="CaL"  class="calcium channel" label="\text{I}_\text{CaL}"/>
+            <transporter id="Ca_b" class="calcium channel" label="$\text{I}_\text{Ca,b}$"/>
+            <transporter id="Ca_t" class="calcium channel" label="$\text{I}_\text{Ca,t}$"/>
+            <transporter id="CaL"  class="calcium channel" label="$\text{I}_\text{CaL}$"/>
 
-            <quantity id="q2"  class="sodium"    label="\text{q}_2^{[\text{Na}^+]_\text{i}}"/>
-            <quantity id="q5"  class="potassium" label="\text{q}_5^{[\text{K}^+]_\text{i}}"/>
+            <quantity id="q2"  class="sodium"    label="$\text{q}_2^{[\text{Na}^+]_\text{i}}$"/>
+            <quantity id="q5"  class="potassium" label="$\text{q}_5^{[\text{K}^+]_\text{i}}$"/>
 
-            <quantity id="q8"  class="hydroxide" label="\text{q}_8^{[\text{OH}^-]_\text{i}}"/>
-            <quantity id="q10" class="bicarbonate" label="\text{q}_{10}^{[\text{HCO}_3^-]_\text{i}}"/>
-            <quantity id="q12" class="chloride"  label="\text{q}_{12}^{[\text{Cl}^-]_\text{i}}"/>
+            <quantity id="q8"  class="hydroxide" label="$\text{q}_8^{[\text{OH}^-]_\text{i}}$"/>
+            <quantity id="q10" class="bicarbonate" label="$\text{q}_{10}^{[\text{HCO}_3^-]_\text{i}}$"/>
+            <quantity id="q12" class="chloride"  label="$\text{q}_{12}^{[\text{Cl}^-]_\text{i}}$"/>
 
-            <quantity id="q14" class="hydrogen"  label="\text{q}_{14}^{[\text{H}^+]_\text{i}}"/>
+            <quantity id="q14" class="hydrogen"  label="$\text{q}_{14}^{[\text{H}^+]_\text{i}}$"/>
 
-            <quantity id="q17" class="calcium"   label="\text{q}_{17}^{[\text{Ca}^{2+}]_\text{i}}"/>
-            <quantity id="q18" class="calcium"   label="\text{q}_{18}^{[\text{Ca}^{2+}]_\text{i}}"/>
-            <quantity id="q19" class="calcium"   label="\text{q}_{19}^{[\text{Ca}^{2+}\text{-CMDN}]_\text{i}}"/>
-            <quantity id="q20" class="calcium"   label="\text{q}_{20}^{[\text{Ca}^{2+}\text{-TRPN}]_\text{i}}"/>
+            <quantity id="q17" class="calcium"   label="$\text{q}_{17}^{[\text{Ca}^{2+}]_\text{i}}$"/>
+            <quantity id="q18" class="calcium"   label="$\text{q}_{18}^{[\text{Ca}^{2+}]_\text{i}}$"/>
+            <quantity id="q19" class="calcium"   label="$\text{q}_{19}^{[\text{Ca}^{2+}\text{-CMDN}]_\text{i}}$"/>
+            <quantity id="q20" class="calcium"   label="$\text{q}_{20}^{[\text{Ca}^{2+}\text{-TRPN}]_\text{i}}$"/>
 
             <compartment id="atp" class="metabolic">
-                <quantity id="q24" class="atp" label="\text{q}_{24}^{[\text{ATP}]_\text{i}}"/>
-                <quantity id="q25" class="metabolic" label="\text{q}_{25}^{[\text{ADP}]}"/>
-                <quantity id="q26" class="metabolic" label="\text{q}_{26}^{[\text{P}]_\text{i}}"/>
+                <quantity id="q24" class="atp" label="$\text{q}_{24}^{[\text{ATP}]_\text{i}}$"/>
+                <quantity id="q25" class="metabolic" label="$\text{q}_{25}^{[\text{ADP}]}$"/>
+                <quantity id="q26" class="metabolic" label="$\text{q}_{26}^{[\text{P}]_\text{i}}$"/>
             </compartment>
 
             <compartment id="SR" class="organelle reticulum">
                 <transporter id="SERCA" class="calcium atp"/>
                 <transporter id="RyR"   class="calcium channel"/>
 
-                <quantity id="q21" class="calcium" label="\text{q}_{21}^{[\text{Ca}^{2+}]_\text{i}}"/>
-                <quantity id="q22" class="calcium" label="\text{q}_{22}^{[\text{Ca}^{2+}\text{-CSNQ}]_\text{i}}"/>
+                <quantity id="q21" class="calcium" label="$\text{q}_{21}^{[\text{Ca}^{2+}]_\text{i}}$"/>
+                <quantity id="q22" class="calcium" label="$\text{q}_{22}^{[\text{Ca}^{2+}\text{-CSNQ}]_\text{i}}$"/>
             </compartment>
 
             <compartment id="mitochrondion" class="organelle mitochondrion">
-                <transporter id="m_NCE"  label="\text{NCE}"  class="sodium atp exchanger"/>
-                <transporter id="m_NHE"  label="\text{NHE}"  class="hydrogen exchanger"/>
-                <transporter id="m_KHE"  label="\text{KHE}"  class="hydrogen exchanger"/>
-                <transporter id="m_CI"   label="\text{CI}"   class="mitochrondial-complex"/>
-                <transporter id="m_CIII" label="\text{CIII}" class="mitochrondial-complex"/>
-                <transporter id="m_CIV"  label="\text{CIV}"  class="mitochrondial-complex"/>
-                <transporter id="m_CII"  label="\text{CII}"  class="mitochrondial-complex"/>
-                <transporter id="m_K"    label="\text{K}"    class="potassium diffuser"/>
-                <transporter id="m_Ca"   label="\text{Ca}"   class="calcium diffuser"/>
+                <transporter id="m_NCE"  class="sodium atp exchanger"  label="$\text{NCE}$"/>
+                <transporter id="m_NHE"  class="hydrogen exchanger"    label="$\text{NHE}$"/>
+                <transporter id="m_KHE"  class="hydrogen exchanger"    label="$\text{KHE}$"/>
+                <transporter id="m_CI"   class="mitochrondial-complex" label="$\text{CI}$"/>
+                <transporter id="m_CIII" class="mitochrondial-complex" label="$\text{CIII}$"/>
+                <transporter id="m_CIV"  class="mitochrondial-complex" label="$\text{CIV}$"/>
+                <transporter id="m_CII"  class="mitochrondial-complex" label="$\text{CII}$"/>
+                <transporter id="m_K"    class="potassium diffuser"    label="$\text{K}$"/>
+                <transporter id="m_Ca"   class="calcium diffuser"      label="$\text{Ca}$"/>
 
-                <quantity id="q23" class="calcium"   label="\text{q}_{23}^{[\text{Ca}^{2+}]_\text{i}}"/>
-                <quantity id="q3"  class="sodium"    label="\text{q}_3^{[\text{Na}^+]_\text{i}}"/>
-                <quantity id="q6"  class="potassium" label="\text{q}_6^{[\text{K}^+]_\text{i}}"/>
-                <quantity id="q15" class="hydrogen"  label="\text{q}_{15}^{[\text{H}^+]_\text{i}}"/>
+                <quantity id="q23" class="calcium"   label="$\text{q}_{23}^{[\text{Ca}^{2+}]_\text{i}}$"/>
+                <quantity id="q3"  class="sodium"    label="$\text{q}_3^{[\text{Na}^+]_\text{i}}$"/>
+                <quantity id="q6"  class="potassium" label="$\text{q}_6^{[\text{K}^+]_\text{i}}$"/>
+                <quantity id="q15" class="hydrogen"  label="$\text{q}_{15}^{[\text{H}^+]_\text{i}}$"/>
             </compartment>
         </compartment>
     </diagram>
