@@ -112,20 +112,20 @@ class CellMembrane(SvgElement):
         </g>
         <!-- Inward pointing marker -->
         <marker id="{ID_BASE}_inward_marker" markerUnits="userSpaceOnUse" style="overflow: visible" orient="auto">
-            <use stroke="{STROKE}" fill="{FILL}" href="#{ID_BASE}_base_element" transform="rotate(270)"/>
+            <use stroke="{STROKE}" fill="{FILL}" xlink:href="#{ID_BASE}_base_element" transform="rotate(270)"/>
         </marker>
         <!-- Outward pointing marker -->
         <marker id="{ID_BASE}_outward_marker" markerUnits="userSpaceOnUse" style="overflow: visible" orient="auto">
-            <use stroke="{STROKE}" fill="{FILL}" href="#{ID_BASE}_base_element" transform="rotate(90)"/>
+            <use stroke="{STROKE}" fill="{FILL}" xlink:href="#{ID_BASE}_base_element" transform="rotate(90)"/>
         </marker>
         <!-- Straight segments are built from two base elements at 180 degrees to each other -->
         <g id="{ID_BASE}_element">
-            <use transform="translate({OFFSET}, {SPACING})" href="#{ID_BASE}_base_element"/>
-            <use transform="rotate(180) translate({OFFSET}, 0)" href="#{ID_BASE}_base_element"/>
+            <use transform="translate({OFFSET}, {SPACING})" xlink:href="#{ID_BASE}_base_element"/>
+            <use transform="rotate(180) translate({OFFSET}, 0)" xlink:href="#{ID_BASE}_base_element"/>
         </g>
         <!-- Marker for straight segments -->
         <marker id="{ID_BASE}_marker" markerUnits="userSpaceOnUse" style="overflow: visible" orient="auto">
-            <use stroke="{STROKE}" fill="{FILL}" href="#{ID_BASE}_element" transform="rotate(90)"/>
+            <use stroke="{STROKE}" fill="{FILL}" xlink:href="#{ID_BASE}_element" transform="rotate(90)"/>
         </marker>"""
 
     def __init__(self, id, width, height, id_base='cell_membrane',
@@ -203,7 +203,7 @@ class CellMembrane(SvgElement):
             t += dt
         return '''
       <g transform="{transform}">
-        <path stroke="none" fill="none" marker-mid="url(#{marker})" d="{path}"/>
+        <path stroke="#FFFFFF" fill="none" marker-mid="url(#{marker})" d="{path}"/>
       </g>'''.format(transform=' '.join(transform), marker=marker_id, path=' '.join(path))
 
     def corner(self, position):
@@ -245,7 +245,7 @@ class CellMembrane(SvgElement):
             path.append(step_format.format(self._marker_width))
         return ['''
       <g id="{id}_{orientation}" transform="translate({trans_x}, {trans_y})">
-        <path stroke="none" fill="none"  d="{path}"
+        <path stroke="#FFFFFF" fill="none"  d="{path}"
               marker-start="url(#{marker})" marker-mid="url(#{marker})"/>
       </g>'''.format(id=self._id_base, orientation=orientation,
                      trans_x=translation[0], trans_y=translation[1],
@@ -284,7 +284,7 @@ class _TransporterElement(SvgElement):
         DefinesStore.add(id_base, defs.format(ID_BASE=id_base))
 
     def svg(self):
-        svg = ['<use href="#{ID_BASE}_element" transform="translate({X:g}, {Y:g})'
+        svg = ['<use xlink:href="#{ID_BASE}_element" transform="translate({X:g}, {Y:g})'
                .format(ID_BASE=self._id_base, X=self._coords[0], Y=self._coords[1])]
         scaling = self._height/float(self._defined_height)
         if scaling != 1.0:
@@ -312,10 +312,10 @@ class Channel(_TransporterElement):
         <path id="{ID_BASE}_sub_element" fill="url(#{ID_BASE}_fill)"
           d="M0,0 a10,10 0 0 1 20,0 v80 a10,10 0 0 1 -20,0 v-80 z"/>
         <g id="{ID_BASE}_element" transform="translate(-10, -40)">
-          <use opacity="0.85" href="#{ID_BASE}_sub_element" transform="translate(  0, -5)"/>
-          <use opacity="0.85" href="#{ID_BASE}_sub_element" transform="translate( 15,  0)" />
-          <use opacity="0.75" href="#{ID_BASE}_sub_element" transform="translate(-15,  0)" />
-          <use opacity="0.60" href="#{ID_BASE}_sub_element" transform="translate( -1,  5)" />
+          <use opacity="0.85" xlink:href="#{ID_BASE}_sub_element" transform="translate(  0, -5)"/>
+          <use opacity="0.85" xlink:href="#{ID_BASE}_sub_element" transform="translate( 15,  0)" />
+          <use opacity="0.75" xlink:href="#{ID_BASE}_sub_element" transform="translate(-15,  0)" />
+          <use opacity="0.60" xlink:href="#{ID_BASE}_sub_element" transform="translate( -1,  5)" />
         </g>"""
 
     HEIGHT = 100

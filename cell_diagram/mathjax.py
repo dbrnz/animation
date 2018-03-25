@@ -28,7 +28,7 @@ def clean_svg(svg, id_base):
     if title is not None:
         xml.remove(title)
     suffix_ids(xml, 'id', id_base)
-    suffix_ids(xml, '{http://www.w3.org/1999/xlink}href', id_base, new_attrib='href')
+    suffix_ids(xml, '{http://www.w3.org/1999/xlink}href', id_base) ## , new_attrib='href)  ## SVG 2 only
     return (etree.tostring(xml, encoding='unicode'), (w, h, va, vb))
 
 def typeset(latex, id_base):
