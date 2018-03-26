@@ -50,7 +50,7 @@ class Element(object):
                                else None)
         self._class_name = class_name
         self._classes = class_.split() if class_ is not None else []
-        self._label = label if label else '\\text{{{}}}'.format(name)
+        self._label = label if label else name
         self._style = style if style is not None else {}
         super().__init__()   # Now initialise any PositionedElement mixin
 
