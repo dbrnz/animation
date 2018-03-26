@@ -169,19 +169,23 @@ class PositionedElement(object):
         if self._position_tokens is not None:
             self.position.parse(self._position_tokens, default_offset, default_dependency)
 
-    def svg(self):
+    def label_as_svg(self):
+        (x, y) = self.coords
+        if self.label.startswith('$'):
+            rotation = float(self.get_style_as_string('text-rotation', '0'))
+            return svg_elements.Text.typeset(self.label, x, y, rotation)
+            ## `\text{ABC}` isn't centered...
+        else:
+            return ('  <text text-anchor="middle" dominant-baseline="central"'
+                    ' x="{}" y="{}">{}</text>').format(x, y, self.label)
+
         svg = ['<g{}{}>'.format(self.id_class(), self.display())]
         if self.position.has_coords:
             (x, y) = self.coords
             svg.append(('  <circle r="{}" cx="{}" cy="{}"'
                         ' stroke="{}" stroke-width="{}" fill="{}"/>')
                        .format(layout.ELEMENT_RADIUS, x, y, self.stroke, self.stroke_width, self.colour))
-            if self.label.startswith('$') or isinstance(self, diagram.Transporter):  ## TODO: Improve...
-                angle = float(self.get_style_as_string('text-angle', '0'))
-                svg.append(svg_elements.Text.typeset(self.label, x, y, angle))
-            else:
-                svg.append(('  <text text-anchor="middle" dominant-baseline="central"'
-                            ' x="{}" y="{}">{}</text>').format(x, y, self.label))
+            svg.append(self.label_as_svg())
         svg.append('</g>')
         return svg
 

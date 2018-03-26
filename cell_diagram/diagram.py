@@ -137,7 +137,7 @@ class Quantity(Element, PositionedElement):
             svg.append(('  <rect rx="{}" ry="{}" x="{}" y="{}"'
                         ' width="{}" height="{}" stroke="none" fill="{}"/>')
                        .format(0.375*w, 0.375*h, x-w/2, y-h/2, w, h, self.colour))
-            svg.append(svg_elements.Text.typeset(self.label, x, y))
+            svg.append(self.label_as_svg())
         svg.append('</g>')
         return svg
 
