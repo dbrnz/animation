@@ -3,8 +3,8 @@
 <cell-diagram xmlns="http://www.cellml.org/celldl/1.0#">
     <diagram>
         <compartment id="cell" class="cell">
-            <transporter id="K"     class="potassium channel" label="$\text{K}^\text{+}$"/>
-            <transporter id="Na"    class="sodium channel" label="$\text{Na}^\text{+}$"/>
+            <transporter id="K"     class="potassium channel out" label="$\text{K}^\text{+}$"/>
+            <transporter id="Na"    class="sodium channel in" label="$\text{Na}^\text{+}$"/>
             <transporter id="Leak"  class="channel" label="$\text{ }$"/>
         </compartment>
 
@@ -29,11 +29,12 @@
         }
 
         .channel {
-            svg-element: PMRChannel;
+            svg-element: PMRChannelInOut;
             colour: none;
         }
+        .channel.in { svg-element: PMRChannelIn; }
+        .channel.out { svg-element: PMRChannelOut; }
 
-        .channel { svg-element: Channel; }
         transporter.sodium { colour: radial-gradient(white 40%, #FE44F9); }
         transporter.potassium { colour: radial-gradient(white 40%, #2209E1); }
 

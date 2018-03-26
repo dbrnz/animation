@@ -346,9 +346,24 @@ class PMRChannel(_TransporterElement):
             <stop offset="95.06%" stop-color="#FEE12A"/>
             <stop offset="100%"   stop-color="#FEDE12"/>
         </radialGradient>
-        <path id="{ID_BASE}_element" fill="url(#{ID_BASE}_fill)"  transform="translate(-22, -25) scale(1.1)"
+        <path id="{ID_BASE}_element" fill="url(#{ID_BASE}_fill)"  transform="scale(1.1) translate(-22, -25)"
             stroke="#010101" stroke-width="2" stroke-linejoin="miter"
-            d="M0,0 c0,-25 15,-30 22,-12 c7,-18 22,-13 22,12 v50 c0,25 -15,30 -22,12 c-7,18 -22,13 -22,-12 v-50 z"/>"""
+            d="M0,0 c0,-25 15,-30 22,-12 c7,-18 22,-13 22,12 v50 c0,25 -15,30 -22,12 c-7,18 -22,13 -22,-12 v-50 z"/>
+        <marker id="{ID_BASE}_arrow" orient="auto" style="overflow: visible">
+            <path fill="010101" transform="rotate(90) translate(0, 0) scale(0.5)"
+                  d="M0,0l5,3.1l0.1-0.2l-3.3-8.2l-1.9-8.6l-1.9,8.6l-3.3,8.2l0.1,0.2l5-3.1z"/>
+        </marker>
+        <g id="{ID_BASE}_in_element">
+          <path stroke="#010101" stroke-width="2" d="M0,-65 v130" marker-end="url(#{ID_BASE}_arrow)"/>
+          <use xlink:href="#{ID_BASE}_element"/>
+        </g>
+        <g id="{ID_BASE}_out_element">
+          <use xlink:href="#{ID_BASE}_in_element" transform="rotate(180)"/>
+        </g>
+        <g id="{ID_BASE}_inout_element">
+          <use xlink:href="#{ID_BASE}_in_element"/>
+          <use xlink:href="#{ID_BASE}_in_element" transform="rotate(180)"/>
+        </g>"""
 
     HEIGHT = 80
     WIDTH = 44
@@ -358,8 +373,28 @@ class PMRChannel(_TransporterElement):
 
 # -----------------------------------------------------------------------------
 
+class PMRChannelIn(PMRChannel):
+    def __init__(self, id, coords, rotation, height=0.6*PMRChannel.HEIGHT, id_base='pmr_channel'):
+        super().__init__(id, coords, rotation, height, id_base)
+        self._id_base = self._id_base + '_in'
 
 class ArrowDefine(object):
+# -----------------------------------------------------------------------------
+
+class PMRChannelOut(PMRChannel):
+    def __init__(self, id, coords, rotation, height=0.6*PMRChannel.HEIGHT, id_base='pmr_channel'):
+        super().__init__(id, coords, rotation, height, id_base)
+        self._id_base = self._id_base + '_out'
+
+# -----------------------------------------------------------------------------
+
+class PMRChannelInOut(PMRChannel):
+    def __init__(self, id, coords, rotation, height=0.6*PMRChannel.HEIGHT, id_base='pmr_channel'):
+        super().__init__(id, coords, rotation, height, id_base)
+        self._id_base = self._id_base + '_inout'
+
+# -----------------------------------------------------------------------------
+
     def __init__(self, colour):
         self._colour = colour
 
