@@ -204,7 +204,10 @@ class Transporter(Element, PositionedElement):
                           0 if self.compartment_side in layout.HORIZONTAL_BOUNDARIES else 90))
             svg.append(element.svg())
             svg.append('</g>')
-        svg.extend(super().svg())
+            radius = layout.ELEMENT_RADIUS
+        else:
+            radius = layout.TRANSPORTER_RADIUS
+        svg.extend(super().svg(radius))
         return svg
 
 # -----------------------------------------------------------------------------

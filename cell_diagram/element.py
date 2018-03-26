@@ -179,12 +179,13 @@ class PositionedElement(object):
             return ('  <text text-anchor="middle" dominant-baseline="central"'
                     ' x="{}" y="{}">{}</text>').format(x, y, self.label)
 
+    def svg(self, radius=layout.ELEMENT_RADIUS):
         svg = ['<g{}{}>'.format(self.id_class(), self.display())]
         if self.position.has_coords:
             (x, y) = self.coords
             svg.append(('  <circle r="{}" cx="{}" cy="{}"'
                         ' stroke="{}" stroke-width="{}" fill="{}"/>')
-                       .format(layout.ELEMENT_RADIUS, x, y, self.stroke, self.stroke_width, self.colour))
+                       .format(radius, x, y, self.stroke, self.stroke_width, self.colour))
             svg.append(self.label_as_svg())
         svg.append('</g>')
         return svg
