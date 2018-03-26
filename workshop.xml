@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+ !
+ !  Cell Diagramming Language
+ !
+ !  Copyright (c) 2018  David Brooks
+ !
+ !  Licensed under the Apache License, Version 2.0 (the "License");
+ !  you may not use this file except in compliance with the License.
+ !  You may obtain a copy of the License at
+ !
+ !      http://www.apache.org/licenses/LICENSE-2.0
+ !
+ !  Unless required by applicable law or agreed to in writing, software
+ !  distributed under the License is distributed on an "AS IS" BASIS,
+ !  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ !  See the License for the specific language governing permissions and
+ !  limitations under the License.
+ !
+ !-->
+
+<cell-diagram xmlns="http://www.cellml.org/celldl/1.0#">
+
+    <diagram>
+        <quantity id="q1"  class="sodium"    label="Na+"/>
+        <quantity id="q3"  class="potassium" label="$\text{K}^+$"/>
+
+        <compartment id="cell" class="cell">
+            <transporter id="Na"  class="sodium channel" label="$\text{I}_\text{Na}$"/>
+            <transporter id="NKE" class="sodium exchanger"/>
+            <transporter id="K"   class="potassium channel" label="$\text{I}_\text{K}$"/>
+
+            <quantity id="q2"  class="sodium"/>
+            <quantity id="q4"  class="potassium"/>
+        </compartment>
+    </diagram>
+
+    <bond-graph>
+        <potential id="u1"  quantity="q1"/>
+        <potential id="u2"  quantity="q2"/>
+        <potential id="u3"  quantity="q3"/>
+        <potential id="u4"  quantity="q4"/>
+
+        <flow id="v1" transporter="Na">
+            <flux from="u1" to="u2" class="sodium"/>
+        </flow>
+        <flow id="v2" transporter="NKE">
+            <flux from="u2" to="u1" count="3" class="sodium"/>
+            <flux from="u3" to="u4"           class="potassium"/>
+        </flow>
+        <flow id="v3" transporter="K">
+            <flux from="u3" to="u4" class="potassium"/>
+        </flow>
+    </bond-graph>
+
+    <style>
+        diagram {
+            width: 800;            /* SVG `pixel` units */
+            height: 500;           /* SVG `pixel` units */
+            flow-offset: 60x;      /* From its transporter */
+            quantity-offset: 80x;  /* From its potential   */
+        }
+
+        #cell {
+            size: (50%, 50%);
+            position: (40%, 40%);
+            svg-element: CellMembrane;
+        }
+
+        /* Channel glyph */
+        .channel {
+            svg-element: PMRChannel;
+        }
+
+        /* Colours of elemenst */
+        .sodium {
+            colour: #FE44F9;
+            stroke: #FE44F9;
+            }
+        quantity.sodium { colour: radial-gradient(white 20%, #FEA3FB); }
+        transporter.sodium { colour: radial-gradient(white 40%, #FE44F9); }
+        .potassium {
+            colour: #2209E1;
+            stroke: #2209E1;
+        }
+        quantity.potassium { colour: radial-gradient(white 20%, #9C9FF5); }
+        transporter.potassium { colour: radial-gradient(white 40%, #2209E1); }
+        flow {
+            colour: radial-gradient(#ABFF9E, #D5FFD5);
+            text-colour: #059996;
+        }
+        potential {
+            colour: radial-gradient(#FF9299, #FFFDEE);
+            text-colour: #D93300;
+        }
+
+        /* Position transporters on compartment boundary */
+        #Na { position: top 30%; }
+        #NKE { position: top 50%; }
+        #K { position: top 70%; }
+
+        /* Position potentials wrt transporters */
+        #u1 { position: 180 above #Na; }
+        #u2 { position: 150 below #Na; }
+        #u3 { position: 180 above #K; }
+        #u4 { position: 150 below #K; }
+
+        /* Quantity positioning by default is wrt potentials */
+        #q1 { position: above; }
+        #q3 { position: above; }
+        #q2 { position: below; }
+        #q4 { position: below; }
+
+        /* Flow positioning is by default wrt transporters */
+        #v1 { position: above; }
+        #v2 { position: above; }
+        #v3 { position: above; }
+
+    </style>
+
+</cell-diagram>
