@@ -378,7 +378,6 @@ class PMRChannelIn(PMRChannel):
         super().__init__(id, coords, rotation, height, id_base)
         self._id_base = self._id_base + '_in'
 
-class ArrowDefine(object):
 # -----------------------------------------------------------------------------
 
 class PMRChannelOut(PMRChannel):
@@ -414,7 +413,6 @@ class PMRChannelInOut(PMRChannel):
 
 # -----------------------------------------------------------------------------
 
-
 class Arrow(object):
     _arrows_to_id = {}
     _next_id = 0
@@ -426,7 +424,7 @@ class Arrow(object):
 
     @classmethod
     def url(cls, colour):
-        a = ArrowDefine(colour)
+        a = _ArrowDefine(colour)
         id = cls._arrows_to_id.get(a, None)
         if id is None:
             id = cls.next_id()
