@@ -91,15 +91,15 @@
             </compartment>
 
             <compartment id="mitochrondion" class="organelle mitochondrion">
-                <transporter id="m_NCE"  class="sodium atp exchanger"  label="$\text{NCE}$"/>
-                <transporter id="m_NHE"  class="hydrogen exchanger"    label="$\text{NHE}$"/>
-                <transporter id="m_KHE"  class="hydrogen exchanger"    label="$\text{KHE}$"/>
-                <transporter id="m_CI"   class="mitochrondial-complex" label="$\text{CI}$"/>
-                <transporter id="m_CIII" class="mitochrondial-complex" label="$\text{CIII}$"/>
-                <transporter id="m_CIV"  class="mitochrondial-complex" label="$\text{CIV}$"/>
-                <transporter id="m_CII"  class="mitochrondial-complex" label="$\text{CII}$"/>
-                <transporter id="m_K"    class="potassium diffuser"    label="$\text{K}$"/>
-                <transporter id="m_Ca"   class="calcium diffuser"      label="$\text{Ca}$"/>
+                <transporter id="m_NCE"  class="sodium atp exchanger"  label="NCE"/>
+                <transporter id="m_NHE"  class="hydrogen exchanger"    label="NHE"/>
+                <transporter id="m_KHE"  class="hydrogen exchanger"    label="KHE"/>
+                <transporter id="m_CI"   class="mitochrondial-complex" label="CI"/>
+                <transporter id="m_CIII" class="mitochrondial-complex" label="CIII"/>
+                <transporter id="m_CIV"  class="mitochrondial-complex" label="CIV"/>
+                <transporter id="m_CII"  class="mitochrondial-complex" label="CII"/>
+                <transporter id="m_K"    class="potassium diffuser"    label="K"/>
+                <transporter id="m_Ca"   class="calcium diffuser"      label="Ca"/>
 
                 <quantity id="q23" class="calcium"   label="$\text{q}_{23}^{[\text{Ca}^{2+}]_\text{i}}$"/>
                 <quantity id="q3"  class="sodium"    label="$\text{q}_3^{[\text{Na}^+]_\text{i}}$"/>
