@@ -263,7 +263,7 @@
         }
 
         #cell {
-            size: (70%, 60%);
+            size: (70%, 70%);
             position: (20%, 25%);
             /* Also `membrane: CellMembrane dashed #888;` */
             /* svg-element: CellMembrane #2B90CF #C2DDF3;  / * class name followed by class specific parameters */
@@ -273,8 +273,8 @@
         }
 
         #mitochrondion {
-            size: (30%, 30%);
-            position: (50%, 55%);
+            size: (45%, 30%);
+            position: (45%, 55%);
             svg-element: Mitochrondion;
             svg-colour: #763693;
         }
@@ -287,8 +287,8 @@
         }
 
         #atp {
-            size: (15%, 40%);
-            position: (85%, 5%);
+            size: (15%, 35%);
+            position: (82%, 5%);
             svg-element: RoundedRectangle;
             svg-colour: black;
             svg-line: dashed;
@@ -410,7 +410,6 @@
         #u12 { position:  60 below #Cl; }
         #u13 { position: 5x right #NHE, 100 above #NHE; }
         #u14 { position: 5x right #NHE, 200 below #NHE; }
-        #u15 { position: right #u6, below #u14; }
 
         #q2 { position: below; }
         #q5 { position: below; }
@@ -450,16 +449,17 @@
         /* Metabolic elements */
 
         #q24 { position: above; }
-        #u24 { position: (15%, 50%); }
-        #q25 { position: (85%, 15%); }
+        #u24 { position: (20%, 50%); }
+        #q25 { position: (80%, 15%); }
         #u25 { position: below; }
-        #q26 { position: (85%, 85%); }
+        #q26 { position: (80%, 85%); }
         #u26 { position: above; }
 
 
         /* Sarcoplasmic reticulum elements */
 
         #SERCA { position: top 35%; }
+        #RyR { position: left 40%; }  /* or set at #CaL and have box top 40% above */
         #q21 { position: below; }
         #u21 { position: right #RyR, below #SERCA; }
         #q22 { position: below; }
@@ -510,9 +510,10 @@
         #q6 { position: below; }
         #q15 { position: right; }
 
-        #u23 { position: 60 below #m_Ca #m_NCE; }
-        #u3 { position:  60 below #m_NCE #m_NHE; }
-        #u6 { position:  60 below #m_K #m_KHE; }
+        #u23 { position: 100 below #m_Ca #m_NCE; }
+        #u3 { position:  100 below #m_NCE #m_NHE; }
+        #u6 { position:  100 below #m_K #m_KHE; }
+        #u15 { position: right #u6, below #u14; }
 
         #u16 { position:  60 left #Ca_b; }
         #u17 { position:  50 right #Ca_b; }
