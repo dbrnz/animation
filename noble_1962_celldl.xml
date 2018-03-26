@@ -11,23 +11,24 @@
 <!-- could have quantities/potentials with `display: none` and draw flux lines -->
 
     </diagram>
+
     <bond-graph>
         <flow id="I_K" transporter="K" label="$\text{I}_\text{K}$"/>
         <flow id="I_Na" transporter="Na" label="$\text{I}_\text{Na}$"/>
-        <flow id="I_Leak" transporter="Leak" label="$\text{I}_\text{Leak}$"/>
+        <flow id="I_Leak" transporter="Leak" label="$\text{I}_\text{L}$"/>
     </bond-graph>
+
     <style>
         diagram {
             width: 600;           /* SVG `pixel` units */
             height: 400;          /* SVG `pixel` units */
-            flow-offset: 80x;     /* From its transporter */
+            flow-offset: 100x;     /* From its transporter */
         }
         #cell {
-            size: (60%, 60%);
-            position: (20%, 20%);
+            size: (60%, 50%);
+            position: (30%, 20%);
             svg-element: CellMembrane;
         }
-
         .channel {
             svg-element: PMRChannelInOut;
             colour: none;
@@ -45,11 +46,12 @@
 */
         flow { colour: none; }
 
+        /* Position channels on boundary */
         #K { position:  top 25%; }
         #Na { position:  top 75%; }
         #Leak { position:  bottom 50%; }
 
-        /* Default to `outside`; position options are then `outside` and `inside` */
+        /* Position flow elements wrt their channel */
         #I_K { position: above; }
         #I_Na { position: above; }
         #I_Leak { position: below; }
