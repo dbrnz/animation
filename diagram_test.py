@@ -42,7 +42,6 @@ def display_svg(file):
         diagram = parse(root + extension)
         svg = diagram.svg()
     except Exception as msg:
-        raise
         print('ERROR: {}',format(msg))
         sys.exit(1)
     try:
