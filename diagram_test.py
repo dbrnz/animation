@@ -18,6 +18,11 @@
 #
 # -----------------------------------------------------------------------------
 
+import logging
+import os
+
+# -----------------------------------------------------------------------------
+
 from cell_diagram.parser import Parser
 
 # -----------------------------------------------------------------------------
@@ -30,8 +35,11 @@ def parse(file, stylesheet=None):
 # -----------------------------------------------------------------------------
 
 def display_svg(file):
+    (root, extension) =  os.path.splitext(file)
+    if not extension:
+        extension = '.xml'
     try:
-        diagram = parse('{}.xml'.format(file))
+        diagram = parse(root + extension)
         svg = diagram.svg()
     except Exception as msg:
         raise
@@ -42,17 +50,24 @@ def display_svg(file):
         browser = oc.browserWebView()
         browser.setContent(svg, "image/svg+xml")
     except ImportError:
-        f = open('{}.svg'.format(file), 'w')
+        f = open(root + '.svg', 'w')
         f.write(svg)
         f.close()
 
 
 if __name__ == '__main__':
-    import sys
+    import argparse
 
-    import logging
-    # logging.getLogger().setLevel(logging.DEBUG)
+    parser = argparse.ArgumentParser(description='Generate SVG from a CellDL description.')
+    parser.add_argument('-d', '--debug', action='store_true',
+                        help='show debugging')
+    parser.add_argument('celldl', metavar='CELLDL_FILE',
+                        help='the CellDl file')
+    args = parser.parse_args()
 
-    display_svg('cell_diagram')
+    if args.debug:
+        logging.getLogger().setLevel(logging.DEBUG)
+
+    display_svg(args.celldl)
 
 # -----------------------------------------------------------------------------
