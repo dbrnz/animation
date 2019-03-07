@@ -331,7 +331,6 @@ class ElementChildren(object):
             if not isinstance(e.etree_element, etree._Element):
                 continue
             yield ElementWrapper(e, self._stylesheets)
-        raise StopIteration
 
 # -----------------------------------------------------------------------------
 
