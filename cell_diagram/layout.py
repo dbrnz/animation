@@ -228,7 +228,7 @@ class Position(object):
         :return: tuple(tuple(x, y), index) where index == 0 means
                  horizontal and 1 means vertical.
         '''
-        coords = self.centroid(dependencies)
+        coords = Position.centroid(dependencies)
         index = Position._orientation[reln]
         if index >= 0:
             adjust = unit_converter.pixels(offset, index, False)
