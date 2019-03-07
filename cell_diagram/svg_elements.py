@@ -394,6 +394,7 @@ class PMRChannelInOut(PMRChannel):
 
 # -----------------------------------------------------------------------------
 
+class ArrowDefine_(object):
     def __init__(self, colour):
         self._colour = colour
 
@@ -424,7 +425,7 @@ class Arrow(object):
 
     @classmethod
     def url(cls, colour):
-        a = _ArrowDefine(colour)
+        a = ArrowDefine_(colour)
         id = cls._arrows_to_id.get(a, None)
         if id is None:
             id = cls.next_id()
