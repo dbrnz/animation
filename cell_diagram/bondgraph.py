@@ -68,10 +68,10 @@ class BondGraph(Element):
             svg.append(svg_line(geo.LineString([p.coords, q.coords]),
                                 q.stroke if q.stroke != 'none' else '#808080',
                                 display=self.display()))
-        # Link potentials via flows and fluxes
+        # Link potentials via flows and their components
         for flow in self.flows:
-            for flux in flow.fluxes:
-                svg.extend(flux.svg())
+            for component in flow.components:
+                svg.extend(component.svg())
         # Then symbols
         for p, q in self.potentials.items():
             svg.extend(p.svg())
@@ -85,49 +85,46 @@ class Flow(Element, PositionedElement):
     def __init__(self, diagram, transporter=None, **kwds):
         self._transporter = diagram.find_element('#' + transporter, dia.Transporter) if transporter else None
         super().__init__(diagram, class_name='Flow', **kwds)
-        self._fluxes = []
-        self._flux_offsets = {}
+        self._components = []
+        self._component_offsets = {}
 
     @property
-    def fluxes(self):
-        return self._fluxes
+    def components(self):
+        return self._components
 
     @property
     def transporter(self):
         return self._transporter
 
-    def add_flux(self, flux):
-        self._fluxes.append(flux)
-        self._flux_offsets[flux] = layout.Point()
+    def add_component(self, component):
+        self._components.append(component)
+        self._component_offsets[component] = layout.Point()
 
-    def flux_offset(self, flux):
-        return self._flux_offsets.get(flux, layout.Point())
+    def component_offset(self, component):
+        return self._component_offsets.get(component, layout.Point())
 
     def parse_geometry(self):
         PositionedElement.parse_geometry(self, default_offset=self.diagram.flow_offset,
                                                default_dependency=self.transporter)
 
     def set_transporter_offsets(self):
-        if self.transporter is not None and len(self.fluxes) > 1:
+        if self.transporter is not None and len(self.components) > 1:
             # Get index of coordinate we want to compare against.
             index = (1 if self.transporter.compartment_side in layout.VERTICAL_BOUNDARIES
                      else 0)
             origin = self.transporter.coords[index]
-            flux_offset = {}
-            num_fluxes = len(self.fluxes)
-            for flux in self.fluxes:
-                offset = flux.from_potential.coords[index] - origin
-                for to in flux.to_potentials:
+            component_offset = {}
+            num_components = len(self.components)
+            for component in self.components:
+                offset = component.from_potential.coords[index] - origin
+                for to in component.to_potentials:
                     offset += (to.coords[index] - origin)
-                flux_offset[flux] = offset/float(1 + len(flux.to_potentials))
-            for n, p in enumerate(sorted(flux_offset.items(), key=operator.itemgetter(1))):
-                self._flux_offsets[p[0]][index] = (self.diagram.unit_converter.pixels(
-                                                      self.transporter.width,
-                                                      index,
-                                                      add_offset=False)
-                                                 *(-0.5 + n/float(num_fluxes - 1)))
+                component_offset[component] = offset/float(1 + len(component.to_potentials))
+            for n, p in enumerate(sorted(component_offset.items(), key=operator.itemgetter(1))):
+                w = self.diagram.unit_converter.pixels(self.transporter.width, index, add_offset=False)
+                self._component_offsets[p[0]][index] = w*(-0.5 + n/float(num_components - 1))
 
-    def get_flow_line(self, flux):
+    def get_flow_line(self, component):
         points = []
         if self.transporter is not None:
             compartment = self.transporter.container.geometry
@@ -143,11 +140,11 @@ class Flow(Element, PositionedElement):
                                                       layout.TRANSPORTER_EXTRA,
                                                       index,
                                                       add_offset=False))
-            offset = self._flux_offsets[flux]
+            offset = self._component_offsets[component]
             # Are the from and flow elements on the same side
             # of the transporter's compartment?
             if (compartment.contains(self.geometry)
-             == compartment.contains(flux.from_potential.geometry)):
+             == compartment.contains(component.from_potential.geometry)):
                 points.extend([offset+self.coords, offset+transporter_end])
             else:
                 points.extend([offset+transporter_end, offset+self.coords])
@@ -157,9 +154,9 @@ class Flow(Element, PositionedElement):
 
 #------------------------------------------------------------------------------
 
-class Flux(Element, PositionedElement):
+class FlowComponent(Element, PositionedElement):
     def __init__(self, diagram, flow, from_=None, to=None, count=1, line=None, **kwds):
-        super().__init__(diagram, class_name='Flux', **kwds)
+        super().__init__(diagram, class_name='FlowComponent', **kwds)
         self._from_potential = diagram.find_element('#' + from_, Potential)
         self._to_potentials = [diagram.find_element('#' + name, Potential) for name in to.split()]
         self._count = int(count)
@@ -185,11 +182,11 @@ class Flux(Element, PositionedElement):
 
     def svg(self):
         svg = []
-        flux_points = self._lines['start'].points(self.from_potential.coords, flow=self._flow)
-        flux_points.extend(self._flow.get_flow_line(self))
+        component_points = self._lines['start'].points(self.from_potential.coords, flow=self._flow)
+        component_points.extend(self._flow.get_flow_line(self))
         for to in self.to_potentials:
             # Can have multiple `to` potentials
-            points = list(flux_points)
+            points = list(component_points)
             points.extend(self._lines['end'].points(to.coords, flow=self._flow, reverse=True))
             line = geo.LineString(points)
             line_style = self.get_style_as_string('line-style', '')

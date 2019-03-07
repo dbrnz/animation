@@ -333,7 +333,7 @@ class Diagram(Container):
 
 
         # Now that we have element positions we can calculate the offsets
-        # of flux lines passing through transporters
+        # of flow component lines passing through transporters
         self.bond_graph.set_offsets()
 
     def svg(self):

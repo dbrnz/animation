@@ -138,119 +138,119 @@
         <potential id="u26" quantity="q26"/>
 
         <flow id="v1" transporter="Na">
-            <flux from="u1" to="u2" class="sodium"/>
+            <component from="u1" to="u2" class="sodium"/>
         </flow>
         <flow id="v2" transporter="Na_b">
-            <flux from="u1" to="u2" class="sodium"/>
+            <component from="u1" to="u2" class="sodium"/>
         </flow>
         <flow id="v3" transporter="pNa">
-            <flux from="u1" to="u2" class="sodium"/>
+            <component from="u1" to="u2" class="sodium"/>
         </flow>
         <flow id="v4" transporter="NKE">
-            <flux from="u2" to="u1" count="3" class="sodium"/>
-            <flux from="u4" to="u5" count="2" class="potassium"/>
+            <component from="u2" to="u1" count="3" class="sodium"/>
+            <component from="u4" to="u5" count="2" class="potassium"/>
         </flow>
         <flow id="v5" transporter="NCE">
-            <flux from="u1" to="u2" count="3" class="sodium"/>
-            <flux from="u17" to="u16" class="calcium"/>
+            <component from="u1" to="u2" count="3" class="sodium"/>
+            <component from="u17" to="u16" class="calcium"/>
         </flow>
         <flow id="v6" transporter="NBC">
-            <flux from="u1" to="u2" class="sodium"/>
-            <flux from="u9" to="u10" class="bicarbonate"/>
+            <component from="u1" to="u2" class="sodium"/>
+            <component from="u9" to="u10" class="bicarbonate"/>
         </flow>
         <flow id="v7" transporter="NHE">
-            <flux from="u14" to="u13" class="hydrogen"/>
-            <flux from="u1" to="u2" class="sodium"/>
+            <component from="u14" to="u13" class="hydrogen"/>
+            <component from="u1" to="u2" class="sodium"/>
         </flow>
         <flow id="v8" transporter="m_NCE">
-            <flux from="u2" to="u3" count="3" class="sodium"/>
-            <flux from="u23" to="u17" class="calcium"/>
+            <component from="u2" to="u3" count="3" class="sodium"/>
+            <component from="u23" to="u17" class="calcium"/>
         </flow>
         <flow id="v9" transporter="m_NHE">
-            <flux from="u3" to="u2" class="sodium"/>
-            <flux from="u14" to="u15" class="hydrogen"/>
+            <component from="u3" to="u2" class="sodium"/>
+            <component from="u14" to="u15" class="hydrogen"/>
         </flow>
 
         <flow id="v10" transporter="K1">
-            <flux from="u4" to="u5" class="potassium"/>
+            <component from="u4" to="u5" class="potassium"/>
         </flow>
         <flow id="v11" transporter="Kr">
-            <flux from="u4" to="u5" class="potassium"/>
+            <component from="u4" to="u5" class="potassium"/>
         </flow>
         <flow id="v12" transporter="Ks">
-            <flux from="u4" to="u5" class="potassium"/>
+            <component from="u4" to="u5" class="potassium"/>
         </flow>
         <flow id="v13" transporter="Katp">
-            <flux from="u4" to="u5" class="potassium"/>
+            <component from="u4" to="u5" class="potassium"/>
         </flow>
         <flow id="v14" transporter="m_KHE">
-            <flux from="u6" to="u5" class="potassium"/>
-            <flux from="u14" to="u15" class="hydrogen"/>
+            <component from="u6" to="u5" class="potassium"/>
+            <component from="u14" to="u15" class="hydrogen"/>
         </flow>
         <flow id="v15" transporter="m_K">
-            <flux from="u5" to="u6" class="potassium"/>
+            <component from="u5" to="u6" class="potassium"/>
         </flow>
         <flow id="v16" transporter="Cl">
-            <flux from="u12" to="u11" class="chloride"/>
+            <component from="u12" to="u11" class="chloride"/>
         </flow>
         <flow id="v17" transporter="CHE">
-            <flux from="u11" to="u12" class="chloride"/>
-            <flux from="u8" to="u7" class="hydroxide"/>
+            <component from="u11" to="u12" class="chloride"/>
+            <component from="u8" to="u7" class="hydroxide"/>
         </flow>
         <flow id="v18" transporter="AE">
-            <flux from="u11" to="u12" class="chloride"/>
-            <flux from="u10" to="u9" class="bicarbonate"/>
+            <component from="u11" to="u12" class="chloride"/>
+            <component from="u10" to="u9" class="bicarbonate"/>
         </flow>
         <flow id="v19" transporter="pCa">
-            <flux from="u17" to="u16" class="calcium"/>
+            <component from="u17" to="u16" class="calcium"/>
         </flow>
         <flow id="v20" transporter="Ca_b">
-            <flux from="u16" to="u17" class="calcium"/>
+            <component from="u16" to="u17" class="calcium"/>
         </flow>
         <flow id="v21" transporter="Ca_t">
-            <flux from="u16" to="u17" class="calcium"/>
+            <component from="u16" to="u17" class="calcium"/>
         </flow>
         <flow id="v22" transporter="CaL">
-            <flux from="u16" to="u18" class="calcium"/>
+            <component from="u16" to="u18" class="calcium"/>
         </flow>
         <flow id="v23" transporter="RyR">
-            <flux from="u21" to="u18" class="calcium"/>
+            <component from="u21" to="u18" class="calcium"/>
         </flow>
         <flow id="v24">
-            <flux from="u18" to="u17" class="calcium"/>
+            <component from="u18" to="u17" class="calcium"/>
         </flow>
         <flow id="v25">
-            <flux from="u17" to="u19" class="calcium dashed"/>
+            <component from="u17" to="u19" class="calcium dashed"/>
         </flow>
         <flow id="v26">
-            <flux from="u17" to="u20" class="calcium dashed"/>
+            <component from="u17" to="u20" class="calcium dashed"/>
         </flow>
         <flow id="v27" transporter="SERCA">
-            <flux from="u17" to="u21" count="2" class="calcium"/>
+            <component from="u17" to="u21" count="2" class="calcium"/>
         </flow>
         <flow id="v28">  <!-- implicit default ?? -->
-            <flux from="u21" to="u22" class="calcium"/>
+            <component from="u21" to="u22" class="calcium"/>
         </flow>
         <flow id="v29" transporter="m_Ca">
-            <flux from="u23" to="u17" class="calcium"/>
+            <component from="u23" to="u17" class="calcium"/>
         </flow>
 
         <!-- flow v30 ?? -->
 
         <flow id="v31" transporter="m_CI">
-            <flux from="u14" to="u15" class="hydrogen"/>
+            <component from="u14" to="u15" class="hydrogen"/>
         </flow>
         <flow id="v32" transporter="m_CIII">
-            <flux from="u14" to="u15" class="hydrogen"/>
+            <component from="u14" to="u15" class="hydrogen"/>
         </flow>
         <flow id="v33" transporter="m_CIV">
-            <flux from="u14" to="u15" class="hydrogen"/>
+            <component from="u14" to="u15" class="hydrogen"/>
         </flow>
         <flow id="v34" transporter="m_CII">
-            <flux from="u14" to="u15" class="hydrogen"/>
+            <component from="u14" to="u15" class="hydrogen"/>
         </flow>
         <flow id="v35">
-            <flux from="u24" to="u25 u26" class="metabolic"/>
+            <component from="u24" to="u25 u26" class="metabolic"/>
         </flow>
     </bond-graph>
 
@@ -478,13 +478,13 @@
         }
 
         /* We don't need to use ids to locate elements */
-        flow[transporter="m_NCE"] > flux[from="u2"][to="u3"] {
+        flow[transporter="m_NCE"] > component[from="u2"][to="u3"] {
             line-start: -56 until-x 20 left #NKE, 0 until-x #m_NCE;
         }
-        flow[transporter="m_NCE"] > flux[from="u23"][to="u17"] {
+        flow[transporter="m_NCE"] > component[from="u23"][to="u17"] {
             line-end: 0 until-x #m_NCE offset (0, -3);
         }
-        flow[transporter="m_Ca"] > flux[from="u23"][to="u17"] {
+        flow[transporter="m_Ca"] > component[from="u23"][to="u17"] {
             line-end: 0 until-x #m_Ca offset (0, 3);
         }
 
@@ -494,7 +494,7 @@
         flow[transporter="m_NHE"] {
             position: above;
         }
-        flow[transporter="m_NHE"] > flux[from="u3"][to="u2"] {
+        flow[transporter="m_NHE"] > component[from="u3"][to="u2"] {
             line-end: -52 until-x 20 left #NKE, 0 until-x #m_NHE;
             }
 
@@ -521,11 +521,11 @@
 
         #u19 { position:  45% below #K1; }
         #u20 { position:  40 below #u19; }
-        flow[id="v25"] > flux[from="u17"][to="u19"] {
+        flow[id="v25"] > component[from="u17"][to="u19"] {
             line-start: until #v25;
             line-style: dashed;
             }
-        flow[id="v26"] > flux[from="u17"][to="u20"] {
+        flow[id="v26"] > component[from="u17"][to="u20"] {
             line-start: until #v26;
             line-style: dashed;
             }
@@ -539,14 +539,14 @@
         flow[transporter="NCE"] {
             position: left;
             }
-        flow[transporter="NCE"] > flux[from="u1"][to="u2"] {
+        flow[transporter="NCE"] > component[from="u1"][to="u2"] {
             line-start: 195 until-x #u16 #v5, -90 until-y #NCE;
             }
 
         flow[transporter="NBC"] {
             position: above;
             }
-        flow[transporter="NBC"] > flux[from="u1"][to="u2"] {
+        flow[transporter="NBC"] > component[from="u1"][to="u2"] {
             line-start: 48 until-x #pNa #NKE, 0 until-x #NBC;
             line-end: -36 until-x 20 left #NKE, 0 until-x #NBC;
             }
@@ -554,7 +554,7 @@
         flow[transporter="NHE"] {
             position: above;
             }
-        flow[transporter="NHE"] > flux[from="u1"][to="u2"] {
+        flow[transporter="NHE"] > component[from="u1"][to="u2"] {
             line-start: 50 until-x #pNa #NKE, 0 until-x #NHE;
             line-end: -39 until-x 20 left #NKE, 0 until-x #NHE;
             }
@@ -567,14 +567,14 @@
         flow[transporter="m_KHE"] {
             position: above;
             }
-        flow[transporter="m_KHE"] > flux[from="u6"][to="u5"] {
+        flow[transporter="m_KHE"] > component[from="u6"][to="u5"] {
             line-end: -47 until-x 10 right #Katp, 0 until-x #m_KHE;
             }
 
         flow[transporter="m_K"] {
             position: above;
             }
-        flow[transporter="m_K"] > flux[from="u5"][to="u6"] {
+        flow[transporter="m_K"] > component[from="u5"][to="u6"] {
             line-start: -50 until-x 10 right #Katp, 0 until-x #m_K;
             }
 
@@ -588,7 +588,7 @@
         flow[transporter="CaL"] {
             position: left;
             }
-        flow[transporter="CaL"] > flux[from="u16"][to="u18"] {
+        flow[transporter="CaL"] > component[from="u16"][to="u18"] {
             line-start: -90 until-y #CaL;
             }
 

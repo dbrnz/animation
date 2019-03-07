@@ -392,21 +392,21 @@ class Parser(object):
         container = flow.transporter.container if flow.transporter is not None else None
         for e in ElementChildren(element, self._stylesheets):
             self._last_element = e
-            if e.tag == CellDL_namespace('flux'):
+            if e.tag == CellDL_namespace('component'):
                 if 'from_' not in e.attributes or 'to' not in e.attributes:
-                    raise SyntaxError("Flux requires 'from' and 'to' potentials.")
-                flux = bg.Flux(self._diagram, flow, style=e.style, **e.attributes)
+                    raise SyntaxError("Flow component requires 'from' and 'to' potentials.")
+                component = bg.FlowComponent(self._diagram, flow, style=e.style, **e.attributes)
                 if flow.transporter is None:
                     if container is None:
-                        container = flux.from_potential.container
-                    elif container != flux.from_potential.container:
+                        container = component.from_potential.container
+                    elif container != component.from_potential.container:
                         raise ValueError("All 'to' potentials must be in the same container.")
-                    for p in flux.to_potentials:
+                    for p in component.to_potentials:
                         if container != p.container:
                             raise ValueError("All 'from' and 'to' potentials must be in the same container.")
-                flux.set_container(container)
-                self._diagram.add_element(flux)    ## Add to container...
-                flow.add_flux(flux)
+                component.set_container(container)
+                self._diagram.add_element(component)    ## Add to container...
+                flow.add_component(component)
             else:
                 raise SyntaxError
         self._bond_graph.add_flow(flow)

@@ -431,7 +431,7 @@ class Line(object):
             trans_coords = flow.transporter.coords
             if (trans_coords[0] == points[-1][0]
              or trans_coords[1] == points[-1][1]):
-                points[-1] += flow.flux_offset(self._element)
+                points[-1] += flow.component_offset(self._element)
         return points if not reverse else list(reversed(points))
 
 #------------------------------------------------------------------------------
