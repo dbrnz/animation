@@ -65,7 +65,8 @@ class BondGraph(Element):
         svg = [ ]
         # First draw all lines
         for p, q in self.potentials.items():
-            svg.append(svg_line(geo.LineString([p.coords, q.coords]),
+            svg.append(svg_line(FlowComponent.trimmed_path(
+                                    geo.LineString([p.coords, q.coords]), p, q),
                                 q.stroke if q.stroke != 'none' else '#808080',
                                 display=self.display()))
         # Link potentials via flows and their components
@@ -180,6 +181,11 @@ class FlowComponent(Element, PositionedElement):
         for line in self._lines.values():
             line.parse()
 
+
+    @staticmethod
+    def trimmed_path(path, from_element, to_element):
+        return path.difference(from_element.geometry()).difference(to_element.geometry())
+
     def svg(self):
         svg = []
         component_points = self._lines['start'].points(self.from_potential.coords, flow=self._flow)
@@ -188,7 +194,7 @@ class FlowComponent(Element, PositionedElement):
             # Can have multiple `to` potentials
             points = list(component_points)
             points.extend(self._lines['end'].points(to.coords, flow=self._flow, reverse=True))
-            line = geo.LineString(points)
+            line = FlowComponent.trimmed_path(geo.LineString(points), self.from_potential, to)
             line_style = self.get_style_as_string('line-style', '')
             if (self.count % 2) == 0:  # An even number of lines
                 for n in range(self.count // 2):
