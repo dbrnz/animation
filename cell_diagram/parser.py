@@ -390,12 +390,16 @@ class Parser(object):
         flow = bg.Flow(self._diagram, style=element.style, **element.attributes)
         self._diagram.add_element(flow)  ## Add to container?? But does flow have a container??
         container = flow.transporter.container if flow.transporter is not None else None
-        for e in ElementChildren(element, self._stylesheets):
+        for n, e in enumerate(ElementChildren(element, self._stylesheets)):
             self._last_element = e
             if e.tag == CellDL_namespace('component'):
                 if 'from_' not in e.attributes or 'to' not in e.attributes:
                     raise SyntaxError("Flow component requires 'from' and 'to' potentials.")
-                component = bg.FlowComponent(self._diagram, flow, style=e.style, **e.attributes)
+                if 'id' in e.attributes:
+                    id = e.attributes.pop('id')
+                else:
+                    id = '{}/{}'.format(flow.id[1:], n+1)
+                component = bg.FlowComponent(self._diagram, flow, style=e.style, id=id, **e.attributes)
                 if flow.transporter is None:
                     if container is None:
                         container = component.from_potential.container
