@@ -127,10 +127,10 @@ class Flow(Element, PositionedElement):
     def get_flow_line(self, component):
         points = []
         if self.transporter is not None:
-            compartment = self.transporter.container.geometry
+            compartment = self.transporter.container.geometry()
             side = self.transporter.compartment_side
             index = 0 if side in layout.VERTICAL_BOUNDARIES else 1
-            if compartment.contains(self.geometry):
+            if compartment.contains(self.geometry()):
                 sign = -1 if side in ['top', 'left'] else 1
             else:
                 sign = 1 if side in ['top', 'left'] else -1
@@ -143,8 +143,8 @@ class Flow(Element, PositionedElement):
             offset = self._component_offsets[component]
             # Are the from and flow elements on the same side
             # of the transporter's compartment?
-            if (compartment.contains(self.geometry)
-             == compartment.contains(component.from_potential.geometry)):
+            if (compartment.contains(self.geometry())
+             == compartment.contains(component.from_potential.geometry())):
                 points.extend([offset+self.coords, offset+transporter_end])
             else:
                 points.extend([offset+transporter_end, offset+self.coords])

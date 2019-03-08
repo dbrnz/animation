@@ -152,10 +152,9 @@ class PositionedElement(object):
     def coords(self):
         return self._position.coords
 
-    @property
-    def geometry(self):
+    def geometry(self, radius=layout.ELEMENT_RADIUS):
         if self._geometry is None and self.position.has_coords:
-            self._geometry = geo.Point(self.coords)
+            self._geometry = geo.Point(self.coords).buffer(radius)
         return self._geometry
 
     def resolve_position(self):

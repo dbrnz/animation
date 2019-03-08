@@ -46,7 +46,6 @@ class Container(Element, PositionedElement):
     def unit_converter(self):
         return self._unit_converter
 
-    @property
     def geometry(self):
         if self._geometry is None and self.position.has_coords:
             self._geometry = geo.box(self.coords[0], self.coords[1],  # Top left corner
@@ -125,6 +124,13 @@ class Quantity(Element, PositionedElement):
     def set_potential(self, potential):
         self._potential = potential
 
+    def geometry(self):
+        if self._geometry is None and self.position.has_coords:
+            (x, y) = self.coords
+            (w, h) = (layout.QUANTITY_WIDTH, layout.QUANTITY_HEIGHT)
+            self._geometry = affine.scale(geo.box(x-0.125, y-0.125, x+0.125, y+0.125).buffer(0.375), w, h)
+        return self._geometry
+
     def parse_geometry(self):
         PositionedElement.parse_geometry(self, default_offset=self.diagram.quantity_offset,
                                                default_dependency=self._potential)
@@ -158,6 +164,14 @@ class Transporter(Element, PositionedElement):
     @property
     def width(self):
         return self._width
+
+    def geometry(self):
+        element_class = self.get_style_as_string('svg-element')
+        if element_class in dir(svg_elements):
+            radius = layout.ELEMENT_RADIUS
+        else:
+            radius = layout.TRANSPORTER_RADIUS
+        return super().geometry(radius)
 
     def parse_geometry(self):
         """
