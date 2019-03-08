@@ -26,6 +26,7 @@ import shapely.geometry as geo
 
 # -----------------------------------------------------------------------------
 
+from . import geojson as GeoJSON
 from . import layout
 from . import parser
 from . import svg_elements
@@ -370,5 +371,14 @@ class Diagram(Container):
         svg.append('</defs>')
         svg.append('</svg>')
         return '\n'.join(svg)
+
+    def geojson(self):
+        features = []
+        features.extend(self.bond_graph.geojson())
+        for q in self._quantities:
+            features.append(q.geojson())
+        for t in self._transporters:
+            features.append(t.geojson())
+        return GeoJSON.FeatureCollection(features)
 
 # -----------------------------------------------------------------------------

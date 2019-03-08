@@ -26,6 +26,7 @@ import shapely.geometry as geo
 #------------------------------------------------------------------------------
 
 from . import diagram as dia
+from . import geojson as GeoJSON
 from . import layout
 from . import parser
 from .element import Element, PositionedElement
@@ -79,6 +80,29 @@ class BondGraph(Element):
         for flow in self.flows:
             svg.extend(flow.svg())
         return svg
+
+    def geojson(self):
+        features = [ ]
+        # First draw all lines
+        for p, q in self.potentials.items():
+            features.append(
+                GeoJSON.Feature(
+                    FlowComponent.trimmed_path(
+                        geo.LineString([p.coords, q.coords]), p, q),
+                    id='{}-{}'.format(p.id, q.id[1:])))
+        # Link potentials via flows and their components
+        for flow in self.flows:
+            for component in flow.components:
+                ## All these components go through the flow's transporter
+                ## so check from/to positions to offset line when it goes
+                ## through the transporter and flow...
+                features.append(component.geojson())
+        # Then symbols
+        for p, q in self.potentials.items():
+            features.append(p.geojson())
+        for flow in self.flows:
+            features.append(flow.geojson())
+        return features
 
 #------------------------------------------------------------------------------
 
@@ -212,6 +236,28 @@ class FlowComponent(Element, PositionedElement):
                                         True, style=line_style))
                 svg.append(svg_line(line, self.colour, style=line_style))
         return svg
+
+    def geojson(self):
+        lines = []
+        component_points = self._lines['start'].points(self.from_potential.coords, flow=self._flow)
+        component_points.extend(self._flow.get_flow_line(self))
+        for to in self.to_potentials:
+            # Can have multiple `to` potentials
+            points = list(component_points)
+            points.extend(self._lines['end'].points(to.coords, flow=self._flow, reverse=True))
+            line = FlowComponent.trimmed_path(geo.LineString(points), self.from_potential, to)
+            if (self.count % 2) == 0:  # An even number of lines
+                for n in range(self.count // 2):
+                    offset = (n + 0.5)*LINE_OFFSET
+                    lines.append(line.parallel_offset(offset, 'left', join_style=2))
+                    lines.append(line.parallel_offset(offset, 'right', join_style=2))
+            else:
+                for n in range(self.count // 2):
+                    offset = (n + 1)*LINE_OFFSET
+                    lines.append(line.parallel_offset(offset, 'left', join_style=2))
+                    lines.append(line.parallel_offset(offset, 'right', join_style=2))
+                lines.append(line)
+        return GeoJSON.Feature(geo.MultiLineString(lines), id=self.id)
 
 #------------------------------------------------------------------------------
 

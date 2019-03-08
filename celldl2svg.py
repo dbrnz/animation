@@ -24,6 +24,7 @@ import os
 # -----------------------------------------------------------------------------
 
 from cell_diagram.parser import Parser
+import cell_diagram.geojson as GeoJSON
 
 # -----------------------------------------------------------------------------
 
@@ -34,16 +35,13 @@ def parse(file, stylesheet=None):
 
 # -----------------------------------------------------------------------------
 
-def display_svg(file):
+def display_svg(file, geoson=False):
     (root, extension) =  os.path.splitext(file)
     if not extension:
         extension = '.xml'
-    try:
-        diagram = parse(root + extension)
-        svg = diagram.svg()
-    except Exception as msg:
-        print('ERROR: {}',format(msg))
-        sys.exit(1)
+    diagram = parse(root + extension)
+    svg = diagram.svg()
+
     try:
         import OpenCOR as oc
         browser = oc.browserWebView()
@@ -53,6 +51,11 @@ def display_svg(file):
         f.write(svg)
         f.close()
 
+    if geoson:
+        f = open(root + '.json', 'w')
+        f.write(GeoJSON.dumps(diagram.geojson(), indent=2))
+        f.close()
+
 
 if __name__ == '__main__':
     import argparse
@@ -60,6 +63,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Generate SVG from a CellDL description.')
     parser.add_argument('-d', '--debug', action='store_true',
                         help='show debugging')
+    parser.add_argument('--geojson', action='store_true',
+                        help='output features as GeoJSON')
     parser.add_argument('celldl', metavar='CELLDL_FILE',
                         help='the CellDl file')
     args = parser.parse_args()
@@ -67,6 +72,6 @@ if __name__ == '__main__':
     if args.debug:
         logging.getLogger().setLevel(logging.DEBUG)
 
-    display_svg(args.celldl)
+    display_svg(args.celldl, args.geojson)
 
 # -----------------------------------------------------------------------------

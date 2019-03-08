@@ -23,6 +23,7 @@ import shapely.geometry as geo
 # -----------------------------------------------------------------------------
 
 from . import diagram
+from . import geojson as GeoJSON
 from . import layout
 from . import parser
 from . import svg_elements
@@ -188,6 +189,9 @@ class PositionedElement(object):
             svg.append(self.label_as_svg())
         svg.append('</g>')
         return svg
+
+    def geojson(self):
+        return GeoJSON.Feature(self.geometry(), id=self.id)
 
 
 
