@@ -20,8 +20,9 @@
 
 from collections import OrderedDict
 
-import shapely.geometry as geo
 import networkx as nx
+import shapely.affinity as affine
+import shapely.geometry as geo
 
 # -----------------------------------------------------------------------------
 
