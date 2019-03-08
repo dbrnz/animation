@@ -517,7 +517,7 @@ class Parser(object):
 
         logging.debug('')
 
-        # For all fluxes
+        # For all flow components
         # parse 'line' attribute
         # assign line segments
 
