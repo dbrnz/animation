@@ -217,20 +217,25 @@ class FlowComponent(Element, PositionedElement):
 
 class Potential(Element, PositionedElement):
     def __init__(self, diagram, quantity=None, **kwds):
-        self._quantity = diagram.find_element('#' + quantity, dia.Quantity)
-        self._quantity.set_potential(self)
-        super().__init__(self._quantity.container, class_name='Potential', **kwds)
+        if quantity is not None:
+            self._quantity = diagram.find_element('#' + quantity, dia.Quantity)
+            self._quantity.set_potential(self)
+            super().__init__(self._quantity.container, class_name='Potential', **kwds)
+        else:
+            self._quantity = None
+            super().__init__(None, class_name='Potential', **kwds)
 
     @property
     def quantity_id(self):
-        return self._quantity.id
+        return self._quantity.id if self._quantity else None
 
     @property
     def quantity(self):
         return self._quantity
 
     def parse_geometry(self):
-        PositionedElement.parse_geometry(self, default_offset=self.diagram.quantity_offset,
-                                               default_dependency=self.quantity)
+        if self._quantity:
+            PositionedElement.parse_geometry(self, default_offset=self.diagram.quantity_offset,
+                                                   default_dependency=self.quantity)
 
 #------------------------------------------------------------------------------
