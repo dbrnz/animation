@@ -456,15 +456,15 @@ class Text(object):
         return "_TEXT_{}_".format(cls._next_id)
 
     @classmethod
-    def typeset(cls, s, x, y, angle=0):
+    def typeset(cls, s, x, y, rotation=0):
         svg, size = mathjax.typeset(s, cls.next_id())
         w, h, va = (6*float(size[0][:-2]), 6*float(size[1][:-2]), 6*float(size[2][:-2]))
         # Use viewBox in size[3] to calculate scaling
         # Rotate text but first need to find center
-        return ('<g transform="translate({}, {}) scale(0.017)">{}</g>'
+        return ('<g transform="translate({}, {}) scale(0.015)">{}</g>'
                 .format(x-w/2, y+h/2 + va, svg))
 #        return ('<g transform="translate({}, {}) rotate({}, {}, {}) scale(0.017)">{}</g>'
-#                .format(x-w/2, y+h/2 + va, angle, w, -h, svg))
+#                .format(x-w/2, y+h/2 + va, rotation, w, -h, svg))
 
 # -----------------------------------------------------------------------------
 
