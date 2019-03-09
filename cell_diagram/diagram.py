@@ -352,33 +352,34 @@ class Diagram(Container):
         # of flow component lines passing through transporters
         self.bond_graph.set_offsets()
 
-    def svg(self):
+    def generate_svg(self, layer=None, excludes=None):
+        if excludes is None:
+            excludes = frozenset()
+
         svg = ['<?xml version="1.0" encoding="UTF-8"?>']
         svg.append(('<svg xmlns="http://www.w3.org/2000/svg"'
                     ' xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1"'
                     ' width="{width:g}" height="{height:g}"'
                     ' viewBox="0 0 {width:g} {height:g}">')
                    .format(width=self._width, height=self._height))
-        for c in self._compartments:
-            svg.extend(c.svg())
-        svg.extend(self.bond_graph.svg())
-        for q in self._quantities:
-            svg.extend(q.svg())
-        for t in self._transporters:
-            svg.extend(t.svg())
+        svg.extend(svg_elements.generate(self._compartments, layer, excludes))
+        svg.extend(self.bond_graph.generate_svg(layer, excludes))
+        svg.extend(svg_elements.generate(self._quantities, layer, excludes))
+        svg.extend(svg_elements.generate(self._transporters, layer, excludes))
         svg.append('<defs>')
         svg.extend(svg_elements.DefinesStore.defines())
         svg.append('</defs>')
         svg.append('</svg>')
         return '\n'.join(svg)
 
-    def geojson(self):
+    def generate_geojson(self, layer=None, excludes=None):
+        if excludes is None:
+            excludes = frozenset()
         features = []
-        features.extend(self.bond_graph.geojson())
-        for q in self._quantities:
-            features.append(q.geojson())
-        for t in self._transporters:
-            features.append(t.geojson())
+        #features.extend(GeoJSON.generate(self._compartments, layer, exclude))
+        features.extend(self.bond_graph.generate_geojson(layer, excludes))
+        features.extend(GeoJSON.generate(self._quantities, layer, excludes))
+        features.extend(GeoJSON.generate(self._transporters, layer, excludes))
         return GeoJSON.FeatureCollection(features)
 
 # -----------------------------------------------------------------------------

@@ -29,6 +29,7 @@ from . import diagram as dia
 from . import geojson as GeoJSON
 from . import layout
 from . import parser
+from . import svg_elements
 from .element import Element, PositionedElement
 from .svg_elements import svg_line
 
@@ -62,26 +63,35 @@ class BondGraph(Element):
         for flow in self.flows:
             flow.set_transporter_offsets()
 
-    def svg(self):
+    def generate_svg(self, layer, excludes):
         svg = [ ]
         # First draw all lines
         for p, q in self.potentials.items():
-            svg.append(svg_line(FlowComponent.trimmed_path(
-                                    geo.LineString([p.coords, q.coords]), p, q),
-                                q.stroke if q.stroke != 'none' else '#808080',
-                                display=self.display()))
+            classes = p.classes.union(q.classes)
+            if layer in classes or excludes and excludes.isdisjoint(classes):
+                svg.append(svg_line(FlowComponent.trimmed_path(
+                                        geo.LineString([p.coords, q.coords]), p, q),
+                                    q.stroke if q.stroke != 'none' else '#808080',
+                                    display=self.display()))
         # Link potentials via flows and their components
         for flow in self.flows:
-            for component in flow.components:
-                svg.extend(component.svg())
-        # Then symbols
+            svg.extend(svg_elements.generate(flow.components, layer, excludes))
+            ## All these components go through the flow's transporter
+            ## so check from/to positions to offset line when it goes
+            ## through the transporter and flow...
         for p, q in self.potentials.items():
-            svg.extend(p.svg())
+            classes = p.classes.union(q.classes)
+            if layer in classes or excludes and excludes.isdisjoint(classes):
+                svg.extend(p.svg())
         for flow in self.flows:
-            svg.extend(flow.svg())
+            classes = frozenset(flow.classes)
+            for component in flow.components:
+                classes = classes.union(component.classes)
+            if layer in classes or excludes and excludes.isdisjoint(classes):
+                svg.extend(flow.svg())
         return svg
 
-    def geojson(self):
+    def generate_geojson(self, layer, excludes):
         features = [ ]
         # First draw all lines
         for p, q in self.potentials.items():

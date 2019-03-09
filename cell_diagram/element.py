@@ -50,7 +50,7 @@ class Element(object):
                                if (container and container.full_name and name)
                                else None)
         self._class_name = class_name
-        self._classes = class_.split() if class_ is not None else []
+        self._classes = frozenset(class_.split()) if class_ is not None else frozenset()
         self._label = label if label else name
         self._style = style if style is not None else {}
         super().__init__()   # Now initialise any PositionedElement mixin
@@ -60,6 +60,10 @@ class Element(object):
         if self._id:
             s.append('({})'.format(self._id))
         return ' '.join(s)
+
+    @property
+    def classes(self):
+        return self._classes
 
     @property
     def full_name(self):

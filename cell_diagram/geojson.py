@@ -5,6 +5,16 @@ import json
 import shapely.affinity as affine
 import shapely.geometry as geo
 
+# -----------------------------------------------------------------------------
+
+def generate(elements, layer, excludes):
+    json = []
+    for e in elements:
+        if layer in e.classes or excludes and excludes.isdisjoint(e.classes):
+            json.append(e.geojson())
+    return json
+
+# -----------------------------------------------------------------------------
 
 class Feature(object):
     def __init__(self, geometry, **kwds):

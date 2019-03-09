@@ -26,6 +26,7 @@ import os
 from cell_diagram.parser import Parser
 import cell_diagram.geojson as GeoJSON
 
+from cell_diagram.svg_elements import DefinesStore
 # -----------------------------------------------------------------------------
 
 
@@ -35,26 +36,42 @@ def parse(file, stylesheet=None):
 
 # -----------------------------------------------------------------------------
 
-def display_svg(file, geoson=False):
-    (root, extension) =  os.path.splitext(file)
+def export_diagram_layer(diagram, layer, file_path, geojson=False, excludes=None):
+    file_name = '{}-{}'.format(file_path, layer) if layer else file_path
+
+    svg = diagram.generate_svg(layer, excludes=excludes)
+    f = open('{}.svg'.format(file_name), 'w')
+    f.write(svg)
+    f.close()
+
+    if geojson:
+        json = diagram.generate_geojson(layer, excludes=excludes)
+        f = open('{}.json'.format(file_name), 'w')
+        f.write(GeoJSON.dumps(json, indent=2))
+        f.close()
+
+
+def main(file, geojson=False, classes=None):
+    (root, extension) = os.path.splitext(file)
     if not extension:
         extension = '.xml'
+
     diagram = parse(root + extension)
-    svg = diagram.svg()
 
-    try:
-        import OpenCOR as oc
-        browser = oc.browserWebView()
-        browser.setContent(svg, "image/svg+xml")
-    except ImportError:
-        f = open(root + '.svg', 'w')
-        f.write(svg)
-        f.close()
-
-    if geoson:
-        f = open(root + '.json', 'w')
-        f.write(GeoJSON.dumps(diagram.geojson(), indent=2))
-        f.close()
+    if classes:
+        defines_top = DefinesStore.top()
+        export_diagram_layer(diagram, None, root, geojson, excludes=frozenset(classes))
+        for cls in classes:
+            DefinesStore.reset(defines_top)
+            export_diagram_layer(diagram, cls, root, geojson)
+    else:
+        try:
+            import OpenCOR as oc
+            svg = diagram.svg()
+            browser = oc.browserWebView()
+            browser.setContent(svg, "image/svg+xml")
+        except ModuleNotFoundError:
+            export_diagram_layer(diagram, None, root, geojson)
 
 
 if __name__ == '__main__':
@@ -65,13 +82,15 @@ if __name__ == '__main__':
                         help='show debugging')
     parser.add_argument('--geojson', action='store_true',
                         help='output features as GeoJSON')
-    parser.add_argument('celldl', metavar='CELLDL_FILE',
+    parser.add_argument('--layer-classes', dest='classes', metavar='CLASS', nargs='+',
+                        help='break SVG into separate files by classes')
+    parser.add_argument('--celldl', metavar='CELLDL_FILE',
                         help='the CellDl file')
     args = parser.parse_args()
 
     if args.debug:
         logging.getLogger().setLevel(logging.DEBUG)
 
-    display_svg(args.celldl, args.geojson)
+    main(args.celldl, args.geojson, args.classes)
 
 # -----------------------------------------------------------------------------

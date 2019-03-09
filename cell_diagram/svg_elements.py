@@ -30,6 +30,14 @@ LINE_WIDTH  = 2
 
 # -----------------------------------------------------------------------------
 
+def generate(elements, layer, excludes):
+    svg = []
+    for e in elements:
+        if layer in e.classes or excludes and excludes.isdisjoint(e.classes):
+            svg.extend(e.svg())
+    return svg
+
+# -----------------------------------------------------------------------------
 
 class SvgElement(object):
     def __init__(self, id, id_base):
