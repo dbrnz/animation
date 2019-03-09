@@ -432,7 +432,7 @@ class Arrow(object):
 
     def __eq__(self, other):
         return (isinstance(other, Arrow)
-            and self.colour == other._colour)
+            and self._colour == other._colour)
 
     def __hash__(self):
         return hash(self._colour)
