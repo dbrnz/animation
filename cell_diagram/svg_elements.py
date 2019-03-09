@@ -38,26 +38,63 @@ class SvgElement(object):
 
 # -----------------------------------------------------------------------------
 
-
 class DefinesStore(object):
-    _defs = {}
+    _ids = []
+    _svg_to_id = {}
+    _id_to_svg = {}
 
     @classmethod
-    def add(cls, id, defs):
-        if id not in cls._defs:
-            cls._defs[id] = defs
+    def add(cls, id, svg):
+        if id not in cls._ids:
+            cls._ids.append(id)
+            cls._svg_to_id[svg] = id
+            cls._id_to_svg[id] = svg
+        return "url(#{})".format(id)
+
+    @classmethod
+    def get_url(cls, svg):
+        id = cls._svg_to_id.get(svg, None)
+        if id is not None:
+            return "url(#{})".format(id)
 
     @classmethod
     def defines(cls):
-        return list(cls._defs.values())
+        return cls._id_to_svg.values()
+
+    @classmethod
+    def reset(cls, top):
+        for id in cls._ids[top:]:
+            svg = cls._id_to_svg.pop(id)
+            cls._svg_to_id.pop(svg)
+        del cls._ids[top:]
+
+    @classmethod
+    def top(cls):
+        return len(cls._ids)
 
 # -----------------------------------------------------------------------------
 
 
 class Gradient(object):
+    _next_id = 0
+
+    @classmethod
+    def next_id(cls):
+        cls._next_id += 1
+        return "_GRADIENT_{}_".format(cls._next_id)
+
     def __init__(self, gradient, stop_colours):
         self._gradient = gradient
         self._stop_colours = stop_colours
+
+    @classmethod
+    def url(cls, gradient, stop_colours):
+        self = cls(gradient, stop_colours)
+        url = DefinesStore.get_url(self)
+        if url is None:
+            id = cls.next_id()
+            url = DefinesStore.add(id, self.svg(id))
+        return url
 
     def __eq__(self, other):
         return (isinstance(other, Gradient)
@@ -78,28 +115,6 @@ class Gradient(object):
             stops.append('<stop{} stop-color="{}"/>'.format(offset, stop[0]))
         return ('<{gradient}Gradient id="{id}">{stops}</{gradient}Gradient>'
                 .format(gradient=self._gradient, id=id, stops='/n'.join(stops)))
-
-# -----------------------------------------------------------------------------
-
-
-class GradientStore(object):
-    _gradients_to_id = {}
-    _next_id = 0
-
-    @classmethod
-    def next_id(cls):
-        cls._next_id += 1
-        return "_GRADIENT_{}_".format(cls._next_id)
-
-    @classmethod
-    def url(cls, gradient, stop_colours):
-        g = Gradient(gradient, stop_colours)
-        id = cls._gradients_to_id.get(g, None)
-        if id is None:
-            id = cls.next_id()
-            cls._gradients_to_id[g] = id
-            DefinesStore.add(id, g.svg(id))
-        return "url(#{})".format(id)
 
 # -----------------------------------------------------------------------------
 
@@ -394,9 +409,26 @@ class PMRChannelInOut(PMRChannel):
 
 # -----------------------------------------------------------------------------
 
-class ArrowDefine_(object):
+class Arrow(object):
+    _next_id = 0
+
+    @classmethod
+    def next_id(cls):
+        cls._next_id += 1
+        return "_ARROW_{}_".format(cls._next_id)
+
     def __init__(self, colour):
         self._colour = colour
+
+    @classmethod
+    def url(cls, colour):
+        self = cls(colour)
+        url = DefinesStore.get_url(self)
+        if url is None:
+            id = cls.next_id()
+            url = DefinesStore.add(id, self.svg(id))
+        self._url = url
+        return url
 
     def __eq__(self, other):
         return (isinstance(other, Arrow)
@@ -413,28 +445,6 @@ class ArrowDefine_(object):
             </marker>""".format(id=id, fill=self._colour)
 
 # -----------------------------------------------------------------------------
-
-class Arrow(object):
-    _arrows_to_id = {}
-    _next_id = 0
-
-    @classmethod
-    def next_id(cls):
-        cls._next_id += 1
-        return "_ARROW_{}_".format(cls._next_id)
-
-    @classmethod
-    def url(cls, colour):
-        a = ArrowDefine_(colour)
-        id = cls._arrows_to_id.get(a, None)
-        if id is None:
-            id = cls.next_id()
-            cls._arrows_to_id[a] = id
-            DefinesStore.add(id, a.svg(id))
-        return "url(#{})".format(id)
-
-# -----------------------------------------------------------------------------
-
 
 def svg_line(line, colour, reverse=False, display='', style=''):
     points = list(reversed(line.coords)) if reverse else line.coords

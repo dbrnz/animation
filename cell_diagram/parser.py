@@ -35,7 +35,7 @@ from . import SyntaxError
 from . import bondgraph as bg
 from . import diagram as dia
 
-from .svg_elements import GradientStore
+from .svg_elements import Gradient
 
 # -----------------------------------------------------------------------------
 
@@ -226,7 +226,7 @@ def get_colour(tokens):
                 raise SyntaxError("Gradient stop percentage expected.")
             stop_colours.append((colour, stop))
             token = tokens.peek()
-        return GradientStore.url(gradient, stop_colours)
+        return Gradient.url(gradient, stop_colours)
     else:
         return get_colour_value(tokens)
 
