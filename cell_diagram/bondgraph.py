@@ -30,6 +30,7 @@ from . import geojson as GeoJSON
 from . import layout
 from . import parser
 from . import svg_elements
+from . import utils
 from .element import Element, PositionedElement
 from .svg_elements import svg_line
 
@@ -68,7 +69,7 @@ class BondGraph(Element):
         # First draw all lines
         for p, q in self.potentials.items():
             classes = p.classes.union(q.classes)
-            if layer in classes or excludes and excludes.isdisjoint(classes):
+            if utils.layer_matches(layer, classes, excludes):
                 svg.append(svg_line(FlowComponent.trimmed_path(
                                         geo.LineString([p.coords, q.coords]), p, q),
                                     q.stroke if q.stroke != 'none' else '#808080',
@@ -81,13 +82,13 @@ class BondGraph(Element):
             ## through the transporter and flow...
         for p, q in self.potentials.items():
             classes = p.classes.union(q.classes)
-            if layer in classes or excludes and excludes.isdisjoint(classes):
+            if utils.layer_matches(layer, classes, excludes):
                 svg.extend(p.svg())
         for flow in self.flows:
             classes = frozenset(flow.classes)
             for component in flow.components:
                 classes = classes.union(component.classes)
-            if layer in classes or excludes and excludes.isdisjoint(classes):
+            if utils.layer_matches(layer, classes, excludes):
                 svg.extend(flow.svg())
         return svg
 

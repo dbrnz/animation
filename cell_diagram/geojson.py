@@ -7,10 +7,14 @@ import shapely.geometry as geo
 
 # -----------------------------------------------------------------------------
 
+from . import utils
+
+# -----------------------------------------------------------------------------
+
 def generate(elements, layer, excludes):
     json = []
     for e in elements:
-        if layer in e.classes or excludes and excludes.isdisjoint(e.classes):
+        if utils.layer_matches(layer, e.classes, excludes):
             json.append(e.geojson())
     return json
 

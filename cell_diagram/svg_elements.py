@@ -26,6 +26,10 @@ from . import mathjax
 
 # -----------------------------------------------------------------------------
 
+from . import utils
+
+# -----------------------------------------------------------------------------
+
 LINE_WIDTH  = 2
 
 # -----------------------------------------------------------------------------
@@ -33,7 +37,7 @@ LINE_WIDTH  = 2
 def generate(elements, layer, excludes):
     svg = []
     for e in elements:
-        if layer in e.classes or excludes and excludes.isdisjoint(e.classes):
+        if utils.layer_matches(layer, e.classes, excludes):
             svg.extend(e.svg())
     return svg
 
