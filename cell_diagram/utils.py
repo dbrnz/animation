@@ -18,9 +18,21 @@
 #
 #------------------------------------------------------------------------------
 
+import os
+
+#------------------------------------------------------------------------------
+
 def layer_matches(layer, classes, excludes):
     return (not layer
          or layer in classes
          or excludes and excludes.isdisjoint(classes))
+
+#------------------------------------------------------------------------------
+
+def mkdir(path):
+    try:
+        os.mkdir(path, mode=0o755)
+    except FileExistsError:
+        pass
 
 #------------------------------------------------------------------------------

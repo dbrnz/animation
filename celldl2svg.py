@@ -24,6 +24,7 @@ import os
 # -----------------------------------------------------------------------------
 
 import cell_diagram.geojson as GeoJSON
+import cell_diagram.utils as utils
 
 from cell_diagram.parser import Parser
 from cell_diagram.svg_elements import DefinesStore
@@ -37,16 +38,17 @@ def parse(file, stylesheet=None):
 # -----------------------------------------------------------------------------
 
 def export_diagram_layer(diagram, layer, file_path, geojson=False, excludes=None):
-    file_name = '{}-{}'.format(file_path, layer) if layer else file_path
+    image_path = '{}/images/{}'.format(file_path, layer) if layer else file_path
+    json_path = '{}/features/{}'.format(file_path, layer) if layer else file_path
 
-    f = open('{}.svg'.format(file_name), 'w')
     svg = diagram.svg(layer=layer, excludes=excludes)
+    f = open('{}.svg'.format(image_path), 'w')
     f.write(svg)
     f.close()
 
     if geojson:
-        f = open('{}.json'.format(file_name), 'w')
         json = diagram.geojson(layer=layer, excludes=excludes)
+        f = open('{}.json'.format(json_path), 'w')
         f.write(GeoJSON.dumps(json, indent=2))
         f.close()
 
@@ -59,8 +61,11 @@ def main(file, geojson=False, classes=None):
     diagram = parse(root + extension)
 
     if classes:
+        utils.mkdir(root)
+        utils.mkdir('{}/images'.format(root))
+        utils.mkdir('{}/features'.format(root))
         defines_top = DefinesStore.top()
-        export_diagram_layer(diagram, None, root, geojson, excludes=frozenset(classes))
+        export_diagram_layer(diagram, 'background', root, geojson, excludes=frozenset(classes))
         for cls in classes:
             DefinesStore.reset(defines_top)
             export_diagram_layer(diagram, cls, root, geojson)
