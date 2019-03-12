@@ -230,7 +230,7 @@ class CellMembrane(SvgElement):
             t += dt
         return '''
       <g transform="{transform}">
-        <path stroke="#FFFFFF00" fill="none" marker-mid="url(#{marker})" d="{path}"/>
+        <path stroke="none" fill="none" marker-mid="url(#{marker})" d="{path}"/>
       </g>'''.format(transform=' '.join(transform), marker=marker_id, path=' '.join(path))
 
     def corner(self, position):
@@ -272,7 +272,7 @@ class CellMembrane(SvgElement):
             path.append(step_format.format(self._marker_width))
         return ['''
       <g id="{id}_{orientation}" transform="translate({trans_x}, {trans_y})">
-        <path stroke="#FFFFFF00" fill="none"  d="{path}"
+        <path stroke="none" fill="none"  d="{path}"
               marker-start="url(#{marker})" marker-mid="url(#{marker})"/>
       </g>'''.format(id=self._id_base, orientation=orientation,
                      trans_x=translation[0], trans_y=translation[1],
