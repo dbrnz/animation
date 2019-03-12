@@ -96,23 +96,26 @@ class BondGraph(Element):
         features = [ ]
         # First draw all lines
         for p, q in self.potentials.items():
-            features.append(
-                GeoJSON.Feature(
-                    FlowComponent.trimmed_path(
-                        geo.LineString([p.coords, q.coords]), p, q),
-                    id='{}-{}'.format(p.id, q.id[1:])))
+            classes = p.classes.union(q.classes)
+            if utils.layer_matches(layer, classes, excludes):
+                features.append(
+                    GeoJSON.Feature(
+                        FlowComponent.trimmed_path(
+                            geo.LineString([p.coords, q.coords]), p, q),
+                        id='{}-{}'.format(p.id, q.id[1:])))
         # Link potentials via flows and their components
         for flow in self.flows:
-            for component in flow.components:
-                ## All these components go through the flow's transporter
-                ## so check from/to positions to offset line when it goes
-                ## through the transporter and flow...
-                features.append(component.geojson())
-        # Then symbols
+            features.extend(GeoJSON.generate(flow.components, layer, excludes))
         for p, q in self.potentials.items():
-            features.append(p.geojson())
+            classes = p.classes.union(q.classes)
+            if utils.layer_matches(layer, classes, excludes):
+                features.append(p.geojson())
         for flow in self.flows:
-            features.append(flow.geojson())
+            classes = frozenset(flow.classes)
+            for component in flow.components:
+                classes = classes.union(component.classes)
+            if utils.layer_matches(layer, classes, excludes):
+                features.append(flow.geojson())
         return features
 
 #------------------------------------------------------------------------------
@@ -161,6 +164,11 @@ class Flow(Element, PositionedElement):
                 self._component_offsets[p[0]][index] = w*(-0.5 + n/float(num_components - 1))
 
     def get_flow_line(self, component):
+        ## component_points.extend(transporter_flow_line())  ## This could offset for multiple components
+                                                        ## through a transporter and extend on
+                                                        ## non flow side of a transporter.
+                                                        ## Offseting also needs to modify meaning of
+                                                        ## 'id' positions...
         points = []
         if self.transporter is not None:
             compartment = self.transporter.container.geometry()
