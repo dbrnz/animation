@@ -386,6 +386,7 @@
 
         .diffuser {
             display: none;
+            radius: 10;
         }
 
         /* Quantity positioning is by default wrt potentials */
