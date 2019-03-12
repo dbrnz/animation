@@ -34,7 +34,6 @@ from .element import Element, PositionedElement
 
 # -----------------------------------------------------------------------------
 
-
 class Container(Element, PositionedElement):
     def __init__(self, container, class_name='Container', **kwds):
         super().__init__(container, class_name=class_name, **kwds)
@@ -86,7 +85,6 @@ class Container(Element, PositionedElement):
 
 # -----------------------------------------------------------------------------
 
-
 class Compartment(Container):
     def __init__(self, container, **kwds):
         super().__init__(container, class_name='Compartment', **kwds)
@@ -116,7 +114,6 @@ class Compartment(Container):
         return super().svg()
 
 # -----------------------------------------------------------------------------
-
 
 class Quantity(Element, PositionedElement):
     def __init__(self, container, **kwds):
@@ -150,7 +147,6 @@ class Quantity(Element, PositionedElement):
         return svg
 
 # -----------------------------------------------------------------------------
-
 
 class Transporter(Element, PositionedElement):
     def __init__(self, container, **kwds):
@@ -216,7 +212,6 @@ class Transporter(Element, PositionedElement):
         return svg
 
 # -----------------------------------------------------------------------------
-
 
 class Diagram(Container):
     def __init__(self, **kwds):

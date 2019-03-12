@@ -468,7 +468,6 @@ def svg_line(line, colour, reverse=False, display='', style=''):
 
 # -----------------------------------------------------------------------------
 
-
 class Text(object):
     _next_id = 0
 
@@ -489,7 +488,6 @@ class Text(object):
 #                .format(x-w/2, y+h/2 + va, rotation, w, -h, svg))
 
 # -----------------------------------------------------------------------------
-
 
 if __name__ == '__main__':
 

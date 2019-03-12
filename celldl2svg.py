@@ -23,12 +23,12 @@ import os
 
 # -----------------------------------------------------------------------------
 
-from cell_diagram.parser import Parser
 import cell_diagram.geojson as GeoJSON
 
+from cell_diagram.parser import Parser
 from cell_diagram.svg_elements import DefinesStore
-# -----------------------------------------------------------------------------
 
+# -----------------------------------------------------------------------------
 
 def parse(file, stylesheet=None):
     parser = Parser()

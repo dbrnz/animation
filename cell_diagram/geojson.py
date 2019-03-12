@@ -1,6 +1,12 @@
+# -----------------------------------------------------------------------------
+
 # Inspired by shapely-geojson at https://github.com/alekzvik/shapely-geojson
 
+# -----------------------------------------------------------------------------
+
 import json
+
+# -----------------------------------------------------------------------------
 
 import shapely.affinity as affine
 import shapely.geometry as geo
@@ -33,6 +39,7 @@ class Feature(object):
             'properties': self._properties,
         }
 
+# -----------------------------------------------------------------------------
 
 class FeatureCollection(object):
     def __init__(self, features, **kwds):
@@ -79,12 +86,16 @@ class FeatureCollection(object):
             'properties': self._properties,
         }
 
+# -----------------------------------------------------------------------------
 
 def dump(obj, fp, *args, **kwargs):
     """Dump shapely geometry object :obj: to a file :fp:."""
     json.dump(geo.mapping(obj), fp, *args, **kwargs)
 
+# -----------------------------------------------------------------------------
 
 def dumps(obj, *args, **kwargs):
     """Dump shapely geometry object :obj: to a string."""
     return json.dumps(geo.mapping(obj), *args, **kwargs)
+
+# -----------------------------------------------------------------------------
