@@ -167,14 +167,6 @@ class Transporter(Element, PositionedElement):
     def width(self):
         return self._width
 
-    def geometry(self):
-        element_class = self.get_style_as_string('svg-element')
-        if element_class in dir(svg_elements):
-            radius = layout.ELEMENT_RADIUS
-        else:
-            radius = layout.TRANSPORTER_RADIUS
-        return super().geometry(radius)
-
     def parse_geometry(self):
         """
         * Transporter position: side of container along with offset from
@@ -220,10 +212,7 @@ class Transporter(Element, PositionedElement):
                           0 if self.compartment_side in layout.HORIZONTAL_BOUNDARIES else 90))
             svg.append(element.svg())
             svg.append('</g>')
-            radius = layout.ELEMENT_RADIUS
-        else:
-            radius = layout.TRANSPORTER_RADIUS
-        svg.extend(super().svg(radius))
+        svg.extend(super().svg())
         return svg
 
 # -----------------------------------------------------------------------------

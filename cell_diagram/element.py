@@ -109,6 +109,18 @@ class Element(object):
     def stroke_width(self):
         return self.get_style_as_string('stroke-width', '1')
 
+    @property
+    def radius(self):
+        r = float(self.get_style_as_string('radius', '0.0'))
+        if r == 0.0:
+            if self._class_name != 'Transporter':
+                r = layout.ELEMENT_RADIUS
+            else:
+                element_class = self.get_style_as_string('svg-element')
+                r = (layout.ELEMENT_RADIUS if element_class in dir(svg_elements)
+                else layout.TRANSPORTER_RADIUS)
+        return r
+
     def get_style_as_string(self, name, default=None):
         tokens = self._style.get(name, None)
         return (' '.join([str(t.value) if t.type != 'hash' else ('#' + t.value)
@@ -157,9 +169,9 @@ class PositionedElement(object):
     def coords(self):
         return self._position.coords
 
-    def geometry(self, radius=layout.ELEMENT_RADIUS):
+    def geometry(self):
         if self._geometry is None and self.position.has_coords:
-            self._geometry = geo.Point(self.coords).buffer(radius)
+            self._geometry = geo.Point(self.coords).buffer(self.radius)
         return self._geometry
 
     def resolve_position(self):
@@ -183,13 +195,13 @@ class PositionedElement(object):
             return ('  <text text-anchor="middle" dominant-baseline="central"'
                     ' x="{}" y="{}">{}</text>').format(x, y, self.label)
 
-    def svg(self, radius=layout.ELEMENT_RADIUS):
+    def svg(self):
         svg = ['<g{}{}>'.format(self.id_class(), self.display())]
         if self.position.has_coords:
             (x, y) = self.coords
             svg.append(('  <circle r="{}" cx="{}" cy="{}"'
                         ' stroke="{}" stroke-width="{}" fill="{}"/>')
-                       .format(radius, x, y, self.stroke, self.stroke_width, self.colour))
+                       .format(self.radius, x, y, self.stroke, self.stroke_width, self.colour))
             svg.append(self.label_as_svg())
         svg.append('</g>')
         return svg
