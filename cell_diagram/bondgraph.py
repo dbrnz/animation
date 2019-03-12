@@ -64,7 +64,7 @@ class BondGraph(Element):
         for flow in self.flows:
             flow.set_transporter_offsets()
 
-    def generate_svg(self, layer, excludes):
+    def svg(self, layer=None, excludes=None):
         svg = [ ]
         # First draw all lines
         for p, q in self.potentials.items():
@@ -92,7 +92,7 @@ class BondGraph(Element):
                 svg.extend(flow.svg())
         return svg
 
-    def generate_geojson(self, layer, excludes):
+    def geojson(self, layer, excludes):
         features = [ ]
         # First draw all lines
         for p, q in self.potentials.items():

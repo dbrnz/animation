@@ -352,7 +352,7 @@ class Diagram(Container):
         # of flow component lines passing through transporters
         self.bond_graph.set_offsets()
 
-    def generate_svg(self, layer=None, excludes=None):
+    def svg(self, layer=None, excludes=None):
         if excludes is None:
             excludes = frozenset()
 
@@ -363,7 +363,7 @@ class Diagram(Container):
                     ' viewBox="0 0 {width:g} {height:g}">')
                    .format(width=self._width, height=self._height))
         svg.extend(svg_elements.generate(self._compartments, layer, excludes))
-        svg.extend(self.bond_graph.generate_svg(layer, excludes))
+        svg.extend(self.bond_graph.svg(layer=layer, excludes=excludes))
         svg.extend(svg_elements.generate(self._quantities, layer, excludes))
         svg.extend(svg_elements.generate(self._transporters, layer, excludes))
         svg.append('<defs>')
@@ -372,12 +372,12 @@ class Diagram(Container):
         svg.append('</svg>')
         return '\n'.join(svg)
 
-    def generate_geojson(self, layer=None, excludes=None):
+    def geojson(self, layer=None, excludes=None):
         if excludes is None:
             excludes = frozenset()
         features = []
         #features.extend(GeoJSON.generate(self._compartments, layer, exclude))
-        features.extend(self.bond_graph.generate_geojson(layer, excludes))
+        features.extend(self.bond_graph.geojson(layer, excludes))
         features.extend(GeoJSON.generate(self._quantities, layer, excludes))
         features.extend(GeoJSON.generate(self._transporters, layer, excludes))
         return GeoJSON.FeatureCollection(features)

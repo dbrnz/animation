@@ -39,14 +39,14 @@ def parse(file, stylesheet=None):
 def export_diagram_layer(diagram, layer, file_path, geojson=False, excludes=None):
     file_name = '{}-{}'.format(file_path, layer) if layer else file_path
 
-    svg = diagram.generate_svg(layer, excludes=excludes)
     f = open('{}.svg'.format(file_name), 'w')
+    svg = diagram.svg(layer=layer, excludes=excludes)
     f.write(svg)
     f.close()
 
     if geojson:
-        json = diagram.generate_geojson(layer, excludes=excludes)
         f = open('{}.json'.format(file_name), 'w')
+        json = diagram.geojson(layer=layer, excludes=excludes)
         f.write(GeoJSON.dumps(json, indent=2))
         f.close()
 
